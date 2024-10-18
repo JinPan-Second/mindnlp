@@ -27,7 +27,8 @@ class Starcoder2Config(PretrainedConfig):
     r"""
     This is the configuration class to store the configuration of a [`Starcoder2Model`]. It is used to instantiate a
     Starcoder2 model according to the specified arguments, defining the model architecture. Instantiating a configuration
-    with the defaults will yield a similar configuration to that of the [bigcode/starcoder2-7b_16k](https://huggingface.co/bigcode/starcoder2-7b_16k) model.
+    with the defaults will yield a similar configuration to that of the [bigcode/starcoder2-7b_16k]
+    (https://hf-mirror.com/bigcode/starcoder2-7b_16k) model.
 
 
     Configuration objects inherit from [`PretrainedConfig`] and can be used to control the model outputs. Read the
@@ -49,8 +50,8 @@ class Starcoder2Config(PretrainedConfig):
         num_key_value_heads (`int`, *optional*, defaults to 2):
             This is the number of key_value heads that should be used to implement Grouped Query Attention. If
             `num_key_value_heads=num_attention_heads`, the model will use Multi Head Attention (MHA), if
-            `num_key_value_heads=1 the model will use Multi Query Attention (MQA) otherwise GQA is used. When
-            converting a multi-head checkpoint to a GQA checkpoint, each group key and value head should be constructed
+            `num_key_value_heads=1` the model will use Multi Query Attention (MQA) otherwise GQA is used. When
+            converting a multi-head checkpoint to a GQA checkpoint, each group key and value head should be forwarded
             by meanpooling all the original heads within that group. For more details checkout [this
             paper](https://arxiv.org/pdf/2305.13245.pdf). If it is not specified, will default to `8`.
         hidden_act (`str` or `function`, *optional*, defaults to `"gelu_pytorch_tanh"`):
@@ -82,20 +83,20 @@ class Starcoder2Config(PretrainedConfig):
         use_bias (`bool`, *optional*, defaults to `True`):
             Whether to use bias term on linear layers of the model.
 
-
-    ```python
-    >>> from transformers import Starcoder2Model, Starcoder2Config
-
-    >>> # Initializing a Starcoder2 7B style configuration
-    >>> configuration = Starcoder2Config()
-
-    >>> # Initializing a model from the Starcoder2 7B style configuration
-    >>> model = Starcoder2Model(configuration)
-
-    >>> # Accessing the model configuration
-    >>> configuration = model.config
-    ```"""
-
+    Example:
+        ```python
+        >>> from transformers import Starcoder2Model, Starcoder2Config
+        ...
+        >>> # Initializing a Starcoder2 7B style configuration
+        >>> configuration = Starcoder2Config()
+        ...
+        >>> # Initializing a model from the Starcoder2 7B style configuration
+        >>> model = Starcoder2Model(configuration)
+        ...
+        >>> # Accessing the model configuration
+        >>> configuration = model.config
+        ```
+    """
     model_type = "starcoder2"
     keys_to_ignore_at_inference = ["past_key_values"]
 
@@ -122,6 +123,37 @@ class Starcoder2Config(PretrainedConfig):
         use_bias=True,
         **kwargs,
     ):
+        """
+        Initializes a new instance of the Starcoder2Config class.
+        
+        Args:
+            self: The object itself.
+            vocab_size (int, optional): The size of the vocabulary. Defaults to 49152.
+            hidden_size (int, optional): The size of the hidden layer. Defaults to 3072.
+            intermediate_size (int, optional): The size of the intermediate layer in the transformer encoder. Defaults to 12288.
+            num_hidden_layers (int, optional): The number of hidden layers in the transformer encoder. Defaults to 30.
+            num_attention_heads (int, optional): The number of attention heads in the transformer encoder. Defaults to 24.
+            num_key_value_heads (int, optional): The number of key-value attention heads in the transformer encoder. Defaults to 2.
+            hidden_act (str, optional): The activation function for the hidden layer. Defaults to 'gelu_pytorch_tanh'.
+            max_position_embeddings (int, optional): The maximum number of tokens in a sequence. Defaults to 4096.
+            initializer_range (float, optional): The range of the initializer. Defaults to 0.018042.
+            norm_epsilon (float, optional): The epsilon value for normalization. Defaults to 1e-05.
+            use_cache (bool, optional): Specifies whether to use cache in the transformer encoder. Defaults to True.
+            bos_token_id (int, optional): The ID of the beginning-of-sentence token. Defaults to 50256.
+            eos_token_id (int, optional): The ID of the end-of-sentence token. Defaults to 50256.
+            rope_theta (float, optional): The theta value for the ROPE mechanism. Defaults to 10000.0.
+            sliding_window (None or int, optional): The size of the sliding window used in the transformer encoder. Defaults to None.
+            attention_dropout (float, optional): The dropout rate for attention layers. Defaults to 0.0.
+            residual_dropout (float, optional): The dropout rate for residual connections. Defaults to 0.0.
+            embedding_dropout (float, optional): The dropout rate for embeddings. Defaults to 0.0.
+            use_bias (bool, optional): Specifies whether to use bias in the transformer encoder. Defaults to True.
+        
+        Returns:
+            None.
+        
+        Raises:
+            None.
+        """
         self.vocab_size = vocab_size
         self.max_position_embeddings = max_position_embeddings
         self.hidden_size = hidden_size

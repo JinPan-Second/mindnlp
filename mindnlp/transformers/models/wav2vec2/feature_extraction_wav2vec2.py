@@ -48,23 +48,22 @@ class Wav2Vec2FeatureExtractor(SequenceFeatureExtractor):
         do_normalize (`bool`, *optional*, defaults to `True`):
             Whether or not to zero-mean unit-variance normalize the input. Normalizing can help to significantly
             improve the performance for some models, *e.g.*,
-            [wav2vec2-lv60](https://huggingface.co/models?search=lv60).
+            [wav2vec2-lv60](https://hf-mirror.com/models?search=lv60).
         return_attention_mask (`bool`, *optional*, defaults to `False`):
             Whether or not [`~Wav2Vec2FeatureExtractor.__call__`] should return `attention_mask`.
 
             <Tip>
 
             Wav2Vec2 models that have set `config.feat_extract_norm == "group"`, such as
-            [wav2vec2-base](https://huggingface.co/facebook/wav2vec2-base-960h), have **not** been trained using
+            [wav2vec2-base](https://hf-mirror.com/facebook/wav2vec2-base-960h), have **not** been trained using
             `attention_mask`. For such models, `input_values` should simply be padded with 0 and no `attention_mask`
             should be passed.
 
             For Wav2Vec2 models that have set `config.feat_extract_norm == "layer"`, such as
-            [wav2vec2-lv60](https://huggingface.co/facebook/wav2vec2-large-960h-lv60-self), `attention_mask` should be
+            [wav2vec2-lv60](https://hf-mirror.com/facebook/wav2vec2-large-960h-lv60-self), `attention_mask` should be
             passed for batched inference.
 
             </Tip>"""
-
     model_input_names = ["input_values", "attention_mask"]
 
     def __init__(
@@ -76,6 +75,24 @@ class Wav2Vec2FeatureExtractor(SequenceFeatureExtractor):
         do_normalize=True,
         **kwargs,
     ):
+        """
+        Initialize the Wav2Vec2FeatureExtractor class.
+        
+        Args:
+            self (object): The instance of the class.
+            feature_size (int, optional): The size of the input features. Defaults to 1.
+            sampling_rate (int, optional): The sampling rate of the audio data. Defaults to 16000.
+            padding_value (float, optional): The value used for padding sequences. Defaults to 0.0.
+            return_attention_mask (bool, optional): Whether to return the attention mask. Defaults to False.
+            do_normalize (bool, optional): Whether to normalize the input features. Defaults to True.
+            **kwargs: Additional keyword arguments.
+        
+        Returns:
+            None.
+        
+        Raises:
+            None.
+        """
         super().__init__(feature_size=feature_size, sampling_rate=sampling_rate, padding_value=padding_value, **kwargs)
         self.return_attention_mask = return_attention_mask
         self.do_normalize = do_normalize
@@ -127,11 +144,11 @@ class Wav2Vec2FeatureExtractor(SequenceFeatureExtractor):
                 index) among:
 
                 - `True` or `'longest'`: Pad to the longest sequence in the batch (or no padding if only a single
-                  sequence if provided).
+                sequence if provided).
                 - `'max_length'`: Pad to a maximum length specified with the argument `max_length` or to the maximum
-                  acceptable input length for the model if that argument is not provided.
+                acceptable input length for the model if that argument is not provided.
                 - `False` or `'do_not_pad'` (default): No padding (i.e., can output a batch with sequences of different
-                  lengths).
+                lengths).
             max_length (`int`, *optional*):
                 Maximum length of the returned list and optionally padding length (see above).
             truncation (`bool`):
@@ -150,12 +167,12 @@ class Wav2Vec2FeatureExtractor(SequenceFeatureExtractor):
                 <Tip>
 
                 Wav2Vec2 models that have set `config.feat_extract_norm == "group"`, such as
-                [wav2vec2-base](https://huggingface.co/facebook/wav2vec2-base-960h), have **not** been trained using
+                [wav2vec2-base](https://hf-mirror.com/facebook/wav2vec2-base-960h), have **not** been trained using
                 `attention_mask`. For such models, `input_values` should simply be padded with 0 and no
                 `attention_mask` should be passed.
 
                 For Wav2Vec2 models that have set `config.feat_extract_norm == "layer"`, such as
-                [wav2vec2-lv60](https://huggingface.co/facebook/wav2vec2-large-960h-lv60-self), `attention_mask` should
+                [wav2vec2-lv60](https://hf-mirror.com/facebook/wav2vec2-large-960h-lv60-self), `attention_mask` should
                 be passed for batched inference.
 
                 </Tip>
@@ -171,7 +188,6 @@ class Wav2Vec2FeatureExtractor(SequenceFeatureExtractor):
                 `sampling_rate` at the forward call to prevent silent errors.
             padding_value (`float`, defaults to 0.0):
         """
-
         if sampling_rate is not None:
             if sampling_rate != self.sampling_rate:
                 raise ValueError(

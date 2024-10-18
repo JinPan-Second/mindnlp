@@ -13,9 +13,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ============================================================================
-# pylint: disable=invalid-name
-# pylint: disable=too-many-boolean-expressions
-# pylint: disable=chained-comparison
 """streamers"""
 from queue import Queue
 from typing import TYPE_CHECKING, Optional
@@ -29,7 +26,6 @@ class BaseStreamer:
     """
     Base class from which `.generate()` streamers should inherit.
     """
-
     def put(self, value):
         """Function that is called by `.generate()` to push new tokens"""
         raise NotImplementedError()
@@ -57,23 +53,36 @@ class TextStreamer(BaseStreamer):
         decode_kwargs (`dict`, *optional*):
             Additional keyword arguments to pass to the tokenizer's `decode` method.
 
-    Examples:
-
+    Example:
         ```python
         >>> from transformers import AutoModelForCausalLM, AutoTokenizer, TextStreamer
-
+        ...
         >>> tok = AutoTokenizer.from_pretrained("openai-community/gpt2")
         >>> model = AutoModelForCausalLM.from_pretrained("openai-community/gpt2")
-        >>> inputs = tok(["An increasing sequence: one,"], return_tensors="pt")
+        >>> inputs = tok(["An increasing sequence: one,"], return_tensors="ms")
         >>> streamer = TextStreamer(tok)
-
+        ...
         >>> # Despite returning the usual output, the streamer will also print the generated text to stdout.
         >>> _ = model.generate(**inputs, streamer=streamer, max_new_tokens=20)
         An increasing sequence: one, two, three, four, five, six, seven, eight, nine, ten, eleven,
         ```
     """
-
     def __init__(self, tokenizer: "AutoTokenizer", skip_prompt: bool = False, **decode_kwargs):
+        """
+        Initializes an instance of the TextStreamer class.
+
+        Args:
+            tokenizer (AutoTokenizer): An instance of AutoTokenizer used for tokenization.
+            skip_prompt (bool, optional): A flag indicating whether to skip the prompt. Defaults to False.
+            **decode_kwargs: Additional keyword arguments for decoding.
+
+        Returns:
+            None.
+
+        Raises:
+            TypeError: If tokenizer is not an instance of AutoTokenizer.
+            ValueError: If skip_prompt is not a boolean.
+        """
         self.tokenizer = tokenizer
         self.skip_prompt = skip_prompt
         self.decode_kwargs = decode_kwargs
@@ -183,17 +192,16 @@ class TextIteratorStreamer(TextStreamer):
         decode_kwargs (`dict`, *optional*):
             Additional keyword arguments to pass to the tokenizer's `decode` method.
 
-    Examples:
-
+    Example:
         ```python
         >>> from transformers import AutoModelForCausalLM, AutoTokenizer, TextIteratorStreamer
         >>> from threading import Thread
-
+        ...
         >>> tok = AutoTokenizer.from_pretrained("openai-community/gpt2")
         >>> model = AutoModelForCausalLM.from_pretrained("openai-community/gpt2")
-        >>> inputs = tok(["An increasing sequence: one,"], return_tensors="pt")
+        >>> inputs = tok(["An increasing sequence: one,"], return_tensors="ms")
         >>> streamer = TextIteratorStreamer(tok)
-
+        ...
         >>> # Run the generation in a separate thread, so that we can fetch the generated text in a non-blocking way.
         >>> generation_kwargs = dict(inputs, streamer=streamer, max_new_tokens=20)
         >>> thread = Thread(target=model.generate, kwargs=generation_kwargs)
@@ -205,10 +213,25 @@ class TextIteratorStreamer(TextStreamer):
         'An increasing sequence: one, two, three, four, five, six, seven, eight, nine, ten, eleven,'
         ```
     """
-
     def __init__(
         self, tokenizer: "AutoTokenizer", skip_prompt: bool = False, timeout: Optional[float] = None, **decode_kwargs
     ):
+        """
+        Initializes an instance of the TextIteratorStreamer class.
+        
+        Args:
+            self: The instance of the class itself.
+            tokenizer (AutoTokenizer): An instance of the AutoTokenizer class used for tokenization.
+            skip_prompt (bool): A flag indicating whether prompts should be skipped during iteration. Defaults to False.
+            timeout (Optional[float]): An optional timeout value in seconds for waiting on text_queue. Defaults to None.
+            **decode_kwargs: Additional keyword arguments for decoding.
+        
+        Returns:
+            None
+        
+        Raises:
+            None
+        """
         super().__init__(tokenizer, skip_prompt, **decode_kwargs)
         self.text_queue = Queue()
         self.stop_signal = None
@@ -221,9 +244,41 @@ class TextIteratorStreamer(TextStreamer):
             self.text_queue.put(self.stop_signal, timeout=self.timeout)
 
     def __iter__(self):
+        """
+        Docstring for method '__iter__' in the class 'TextIteratorStreamer'.
+        
+        Args:
+            self (object): The instance of the class TextIteratorStreamer.
+                This parameter is required to access the object's attributes and methods.
+        
+        Returns:
+            None: This method returns None as it is meant to be an iterator and does not explicitly return a value.
+        
+        Raises:
+            None.
+        """
         return self
 
     def __next__(self):
+        """
+        Method to retrieve the next value from the text queue in the TextIteratorStreamer class.
+        
+        Args:
+            self:
+                An instance of the TextIteratorStreamer class.
+
+                - Type: TextIteratorStreamer
+                - Purpose: Represents the current instance of the TextIteratorStreamer class.
+                - Restrictions: This parameter is automatically passed when the method is called.
+        
+        Returns:
+            None: This method does not explicitly return a value. It retrieves the next value from the text queue
+                and processes it accordingly within the context of the TextIteratorStreamer class.
+        
+        Raises:
+            StopIteration: Raised when the retrieved value from the text queue is equal to the stop signal,
+                indicating the end of iteration.
+        """
         value = self.text_queue.get(timeout=self.timeout)
         if value == self.stop_signal:
             raise StopIteration()

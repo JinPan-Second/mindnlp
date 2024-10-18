@@ -14,12 +14,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ============================================================================
-# pylint: disable=invalid-name
-# pylint: disable=arguments-renamed
-# pylint: disable=invalid-unary-operand-type
-# pylint: disable=missing-function-docstring
-# pylint: disable=missing-class-docstring
-# pylint: disable=potential-index-error
+# pylint: disable=import-error
 """ Feature extractor class for Pop2Piano"""
 
 import warnings
@@ -83,7 +78,6 @@ class Pop2PianoFeatureExtractor(SequenceFeatureExtractor):
         num_bars (`int`, *optional*, defaults to 2):
             Determines interval between each sequence.
     """
-
     model_input_names = ["input_features", "beatsteps", "extrapolated_beatstep"]
 
     def __init__(
@@ -97,6 +91,27 @@ class Pop2PianoFeatureExtractor(SequenceFeatureExtractor):
         num_bars: int = 2,
         **kwargs,
     ):
+        """
+        Initializes a Pop2PianoFeatureExtractor object.
+        
+        Args:
+            self: The Pop2PianoFeatureExtractor object itself.
+            sampling_rate (int, optional): The sampling rate of the audio signal in Hz. Defaults to 22050.
+            padding_value (int, optional): The value used for padding the audio signal. Defaults to 0.
+            window_size (int, optional): The size of the analysis window in samples. Defaults to 4096.
+            hop_length (int, optional): The number of samples between successive frames. Defaults to 1024.
+            min_frequency (float, optional): The minimum frequency in Hz for the mel filters. Defaults to 10.0.
+            feature_size (int, optional): The size of the output feature representation. Defaults to 512.
+            num_bars (int, optional): The number of bars in each feature representation. Defaults to 2.
+            **kwargs: Additional keyword arguments to be passed to the parent class forwardor.
+        
+        Returns:
+            None.
+        
+        Raises:
+            None.
+        
+        """
         super().__init__(
             feature_size=feature_size,
             sampling_rate=sampling_rate,
@@ -176,7 +191,6 @@ class Pop2PianoFeatureExtractor(SequenceFeatureExtractor):
             n_extend (`int`):
                 used as an parameter to control the interpolation.
         """
-
         requires_backends(self, ["scipy"])
         beat_times_function = scipy.interpolate.interp1d(
             np.arange(beat_times.size),
@@ -202,7 +216,6 @@ class Pop2PianoFeatureExtractor(SequenceFeatureExtractor):
                 Interpolated values of the raw audio. If beatstep[0] is greater than 0.0, then it will be shifted by
                 the value at beatstep[0].
         """
-
         if audio is not None and len(audio.shape) != 1:
             raise ValueError(
                 f"Expected `audio` to be a single channel audio input of shape `(n, )` but found shape {audio.shape}."
@@ -240,12 +253,36 @@ class Pop2PianoFeatureExtractor(SequenceFeatureExtractor):
         return padded_batch, extrapolated_beatstep
 
     def _pad(self, features: np.ndarray, add_zero_line=True):
+        """
+        Method _pad in class Pop2PianoFeatureExtractor.
+        
+        This method pads the input features and attention masks to ensure that they have the same shape for further processing.
+        
+        Args:
+            self (Pop2PianoFeatureExtractor): The instance of the Pop2PianoFeatureExtractor class.
+            features (np.ndarray): An array containing the input features to be padded. The shape of each feature
+                should be consistent within the array.
+            add_zero_line (bool): A flag indicating whether to add a zero line at the end of each padded feature.
+                Defaults to True.
+        
+        Returns:
+            tuple:
+                A tuple containing the padded features and attention masks.
+
+                - The padded features are of type np.ndarray and have been concatenated along the 0th axis.
+                - The attention masks are also of type np.ndarray and have been concatenated along the 0th axis.
+
+        Raises:
+            ValueError: If the input features are not of type np.ndarray or if the feature shapes are inconsistent.
+            TypeError: If the input features or attention masks are not of type np.ndarray.
+            ValueError: If the add_zero_line parameter is not a boolean value.
+        """
         features_shapes = [each_feature.shape for each_feature in features]
         attention_masks, padded_features = [], []
         for i, each_feature in enumerate(features):
             # To pad "input_features".
             if len(each_feature.shape) == 3:
-                features_pad_value = max([*zip(*features_shapes)][1]) - features_shapes[i][1]
+                features_pad_value = max([*zip(*features_shapes)][1]) - features_shapes[i][1] # pylint: disable=potential-index-error
                 attention_mask = np.ones(features_shapes[i][:2], dtype=np.int64)
                 feature_padding = ((0, 0), (0, features_pad_value), (0, 0))
                 attention_mask_padding = (feature_padding[0], feature_padding[1])
@@ -264,7 +301,7 @@ class Pop2PianoFeatureExtractor(SequenceFeatureExtractor):
 
             if add_zero_line:
                 # if it is batched then we seperate each examples using zero array
-                zero_array_len = max([*zip(*features_shapes)][1])
+                zero_array_len = max([*zip(*features_shapes)][1]) # pylint: disable=potential-index-error
 
                 # we concatenate the zero array line here
                 each_padded_feature = np.concatenate(
@@ -300,30 +337,29 @@ class Pop2PianoFeatureExtractor(SequenceFeatureExtractor):
             return_attention_mask (`bool`):
                 Whether to return attention mask or not.
             return_tensors (`str` or [`~utils.TensorType`], *optional*):
-                If set, will return tensors instead of list of python integers. Acceptable values are:
-                - `'pt'`: Return PyTorch `torch.Tensor` objects.
-                - `'np'`: Return Numpy `np.ndarray` objects.
-                If nothing is specified, it will return list of `np.ndarray` arrays.
-        Return:
+                - If set, will return tensors instead of list of python integers. Acceptable values are:
+
+                    - `'pt'`: Return PyTorch `torch.Tensor` objects.
+                    - `'np'`: Return Numpy `np.ndarray` objects.
+
+                - If nothing is specified, it will return list of `np.ndarray` arrays.
+
+        Returns:
             `BatchFeature` with attention_mask, attention_mask_beatsteps and attention_mask_extrapolated_beatstep added
             to it:
-            - **attention_mask** numpy.ndarray of shape `(batch_size, max_input_features_seq_length)` --
-                Example :
-                    1, 1, 1, 0, 0 (audio 1, also here it is padded to max length of 5 thats why there are 2 zeros at
-                    the end indicating they are padded)
 
-                    0, 0, 0, 0, 0 (zero pad to seperate audio 1 and 2)
+            - **attention_mask** numpy.ndarray of shape `(batch_size, max_input_features_seq_length)` -- Example:
 
-                    1, 1, 1, 1, 1 (audio 2)
+                - 1, 1, 1, 0, 0 (audio 1, also here it is padded to max length of 5 thats why there are 2 zeros at
+                the end indicating they are padded)
+                - 0, 0, 0, 0, 0 (zero pad to seperate audio 1 and 2)
+                - 1, 1, 1, 1, 1 (audio 2)
+                - 0, 0, 0, 0, 0 (zero pad to seperate audio 2 and 3)
+                - 1, 1, 1, 1, 1 (audio 3)
 
-                    0, 0, 0, 0, 0 (zero pad to seperate audio 2 and 3)
-
-                    1, 1, 1, 1, 1 (audio 3)
             - **attention_mask_beatsteps** numpy.ndarray of shape `(batch_size, max_beatsteps_seq_length)`
-            - **attention_mask_extrapolated_beatstep** numpy.ndarray of shape `(batch_size,
-              max_extrapolated_beatstep_seq_length)`
+            - **attention_mask_extrapolated_beatstep** numpy.ndarray of shape `(batch_size, max_extrapolated_beatstep_seq_length)`
         """
-
         processed_features_dict = {}
         for feature_name, feature_value in inputs.items():
             if feature_name == "input_features":
@@ -375,12 +411,14 @@ class Pop2PianoFeatureExtractor(SequenceFeatureExtractor):
                 Denotes if attention_mask for input_features, beatsteps and extrapolated_beatstep will be given as
                 output or not. Automatically set to True for batched inputs.
             return_tensors (`str` or [`~utils.TensorType`], *optional*):
-                If set, will return tensors instead of list of python integers. Acceptable values are:
-                - `'pt'`: Return PyTorch `torch.Tensor` objects.
-                - `'np'`: Return Numpy `np.ndarray` objects.
-                If nothing is specified, it will return list of `np.ndarray` arrays.
-        """
 
+                - If set, will return tensors instead of list of python integers. Acceptable values are:
+
+                    - `'pt'`: Return PyTorch `torch.Tensor` objects.
+                    - `'np'`: Return Numpy `np.ndarray` objects.
+
+                - If nothing is specified, it will return list of `np.ndarray` arrays.
+        """
         requires_backends(self, ["librosa"])
         is_batched = bool(isinstance(audio, (list, tuple)) and isinstance(audio[0], (np.ndarray, tuple, list)))
         if is_batched:

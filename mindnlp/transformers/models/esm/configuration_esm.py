@@ -13,8 +13,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ============================================================================
-# pylint: disable=missing-class-docstring
-# pylint: disable=missing-function-docstring
 """ ESM model configuration"""
 
 from dataclasses import asdict, dataclass
@@ -28,8 +26,8 @@ logger = logging.get_logger(__name__)
 
 # TODO Update this
 ESM_PRETRAINED_CONFIG_ARCHIVE_MAP = {
-    "facebook/esm-1b": "https://huggingface.co/facebook/esm-1b/resolve/main/config.json",
-    # See all ESM models at https://huggingface.co/models?filter=esm
+    "facebook/esm-1b": "https://hf-mirror.com/facebook/esm-1b/resolve/main/config.json",
+    # See all ESM models at https://hf-mirror.com/models?filter=esm
 }
 
 
@@ -38,7 +36,7 @@ class EsmConfig(PretrainedConfig):
     This is the configuration class to store the configuration of a [`ESMModel`]. It is used to instantiate a ESM model
     according to the specified arguments, defining the model architecture. Instantiating a configuration with the
     defaults will yield a similar configuration to that of the ESM
-    [facebook/esm-1b](https://huggingface.co/facebook/esm-1b) architecture.
+    [facebook/esm-1b](https://hf-mirror.com/facebook/esm-1b) architecture.
 
     Configuration objects inherit from [`PretrainedConfig`] and can be used to control the model outputs. Read the
     documentation from [`PretrainedConfig`] for more information.
@@ -89,18 +87,17 @@ class EsmConfig(PretrainedConfig):
         token_dropout (`bool`, defaults to `False`):
             When this is enabled, masked tokens are treated as if they had been dropped out by input dropout.
 
-    Examples:
-
-    ```python
-    >>> from transformers import EsmModel, EsmConfig
-
-    >>> # Initializing a ESM facebook/esm-1b style configuration >>> configuration = EsmConfig()
-
-    >>> # Initializing a model from the configuration >>> model = ESMModel(configuration)
-
-    >>> # Accessing the model configuration >>> configuration = model.config
-    ```"""
-
+    Example:
+        ```python
+        >>> from transformers import EsmModel, EsmConfig
+        ...
+        >>> # Initializing a ESM facebook/esm-1b style configuration >>> configuration = EsmConfig()
+        ...
+        >>> # Initializing a model from the configuration >>> model = ESMModel(configuration)
+        ...
+        >>> # Accessing the model configuration >>> configuration = model.config
+        ```
+    """
     model_type = "esm"
 
     def __init__(
@@ -126,6 +123,37 @@ class EsmConfig(PretrainedConfig):
         vocab_list=None,
         **kwargs,
     ):
+        """
+        Initializes an instance of the `EsmConfig` class.
+
+        Args:
+            self: The instance of the class.
+            vocab_size (int, optional): The size of the vocabulary. Defaults to None.
+            mask_token_id (int, optional): The ID of the mask token. Defaults to None.
+            pad_token_id (int, optional): The ID of the padding token. Defaults to None.
+            hidden_size (int, optional): The size of the hidden layers. Defaults to 768.
+            num_hidden_layers (int, optional): The number of hidden layers. Defaults to 12.
+            num_attention_heads (int, optional): The number of attention heads. Defaults to 12.
+            intermediate_size (int, optional): The size of the intermediate layers. Defaults to 3072.
+            hidden_dropout_prob (float, optional): The dropout probability for hidden layers. Defaults to 0.1.
+            attention_probs_dropout_prob (float, optional): The dropout probability for attention layers. Defaults to 0.1.
+            max_position_embeddings (int, optional): The maximum position embeddings. Defaults to 1026.
+            initializer_range (float, optional): The range for initializer values. Defaults to 0.02.
+            layer_norm_eps (float, optional): The epsilon value for layer normalization. Defaults to 1e-12.
+            position_embedding_type (str, optional): The type of position embedding. Defaults to 'absolute'.
+            use_cache (bool, optional): Whether to use cache. Defaults to True.
+            emb_layer_norm_before (bool, optional): Whether to normalize embeddings before layers. Defaults to None.
+            token_dropout (bool, optional): Whether to apply token dropout. Defaults to False.
+            is_folding_model (bool, optional): Whether the model is a folding model. Defaults to False.
+            esmfold_config (EsmFoldConfig, optional): The configuration for the folding model. Defaults to None.
+            vocab_list (list, optional): The list of vocabulary tokens. Defaults to None.
+
+        Returns:
+            None
+
+        Raises:
+            ValueError: If the HuggingFace port of ESMFold does not support `use_esm_attn_map`.
+        """
         super().__init__(pad_token_id=pad_token_id, mask_token_id=mask_token_id, **kwargs)
 
         self.vocab_size = vocab_size
@@ -176,6 +204,27 @@ class EsmConfig(PretrainedConfig):
 
 @dataclass
 class EsmFoldConfig:
+
+    """
+    Represents the configuration of an ESM (Efficient Speech Model) fold instance.
+
+    This class provides methods to initialize the EsmFoldConfig instance and serialize it to a Python dictionary.
+
+    The EsmFoldConfig class inherits from a base class and includes methods for post-initialization and dictionary serialization.
+
+    Methods:
+        __post_init__(self): Initializes the EsmFoldConfig instance, setting defaults for any missing attributes.
+        to_dict(self): Serializes the EsmFoldConfig instance to a Python dictionary, including the trunk configuration.
+
+    Attributes:
+        trunk: Represents the configuration of the trunk model used in the ESM fold.
+
+    Note:
+        Ensure that the trunk attribute is either set to a TrunkConfig instance or a dictionary that can be converted to a TrunkConfig.
+
+    Return:
+        A Python dictionary containing all the attributes of the EsmFoldConfig instance, including the trunk configuration.
+    """
     esm_type: str = None
     fp16_esm: bool = True
     use_esm_attn_map: bool = False
@@ -190,6 +239,37 @@ class EsmFoldConfig:
     trunk: "TrunkConfig" = None
 
     def __post_init__(self):
+        """
+        The '__post_init__' method is used in the 'EsmFoldConfig' class to initialize the 'trunk' attribute.
+
+        Args:
+            self: An instance of the 'EsmFoldConfig' class.
+
+        Returns:
+            None.
+
+        Raises:
+            None.
+
+        Description:
+            This method checks if the 'trunk' attribute is None. If it is, a new instance of the 'TrunkConfig' class
+            is created and assigned to 'self.trunk'. If the 'trunk' attribute is of type dict, it is unpacked and
+            passed as keyword arguments to create a new instance of the 'TrunkConfig' class,  which is then assigned to
+            'self.trunk'. This method is typically called after the object is initialized to ensure that the 'trunk'
+            attribute is properly set.
+
+        Example:
+            ```python
+            >>> config = EsmFoldConfig()
+            >>> config.__post_init__()
+            >>> # The 'trunk' attribute will be initialized with a new instance of the 'TrunkConfig' class.
+            ...
+            >>> config = EsmFoldConfig(trunk={'option1': True, 'option2': False})
+            >>> config.__post_init__()
+            >>> # The 'trunk' attribute will be initialized with a new instance of the 'TrunkConfig' class,
+            >>> # with 'option1' set to True and 'option2' set to False.
+            ```
+        """
         if self.trunk is None:
             self.trunk = TrunkConfig()
         elif isinstance(self.trunk, dict):
@@ -209,6 +289,40 @@ class EsmFoldConfig:
 
 @dataclass
 class TrunkConfig:
+
+    """
+    Represents the configuration settings for the Trunk model.
+    This class defines the configuration attributes and their validations for the Trunk model.
+
+    Attributes:
+        structure_module (StructureModuleConfig): The configuration for the structure module.
+        max_recycles (int): The maximum number of recycles, should be a positive integer.
+        sequence_state_dim (int): The dimension of the sequence state.
+        pairwise_state_dim (int): The dimension of the pairwise state.
+        sequence_head_width (int): The width of the sequence head.
+        pairwise_head_width (int): The width of the pairwise head.
+        dropout (float): The dropout rate, should not be greater than 0.4.
+
+    Raises:
+        ValueError:
+            If any of the following conditions are not met:
+
+            - `max_recycles` is not a positive integer.
+            - `sequence_state_dim` is not a round multiple of itself.
+            - `pairwise_state_dim` is not a round multiple of itself.
+            - `sequence_state_dim` is not equal to `sequence_num_heads * sequence_head_width`.
+            - `pairwise_state_dim` is not equal to `pairwise_num_heads * pairwise_head_width`.
+            - `pairwise_state_dim` is not an even number.
+            - `dropout` is greater than 0.4.
+
+    Methods:
+        __post_init__(self): Performs post-initialization validations for the configuration attributes.
+        to_dict(self): Serializes the instance to a Python dictionary, including the structure module configuration.
+
+    Overrides:
+        `~PretrainedConfig.to_dict`: Overrides the default `to_dict` method to include the structure module
+        configuration in the dictionary output.
+    """
     num_blocks: int = 48
     sequence_state_dim: int = 1024
     pairwise_state_dim: int = 128
@@ -223,6 +337,24 @@ class TrunkConfig:
     structure_module: "StructureModuleConfig" = None
 
     def __post_init__(self):
+        """
+        This method initializes the TrunkConfig class after its instantiation.
+
+        Args:
+            self: The instance of the TrunkConfig class.
+
+        Returns:
+            None.
+
+        Raises:
+            ValueError: If `max_recycles` is not a positive value.
+            ValueError: If `sequence_state_dim` is not a round multiple of itself.
+            ValueError: If `pairwise_state_dim` is not a round multiple of itself.
+            ValueError: If `sequence_state_dim` is not equal to `sequence_num_heads * sequence_head_width`.
+            ValueError: If `pairwise_state_dim` is not equal to `pairwise_num_heads * pairwise_head_width`.
+            ValueError: If `pairwise_state_dim` is not an even number.
+            ValueError: If `dropout` is greater than or equal to 0.4.
+        """
         if self.structure_module is None:
             self.structure_module = StructureModuleConfig()
         elif isinstance(self.structure_module, dict):
@@ -307,7 +439,6 @@ class StructureModuleConfig:
         inf:
             Large number used for attention masking
     """
-
     sequence_dim: int = 384
     pairwise_dim: int = 128
     ipa_dim: int = 16
@@ -325,10 +456,38 @@ class StructureModuleConfig:
     inf: float = 1e5
 
     def to_dict(self):
+        """
+        Converts the current instance of the StructureModuleConfig class to a dictionary.
+
+        Args:
+            self (StructureModuleConfig): The current instance of the StructureModuleConfig class.
+
+        Returns:
+            dict: A dictionary representation of the current StructureModuleConfig instance.
+
+        Raises:
+            None.
+        """
         return asdict(self)
 
 
 def get_default_vocab_list():
+    '''
+    This function returns a list of default vocabulary items including special tokens and characters used in natural
+    language processing tasks.
+
+    Args:
+        None.
+
+    Returns:
+        List:
+            A list of default vocabulary items including '<cls>', '<pad>', '<eos>', '<unk>', 'L', 'A', 'G', 'V', 'S',
+            'E', 'R', 'T', 'I', 'D', 'P', 'K', 'Q', 'N', 'F', 'Y', 'M', 'H', 'W', 'C', 'X', 'B', 'U',
+            'Z', 'O', '.', '-', '<null_1>', '<mask>'.
+    
+    Raises:
+        None.
+    '''
     return (
         "<cls>",
         "<pad>",

@@ -12,8 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-# pylint: disable=invalid-name
-# pylint: disable=inconsistent-return-statements
+# ============================================================================
 """ Tokenization classes for Big Bird model."""
 import os
 from shutil import copyfile
@@ -33,23 +32,23 @@ VOCAB_FILES_NAMES = {"vocab_file": "spiece.model", "tokenizer_file": "tokenizer.
 
 PRETRAINED_VOCAB_FILES_MAP = {
     "vocab_file": {
-        "google/bigbird-roberta-base": "https://huggingface.co/google/bigbird-roberta-base/resolve/main/spiece.model",
+        "google/bigbird-roberta-base": "https://hf-mirror.com/google/bigbird-roberta-base/resolve/main/spiece.model",
         "google/bigbird-roberta-large": (
-            "https://huggingface.co/google/bigbird-roberta-large/resolve/main/spiece.model"
+            "https://hf-mirror.com/google/bigbird-roberta-large/resolve/main/spiece.model"
         ),
         "google/bigbird-base-trivia-itc": (
-            "https://huggingface.co/google/bigbird-base-trivia-itc/resolve/main/spiece.model"
+            "https://hf-mirror.com/google/bigbird-base-trivia-itc/resolve/main/spiece.model"
         ),
     },
     "tokenizer_file": {
         "google/bigbird-roberta-base": (
-            "https://huggingface.co/google/bigbird-roberta-base/resolve/main/tokenizer.json"
+            "https://hf-mirror.com/google/bigbird-roberta-base/resolve/main/tokenizer.json"
         ),
         "google/bigbird-roberta-large": (
-            "https://huggingface.co/google/bigbird-roberta-large/resolve/main/tokenizer.json"
+            "https://hf-mirror.com/google/bigbird-roberta-large/resolve/main/tokenizer.json"
         ),
         "google/bigbird-base-trivia-itc": (
-            "https://huggingface.co/google/bigbird-base-trivia-itc/resolve/main/tokenizer.json"
+            "https://hf-mirror.com/google/bigbird-base-trivia-itc/resolve/main/tokenizer.json"
         ),
     },
 }
@@ -67,7 +66,7 @@ SPIECE_UNDERLINE = "▁"
 class BigBirdTokenizerFast(PreTrainedTokenizerFast):
     """
     Construct a "fast" BigBird tokenizer (backed by HuggingFace's *tokenizers* library). Based on
-    [Unigram](https://huggingface.co/docs/tokenizers/python/latest/components.html?highlight=unigram#models). This
+    [Unigram](https://hf-mirror.com/docs/tokenizers/python/latest/components.html?highlight=unigram#models). This
     tokenizer inherits from [`PreTrainedTokenizerFast`] which contains most of the main methods. Users should refer to
     this superclass for more information regarding those methods
 
@@ -104,7 +103,6 @@ class BigBirdTokenizerFast(PreTrainedTokenizerFast):
             The token used for masking values. This is the token used when training this model with masked language
             modeling. This is the token which the model will try to predict.
     """
-
     vocab_files_names = VOCAB_FILES_NAMES
     pretrained_vocab_files_map = PRETRAINED_VOCAB_FILES_MAP
     max_model_input_sizes = PRETRAINED_POSITIONAL_EMBEDDINGS_SIZES
@@ -125,6 +123,27 @@ class BigBirdTokenizerFast(PreTrainedTokenizerFast):
         cls_token="[CLS]",
         **kwargs,
     ):
+        """
+        Initializes a new instance of the BigBirdTokenizerFast class.
+        
+        Args:
+            self: The current instance of the class.
+            vocab_file (str): The path to the vocabulary file. If None, the tokenizer will not have a vocabulary.
+            tokenizer_file (str): The path to the tokenizer file. If None, the tokenizer will not have a tokenizer.
+            unk_token (str): The unknown token to be used for out-of-vocabulary words. Default is '<unk>'.
+            bos_token (str or AddedToken): The beginning of sentence token. Default is '<s>'.
+            eos_token (str or AddedToken): The end of sentence token. Default is '</s>'.
+            pad_token (str or AddedToken): The padding token. Default is '<pad>'.
+            sep_token (str or AddedToken): The separator token. Default is '[SEP]'.
+            mask_token (str or AddedToken): The mask token to be used during tokenization. Default is '[MASK]'.
+            cls_token (str or AddedToken): The classification token. Default is '[CLS]'.
+        
+        Returns:
+            None
+        
+        Raises:
+            None
+        """
         bos_token = (
             AddedToken(bos_token, lstrip=False, rstrip=False)
             if isinstance(bos_token, str)
@@ -180,6 +199,19 @@ class BigBirdTokenizerFast(PreTrainedTokenizerFast):
 
     @property
     def can_save_slow_tokenizer(self) -> bool:
+        """
+        Check if the slow tokenizer can be saved.
+        
+        Args:
+            self (BigBirdTokenizerFast): The instance of the BigBirdTokenizerFast class.
+                Represents the tokenizer object for which the check is being performed.
+        
+        Returns:
+            bool: Returns True if the vocab file exists for the tokenizer, otherwise False.
+        
+        Raises:
+            None
+        """
         return os.path.isfile(self.vocab_file) if self.vocab_file else False
 
     def build_inputs_with_special_tokens(
@@ -228,7 +260,6 @@ class BigBirdTokenizerFast(PreTrainedTokenizerFast):
         Returns:
             `List[int]`: A list of integers in the range [0, 1]: 1 for a special token, 0 for a sequence token.
         """
-
         if already_has_special_tokens:
             if token_ids_1 is not None:
                 raise ValueError(
@@ -277,6 +308,22 @@ class BigBirdTokenizerFast(PreTrainedTokenizerFast):
     def save_vocabulary(
         self, save_directory: str, filename_prefix: Optional[str] = None
     ) -> Tuple[str]:
+        """
+        Saves the vocabulary for a slow tokenizer.
+        
+        Args:
+            self (BigBirdTokenizerFast): An instance of the BigBirdTokenizerFast class.
+            save_directory (str): The directory where the vocabulary will be saved.
+            filename_prefix (Optional[str], optional): A prefix to be added to the filename of the saved vocabulary.
+                Defaults to None.
+        
+        Returns:
+            Tuple[str]: A tuple containing the path to the saved vocabulary file.
+        
+        Raises:
+            ValueError: If the fast tokenizer does not have the necessary information to save the vocabulary for a slow tokenizer.
+            FileNotFoundError: If the specified save_directory does not exist.
+        """
         if not self.can_save_slow_tokenizer:
             raise ValueError(
                 "Your fast tokenizer does not have the necessary information to save the vocabulary for a slow "

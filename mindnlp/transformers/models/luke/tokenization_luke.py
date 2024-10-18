@@ -12,11 +12,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-# pylint: disable=invalid-name
-# pylint: disable=arguments-renamed
-# pylint: disable=logging-fstring-interpolation
-# pylint: disable=missing-function-docstring
-# pylint: disable=inconsistent-return-statements
 """Tokenization classes for LUKE."""
 
 import itertools
@@ -59,16 +54,16 @@ VOCAB_FILES_NAMES = {
 
 PRETRAINED_VOCAB_FILES_MAP = {
     "vocab_file": {
-        "studio-ousia/luke-base": "https://huggingface.co/studio-ousia/luke-base/resolve/main/vocab.json",
-        "studio-ousia/luke-large": "https://huggingface.co/studio-ousia/luke-large/resolve/main/vocab.json",
+        "studio-ousia/luke-base": "https://hf-mirror.com/studio-ousia/luke-base/resolve/main/vocab.json",
+        "studio-ousia/luke-large": "https://hf-mirror.com/studio-ousia/luke-large/resolve/main/vocab.json",
     },
     "merges_file": {
-        "studio-ousia/luke-base": "https://huggingface.co/studio-ousia/luke-base/resolve/main/merges.txt",
-        "studio-ousia/luke-large": "https://huggingface.co/studio-ousia/luke-large/resolve/main/merges.txt",
+        "studio-ousia/luke-base": "https://hf-mirror.com/studio-ousia/luke-base/resolve/main/merges.txt",
+        "studio-ousia/luke-large": "https://hf-mirror.com/studio-ousia/luke-large/resolve/main/merges.txt",
     },
     "entity_vocab_file": {
-        "studio-ousia/luke-base": "https://huggingface.co/studio-ousia/luke-base/resolve/main/entity_vocab.json",
-        "studio-ousia/luke-large": "https://huggingface.co/studio-ousia/luke-large/resolve/main/entity_vocab.json",
+        "studio-ousia/luke-base": "https://hf-mirror.com/studio-ousia/luke-base/resolve/main/entity_vocab.json",
+        "studio-ousia/luke-large": "https://hf-mirror.com/studio-ousia/luke-large/resolve/main/entity_vocab.json",
     },
 }
 
@@ -201,16 +196,16 @@ class LukeTokenizer(PreTrainedTokenizer):
     This tokenizer has been trained to treat spaces like parts of the tokens (a bit like sentencepiece) so a word will
     be encoded differently whether it is at the beginning of the sentence (without space) or not:
 
-    ```python
-    >>> from transformers import LukeTokenizer
-
-    >>> tokenizer = LukeTokenizer.from_pretrained("studio-ousia/luke-base")
-    >>> tokenizer("Hello world")["input_ids"]
-    [0, 31414, 232, 2]
-
-    >>> tokenizer(" Hello world")["input_ids"]
-    [0, 20920, 232, 2]
-    ```
+    Example:
+        ```python
+        >>> from transformers import LukeTokenizer
+        ...
+        >>> tokenizer = LukeTokenizer.from_pretrained("studio-ousia/luke-base")
+        >>> tokenizer("Hello world")["input_ids"]
+        [0, 31414, 232, 2]
+        >>> tokenizer(" Hello world")["input_ids"]
+        [0, 20920, 232, 2]
+        ```
 
     You can get around that behavior by passing `add_prefix_space=True` when instantiating this tokenizer or when you
     call it on some text, but since the model was not pretrained this way, it might yield a decrease in performance.
@@ -289,7 +284,6 @@ class LukeTokenizer(PreTrainedTokenizer):
             Whether or not to add an initial space to the input. This allows to treat the leading word just as any
             other word. (LUKE tokenizer detect beginning of words by the preceding space).
     """
-
     vocab_files_names = VOCAB_FILES_NAMES
     pretrained_vocab_files_map = PRETRAINED_VOCAB_FILES_MAP
     max_model_input_sizes = PRETRAINED_POSITIONAL_EMBEDDINGS_SIZES
@@ -320,6 +314,42 @@ class LukeTokenizer(PreTrainedTokenizer):
         add_prefix_space=False,
         **kwargs,
     ):
+        """Initialize the LukeTokenizer class.
+
+        This method initializes an instance of the LukeTokenizer class. It takes the following parameters:
+
+        Args:
+            self: The instance of the class.
+            vocab_file (str): The path to the vocabulary file.
+            merges_file (str): The path to the merges file.
+            entity_vocab_file (str): The path to the entity vocabulary file.
+            task (str, optional): The task for which the tokenizer is used. Defaults to None.
+            max_entity_length (int, optional): The maximum length of the entity. Defaults to 32.
+            max_mention_length (int, optional): The maximum length of the mention. Defaults to 30.
+            entity_token_1 (str, optional): The first entity token. Defaults to '<ent>'.
+            entity_token_2 (str, optional): The second entity token. Defaults to '<ent2>'.
+            entity_unk_token (str, optional): The unknown entity token. Defaults to '[UNK]'.
+            entity_pad_token (str, optional): The padding entity token. Defaults to '[PAD]'.
+            entity_mask_token (str, optional): The masked entity token. Defaults to '[MASK]'.
+            entity_mask2_token (str, optional): The second masked entity token. Defaults to '[MASK2]'.
+            errors (str, optional): The error handling strategy. Defaults to 'replace'.
+            bos_token (str, optional): The beginning of sentence token. Defaults to '<s>'.
+            eos_token (str, optional): The end of sentence token. Defaults to '</s>'.
+            sep_token (str, optional): The separator token. Defaults to '</s>'.
+            cls_token (str, optional): The classification token. Defaults to '<s>'.
+            unk_token (str, optional): The unknown token. Defaults to '<unk>'.
+            pad_token (str, optional): The padding token. Defaults to '<pad>'.
+            mask_token (str, optional): The masked token. Defaults to '<mask>'.
+            add_prefix_space (bool, optional): Whether to add space before the token. Defaults to False.
+
+        Returns:
+            None
+
+        Raises:
+            ValueError: If the specified entity special token is not found in the entity vocabulary file.
+            ValueError: If the task is not supported. Select task from ['entity_classification',
+                'entity_pair_classification', 'entity_span_classification'] only.
+        """
         bos_token = AddedToken(bos_token, lstrip=False, rstrip=False) if isinstance(bos_token, str) else bos_token
         eos_token = AddedToken(eos_token, lstrip=False, rstrip=False) if isinstance(eos_token, str) else eos_token
         sep_token = AddedToken(sep_token, lstrip=False, rstrip=False) if isinstance(sep_token, str) else sep_token
@@ -414,16 +444,55 @@ class LukeTokenizer(PreTrainedTokenizer):
     @property
     # Copied from transformers.models.roberta.tokenization_roberta.RobertaTokenizer.vocab_size with Roberta->Luke, RoBERTa->LUKE
     def vocab_size(self):
+        """
+        Returns the size of the vocabulary.
+
+        Args:
+            self (LukeTokenizer): The instance of the LukeTokenizer class.
+
+        Returns:
+            int: The number of items in the encoder, representing the size of the vocabulary.
+
+        Raises:
+            None.
+        """
         return len(self.encoder)
 
     # Copied from transformers.models.roberta.tokenization_roberta.RobertaTokenizer.get_vocab with Roberta->Luke, RoBERTa->LUKE
     def get_vocab(self):
+        """
+        Retrieves the vocabulary dictionary for the 'LukeTokenizer' class.
+
+        Args:
+            self: An instance of the 'LukeTokenizer' class.
+
+        Returns:
+            dict: A dictionary containing the vocabulary of the tokenizer. The keys are the tokens
+                and the values are their corresponding IDs.
+
+        Raises:
+            None.
+        """
         vocab = dict(self.encoder).copy()
         vocab.update(self.added_tokens_encoder)
         return vocab
 
     # Copied from transformers.models.roberta.tokenization_roberta.RobertaTokenizer.bpe with Roberta->Luke, RoBERTa->LUKE
     def bpe(self, token):
+        """
+        This method 'bpe' in the class 'LukeTokenizer' performs Byte Pair Encoding (BPE) on the input token.
+
+        Args:
+            self (LukeTokenizer): The instance of the LukeTokenizer class.
+            token (str): The input token to be processed using Byte Pair Encoding.
+
+        Returns:
+            str: The processed token after applying Byte Pair Encoding.
+
+        Raises:
+            ValueError: If the input token is empty.
+            TypeError: If the input token is not a string.
+        """
         if token in self.cache:
             return self.cache[token]
         word = tuple(token)
@@ -572,6 +641,21 @@ class LukeTokenizer(PreTrainedTokenizer):
 
     # Copied from transformers.models.roberta.tokenization_roberta.RobertaTokenizer.prepare_for_tokenization with Roberta->Luke, RoBERTa->LUKE
     def prepare_for_tokenization(self, text, is_split_into_words=False, **kwargs):
+        """
+        Prepares the input text for tokenization by adding a prefix space if necessary.
+
+        Args:
+            self (LukeTokenizer): An instance of the LukeTokenizer class.
+            text (str): The input text to be tokenized.
+            is_split_into_words (bool): A flag indicating if the input text is already split into words.
+                Defaults to False.
+
+        Returns:
+            None: The method modifies the input text in-place.
+
+        Raises:
+            None.
+        """
         add_prefix_space = kwargs.pop("add_prefix_space", self.add_prefix_space)
         if (is_split_into_words or add_prefix_space) and (len(text) > 0 and not text[0].isspace()):
             text = " " + text
@@ -617,28 +701,28 @@ class LukeTokenizer(PreTrainedTokenizer):
             entity_spans (`List[Tuple[int, int]]`, `List[List[Tuple[int, int]]]`, *optional*):
                 The sequence or batch of sequences of entity spans to be encoded. Each sequence consists of tuples each
                 with two integers denoting character-based start and end positions of entities. If you specify
-                `"entity_classification"` or `"entity_pair_classification"` as the `task` argument in the constructor,
+                `"entity_classification"` or `"entity_pair_classification"` as the `task` argument in the forwardor,
                 the length of each sequence must be 1 or 2, respectively. If you specify `entities`, the length of each
                 sequence must be equal to the length of each sequence of `entities`.
             entity_spans_pair (`List[Tuple[int, int]]`, `List[List[Tuple[int, int]]]`, *optional*):
                 The sequence or batch of sequences of entity spans to be encoded. Each sequence consists of tuples each
                 with two integers denoting character-based start and end positions of entities. If you specify the
-                `task` argument in the constructor, this argument is ignored. If you specify `entities_pair`, the
+                `task` argument in the forwardor, this argument is ignored. If you specify `entities_pair`, the
                 length of each sequence must be equal to the length of each sequence of `entities_pair`.
             entities (`List[str]`, `List[List[str]]`, *optional*):
                 The sequence or batch of sequences of entities to be encoded. Each sequence consists of strings
                 representing entities, i.e., special entities (e.g., [MASK]) or entity titles of Wikipedia (e.g., Los
-                Angeles). This argument is ignored if you specify the `task` argument in the constructor. The length of
+                Angeles). This argument is ignored if you specify the `task` argument in the forwardor. The length of
                 each sequence must be equal to the length of each sequence of `entity_spans`. If you specify
                 `entity_spans` without specifying this argument, the entity sequence or the batch of entity sequences
-                is automatically constructed by filling it with the [MASK] entity.
+                is automatically forwarded by filling it with the [MASK] entity.
             entities_pair (`List[str]`, `List[List[str]]`, *optional*):
                 The sequence or batch of sequences of entities to be encoded. Each sequence consists of strings
                 representing entities, i.e., special entities (e.g., [MASK]) or entity titles of Wikipedia (e.g., Los
-                Angeles). This argument is ignored if you specify the `task` argument in the constructor. The length of
+                Angeles). This argument is ignored if you specify the `task` argument in the forwardor. The length of
                 each sequence must be equal to the length of each sequence of `entity_spans_pair`. If you specify
                 `entity_spans_pair` without specifying this argument, the entity sequence or the batch of entity
-                sequences is automatically constructed by filling it with the [MASK] entity.
+                sequences is automatically forwarded by filling it with the [MASK] entity.
             max_entity_length (`int`, *optional*):
                 The maximum length of `entity_ids`.
         """
@@ -747,6 +831,47 @@ class LukeTokenizer(PreTrainedTokenizer):
         verbose: bool = True,
         **kwargs,
     ) -> BatchEncoding:
+        """Encodes the inputs for the LukeTokenizer.
+
+        Args:
+            self (LukeTokenizer): The instance of the LukeTokenizer class.
+            text (TextInput): The input text to be encoded. It can be a single sentence or a sequence of sentences.
+            text_pair (Optional[TextInput], optional): The second input text to be encoded.
+                It can be a single sentence or a sequence of sentences. Defaults to None.
+            entity_spans (Optional[EntitySpanInput], optional): The input entity spans to be encoded. Defaults to None.
+            entity_spans_pair (Optional[EntitySpanInput], optional): The second input entity spans to be encoded.
+                Defaults to None.
+            entities (Optional[EntityInput], optional): The input entities to be encoded. Defaults to None.
+            entities_pair (Optional[EntityInput], optional): The second input entities to be encoded. Defaults to None.
+            add_special_tokens (bool, optional): Whether to add special tokens to the encoded inputs. Defaults to True.
+            padding_strategy (PaddingStrategy, optional): The strategy to use for padding.
+                Defaults to PaddingStrategy.DO_NOT_PAD.
+            truncation_strategy (TruncationStrategy, optional): The strategy to use for truncation.
+                Defaults to TruncationStrategy.DO_NOT_TRUNCATE.
+            max_length (Optional[int], optional): The maximum sequence length after encoding. Defaults to None.
+            max_entity_length (Optional[int], optional): The maximum entity span length after encoding. Defaults to None.
+            stride (int, optional): The stride to use for overflowing tokens. Defaults to 0.
+            is_split_into_words (Optional[bool], optional): Whether the input text is already split into words.
+                Defaults to False.
+            pad_to_multiple_of (Optional[int], optional): The padding length will be a multiple of this value.
+                Defaults to None.
+            return_tensors (Optional[Union[str, TensorType]], optional): The type of tensors to return. Defaults to None.
+            return_token_type_ids (Optional[bool], optional): Whether to return token type IDs. Defaults to None.
+            return_attention_mask (Optional[bool], optional): Whether to return attention masks. Defaults to None.
+            return_overflowing_tokens (bool, optional): Whether to return the overflowing tokens. Defaults to False.
+            return_special_tokens_mask (bool, optional): Whether to return the special tokens mask. Defaults to False.
+            return_offsets_mapping (bool, optional): Whether to return the offsets mapping. Defaults to False.
+            return_length (bool, optional): Whether to return the length of the encoded inputs. Defaults to False.
+            verbose (bool, optional): Whether to print verbose logs. Defaults to True.
+            **kwargs: Additional keyword arguments.
+
+        Returns:
+            BatchEncoding: The encoded inputs as a BatchEncoding object.
+
+        Raises:
+            NotImplementedError: If return_offsets_mapping is requested.
+            NotImplementedError: If is_split_into_words is True and not supported by the tokenizer.
+        """
         if return_offsets_mapping:
             raise NotImplementedError(
                 "return_offset_mapping is not available when using Python tokenizers. "
@@ -828,6 +953,43 @@ class LukeTokenizer(PreTrainedTokenizer):
         verbose: bool = True,
         **kwargs,
     ) -> BatchEncoding:
+        """
+        Performs batch encoding of text and entity inputs for the LukeTokenizer class.
+
+        Args:
+            self (LukeTokenizer): The LukeTokenizer instance.
+            batch_text_or_text_pairs (Union[List[TextInput], List[TextInputPair]]):
+                A list of text inputs or text pairs to be encoded.
+            batch_entity_spans_or_entity_spans_pairs (Optional[Union[List[EntitySpanInput], List[Tuple[EntitySpanInput, EntitySpanInput]]]]):
+                A list of entity span inputs or entity span input pairs to be encoded. Defaults to None.
+            batch_entities_or_entities_pairs (Optional[Union[List[EntityInput], List[Tuple[EntityInput, EntityInput]]]]):
+                A list of entity inputs or entity input pairs to be encoded. Defaults to None.
+            add_special_tokens (bool): Whether to add special tokens to the encoded inputs. Defaults to True.
+            padding_strategy (PaddingStrategy): The strategy to use for padding. Defaults to PaddingStrategy.DO_NOT_PAD.
+            truncation_strategy (TruncationStrategy): The strategy to use for truncation.
+                Defaults to TruncationStrategy.DO_NOT_TRUNCATE.
+            max_length (Optional[int]): The maximum length of the encoded inputs. Defaults to None.
+            max_entity_length (Optional[int]): The maximum length of the encoded entity inputs. Defaults to None.
+            stride (int): The stride to use when truncating the inputs. Defaults to 0.
+            is_split_into_words (Optional[bool]): Whether the inputs are already split into words. Defaults to False.
+            pad_to_multiple_of (Optional[int]): Pad the inputs to a multiple of this value. Defaults to None.
+            return_tensors (Optional[Union[str, TensorType]]): The type of tensor to return. Defaults to None.
+            return_token_type_ids (Optional[bool]): Whether to return token type ids. Defaults to None.
+            return_attention_mask (Optional[bool]): Whether to return attention masks. Defaults to None.
+            return_overflowing_tokens (bool): Whether to return overflowing tokens. Defaults to False.
+            return_special_tokens_mask (bool): Whether to return special tokens masks. Defaults to False.
+            return_offsets_mapping (bool): Whether to return character offsets mapping. Defaults to False.
+            return_length (bool): Whether to return the lengths of the encoded inputs. Defaults to False.
+            verbose (bool): Whether to print information about the encoding process. Defaults to True.
+
+        Returns:
+            BatchEncoding: The encoded batch inputs.
+
+        Raises:
+            NotImplementedError: If return_offsets_mapping is used with a tokenizer that does not support it.
+            NotImplementedError: If is_split_into_words is used with this tokenizer.
+
+        """
         if return_offsets_mapping:
             raise NotImplementedError(
                 "return_offset_mapping is not available when using Python tokenizers. "
@@ -910,6 +1072,27 @@ class LukeTokenizer(PreTrainedTokenizer):
         return BatchEncoding(batch_outputs)
 
     def _check_entity_input_format(self, entities: Optional[EntityInput], entity_spans: Optional[EntitySpanInput]):
+        """
+        This method '_check_entity_input_format' in the class 'LukeTokenizer' validates the input format for entities and entity spans.
+
+        Args:
+            self: The instance of the class.
+            entities (Optional[EntityInput]): A list of entity names. If specified, it should be given as a list of entity names.
+            entity_spans (Optional[EntitySpanInput]): A list of tuples containing the start and end character indices.
+                If specified, it should be given as a list of tuples containing the start and end character indices.
+
+        Returns:
+            None.
+
+        Raises:
+            ValueError:
+                - If 'entity_spans' is not given as a list.
+                - If 'entity_spans' is given as a list, but the first element is not a tuple containing
+                the start and end character indices.
+                - If 'entities' is specified but not given as a list.
+                - If 'entities' is given as a list, but the first element is not a string.
+                - If the length of 'entities' is not equal to the length of 'entity_spans' when both are specified.
+        """
         if not isinstance(entity_spans, list):
             raise ValueError("entity_spans should be given as a list")
         if len(entity_spans) > 0 and not isinstance(entity_spans[0], tuple):
@@ -937,6 +1120,35 @@ class LukeTokenizer(PreTrainedTokenizer):
         entity_spans_pair: Optional[EntitySpanInput] = None,
         **kwargs,
     ) -> Tuple[list, list, list, list, list, list]:
+        """
+        Create input sequences for the LukeTokenizer.
+
+        Args:
+            self (LukeTokenizer): An instance of the LukeTokenizer class.
+            text (TextInput): The main input text to be tokenized.
+            text_pair (Optional[TextInput]): An optional pair of input text to be tokenized. Default is None.
+            entities (Optional[EntityInput]): An optional list of entities in the main input text. Default is None.
+            entities_pair (Optional[EntityInput]): An optional list of entities in the pair input text. Default is None.
+            entity_spans (Optional[EntitySpanInput]): An optional list of tuples representing the start and end character
+                indices of the entities in the main input text. Default is None.
+            entity_spans_pair (Optional[EntitySpanInput]): An optional list of tuples representing the start and end
+                character indices of the entities in the pair input text. Default is None.
+            **kwargs: Additional keyword arguments.
+
+        Returns:
+            Tuple[list, list, list, list, list, list]:
+                A tuple containing six lists:
+
+                - first_ids: A list of token IDs for the main input text.
+                - second_ids: A list of token IDs for the pair input text.
+                - first_entity_ids: A list of entity IDs for the entities in the main input text.
+                - second_entity_ids: A list of entity IDs for the entities in the pair input text.
+                - first_entity_token_spans: A list of token spans for the entities in the main input text.
+                - second_entity_token_spans: A list of token spans for the entities in the pair input text.
+
+        Raises:
+            ValueError: If the task is not supported or if the entity spans are not in the correct format.
+        """
         def get_input_ids(text):
             tokens = self.tokenize(text, **kwargs)
             return self.convert_tokens_to_ids(tokens)
@@ -1110,7 +1322,6 @@ class LukeTokenizer(PreTrainedTokenizer):
             batch_entity_token_spans_pairs: list of entity spans or entity spans pairs
             max_entity_length: The maximum length of the entity sequence.
         """
-
         batch_outputs = {}
         for input_ids, entity_ids, entity_token_span_pairs in zip(
             batch_ids_pairs, batch_entity_ids_pairs, batch_entity_token_spans_pairs
@@ -1209,7 +1420,6 @@ class LukeTokenizer(PreTrainedTokenizer):
             max_entity_length (`int`, *optional*):
                 The maximum length of the entity sequence.
         """
-
         # Backward compatibility for 'truncation_strategy', 'pad_to_max_length'
         padding_strategy, truncation_strategy, max_length, kwargs = self._get_padding_truncation_strategies(
             padding=padding,
@@ -1425,11 +1635,11 @@ class LukeTokenizer(PreTrainedTokenizer):
                  index) among:
 
                 - `True` or `'longest'`: Pad to the longest sequence in the batch (or no padding if only a single
-                  sequence if provided).
+                sequence if provided).
                 - `'max_length'`: Pad to a maximum length specified with the argument `max_length` or to the maximum
-                  acceptable input length for the model if that argument is not provided.
+                acceptable input length for the model if that argument is not provided.
                 - `False` or `'do_not_pad'` (default): No padding (i.e., can output a batch with sequences of different
-                  lengths).
+                lengths).
             max_length (`int`, *optional*):
                 Maximum length of the returned list and optionally padding length (see above).
             max_entity_length (`int`, *optional*):
@@ -1565,17 +1775,17 @@ class LukeTokenizer(PreTrainedTokenizer):
             max_length: maximum length of the returned list and optionally padding length (see below).
                 Will truncate by taking into account the special tokens.
             max_entity_length: The maximum length of the entity sequence.
-            padding_strategy: PaddingStrategy to use for padding.
-
+            padding_strategy:
+                PaddingStrategy to use for padding.
 
                 - PaddingStrategy.LONGEST Pad to the longest sequence in the batch
                 - PaddingStrategy.MAX_LENGTH: Pad to the max length (default)
                 - PaddingStrategy.DO_NOT_PAD: Do not pad
+
                 The tokenizer padding sides are defined in self.padding_side:
 
-
-                    - 'left': pads on the left of the sequences
-                    - 'right': pads on the right of the sequences
+                - 'left': pads on the left of the sequences
+                - 'right': pads on the right of the sequences
             pad_to_multiple_of: (optional) Integer if set will pad the sequence to a multiple of the provided value.
                 This is especially useful to enable the use of Tensor Core on NVIDIA hardware with compute capability
                 `>= 7.5` (Volta).
@@ -1686,6 +1896,24 @@ class LukeTokenizer(PreTrainedTokenizer):
         return encoded_inputs
 
     def save_vocabulary(self, save_directory: str, filename_prefix: Optional[str] = None) -> Tuple[str]:
+        """
+        Save the vocabulary to specified directory with an optional filename prefix.
+        
+        Args:
+            self: Instance of LukeTokenizer class.
+            save_directory (str): The directory path where the vocabulary files will be saved.
+            filename_prefix (Optional[str]): An optional prefix to be added to the filename. Default is None.
+        
+        Returns:
+            Tuple[str]: A tuple containing paths to the saved vocabulary files - vocab_file, merge_file,
+                and entity_vocab_file.
+        
+        Raises:
+            FileNotFoundError: If the specified save_directory does not exist.
+            IOError: If there is an issue with reading or writing the vocabulary files.
+            ValueError: If the provided filename_prefix is not a string.
+            Exception: Any other unexpected error that may occur during the execution of the method.
+        """
         if not os.path.isdir(save_directory):
             logger.error(f"Vocabulary path ({save_directory}) should be a directory")
             return

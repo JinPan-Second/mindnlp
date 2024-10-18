@@ -1,6 +1,5 @@
 # coding=utf-8
 # Copyright 2018 T5 Authors and HuggingFace Inc. team.
-# Copyright 2023 Huawei Technologies Co., Ltd
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -13,12 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-# ============================================================================
-# pylint: disable=invalid-name
-# pylint: disable=inconsistent-return-statements
-# pylint: disable=missing-function-docstring
-""" Tokenization class for model T5."""
-
+"""Tokenization class for model T5."""
 
 import os
 import re
@@ -26,8 +20,8 @@ import warnings
 from shutil import copyfile
 from typing import List, Optional, Tuple
 
-from mindnlp.utils import is_sentencepiece_available, logging
 from ...tokenization_utils_fast import PreTrainedTokenizerFast
+from ....utils import is_sentencepiece_available, logging
 
 
 if is_sentencepiece_available():
@@ -40,32 +34,8 @@ logger = logging.get_logger(__name__)
 
 VOCAB_FILES_NAMES = {"vocab_file": "spiece.model", "tokenizer_file": "tokenizer.json"}
 
-PRETRAINED_VOCAB_FILES_MAP = {
-    "vocab_file": {
-        "t5-small": "https://huggingface.co/t5-small/resolve/main/spiece.model",
-        "t5-base": "https://huggingface.co/t5-base/resolve/main/spiece.model",
-        "t5-large": "https://huggingface.co/t5-large/resolve/main/spiece.model",
-        "t5-3b": "https://huggingface.co/t5-3b/resolve/main/spiece.model",
-        "t5-11b": "https://huggingface.co/t5-11b/resolve/main/spiece.model",
-    },
-    "tokenizer_file": {
-        "t5-small": "https://huggingface.co/t5-small/resolve/main/tokenizer.json",
-        "t5-base": "https://huggingface.co/t5-base/resolve/main/tokenizer.json",
-        "t5-large": "https://huggingface.co/t5-large/resolve/main/tokenizer.json",
-        "t5-3b": "https://huggingface.co/t5-3b/resolve/main/tokenizer.json",
-        "t5-11b": "https://huggingface.co/t5-11b/resolve/main/tokenizer.json",
-    },
-}
-
 
 # TODO(PVP) - this should be removed in Transformers v5
-PRETRAINED_POSITIONAL_EMBEDDINGS_SIZES = {
-    "t5-small": 512,
-    "t5-base": 512,
-    "t5-large": 512,
-    "t5-3b": 512,
-    "t5-11b": 512,
-}
 
 
 class T5TokenizerFast(PreTrainedTokenizerFast):
@@ -101,11 +71,13 @@ class T5TokenizerFast(PreTrainedTokenizerFast):
             calling get_sentinel_tokens method and token ids can be by calling get_sentinel_token_ids method
         additional_special_tokens (`List[str]`, *optional*):
             Additional special tokens used by the tokenizer.
+        add_prefix_space (`bool`, *optional*):
+            Whether or not the tokenizer should automatically add a prefix space
+        from_slow (`book`, *optional*, defaults to `False`):
+            Whether or not the tokenizer should be converted from a slow one. If `add_prefix_space` is set, this will be set to `True`.
     """
 
     vocab_files_names = VOCAB_FILES_NAMES
-    pretrained_vocab_files_map = PRETRAINED_VOCAB_FILES_MAP
-    max_model_input_sizes = PRETRAINED_POSITIONAL_EMBEDDINGS_SIZES
     model_input_names = ["input_ids", "attention_mask"]
     slow_tokenizer_class = T5Tokenizer
 
@@ -120,6 +92,7 @@ class T5TokenizerFast(PreTrainedTokenizerFast):
         pad_token="<pad>",
         extra_ids=100,
         additional_special_tokens=None,
+        add_prefix_space=None,
         **kwargs,
     ):
         # Add extra_ids to the special token list
@@ -136,6 +109,12 @@ class T5TokenizerFast(PreTrainedTokenizerFast):
         else:
             extra_tokens = [f"<extra_id_{i}>" for i in range(extra_ids)]
             additional_special_tokens = extra_tokens
+
+        if add_prefix_space is not None:
+            logger.warning_once(
+                "You set `add_prefix_space`. The tokenizer needs to be converted from the slow tokenizers"
+            )
+            kwargs["from_slow"] = True
 
         super().__init__(
             vocab_file,
@@ -161,7 +140,7 @@ class T5TokenizerFast(PreTrainedTokenizerFast):
             deprecated_max_model_length = T5TokenizerFast.max_model_input_sizes[pretrained_model_name_or_path]
             if init_max_model_length is not None and init_max_model_length != max_model_length:
                 return init_max_model_length
-            if init_max_model_length is None:
+            elif init_max_model_length is None:
                 warnings.warn(
                     "This tokenizer was incorrectly instantiated with a model max length of"
                     f" {deprecated_max_model_length} which will be corrected in Transformers v5.\nFor now, this"
@@ -219,8 +198,9 @@ class T5TokenizerFast(PreTrainedTokenizerFast):
         token_ids_0 = token_ids_0 + [self.eos_token_id]
         if token_ids_1 is None:
             return self.prefix_tokens + token_ids_0
-        token_ids_1 = token_ids_1 + [self.eos_token_id]
-        return self.prefix_tokens + token_ids_0 + token_ids_1
+        else:
+            token_ids_1 = token_ids_1 + [self.eos_token_id]
+            return self.prefix_tokens + token_ids_0 + token_ids_1
 
     def create_token_type_ids_from_sequences(
         self, token_ids_0: List[int], token_ids_1: Optional[List[int]] = None

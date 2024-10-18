@@ -12,12 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-# pylint: disable=missing-function-docstring
-# pylint: disable=missing-class-docstring
-# pylint: disable=too-many-branches
-# pylint: disable=redefined-builtin
-# pylint: disable=too-many-statements
-# pylint: disable=invalid-name
+# ============================================================================
 """English normalizer."""
 import re
 import unicodedata
@@ -53,7 +48,6 @@ def remove_symbols_and_diacritics(s: str, keep=""):
     Replace any other markers, symbols, and punctuations with a space, and drop any diacritics (category 'Mn' and some
     manual mappings)
     """
-
     def replace_character(char):
         if char in keep:
             return char
@@ -79,11 +73,62 @@ def remove_symbols(s: str):
 
 
 class BasicTextNormalizer:
+
+    """
+    The BasicTextNormalizer class is responsible for normalizing text by removing symbols and diacritics (if specified) a
+    nd splitting letters (if specified).
+    
+    Attributes:
+        remove_diacritics (bool): A flag indicating whether to remove diacritics from the text. Default is False.
+        split_letters (bool): A flag indicating whether to split letters in the text. Default is False.
+
+    Methods:
+        __call__: Normalizes the input text by converting it to lowercase, removing HTML tags and content within
+            parentheses, applying symbol and diacritic removal, and optionally splitting letters if the split_letters
+            flag is True. Returns the normalized text.
+
+    Example:
+        ```python
+        >>> normalizer = BasicTextNormalizer(remove_diacritics=True, split_letters=False)
+        >>> normalized_text = normalizer('Hello, World!')
+        >>> print(normalized_text)  # Output: 'hello world'
+        ```
+
+    """
     def __init__(self, remove_diacritics: bool = False, split_letters: bool = False):
+        """
+        Initializes an instance of the BasicTextNormalizer class.
+
+        Args:
+            self: The instance of the BasicTextNormalizer class.
+            remove_diacritics (bool): A boolean flag indicating whether diacritics should be removed from the text.
+                Defaults to False.
+            split_letters (bool): A boolean flag indicating whether letters should be split. Defaults to False.
+
+        Returns:
+            None.
+
+        Raises:
+            None.
+        """
         self.clean = remove_symbols_and_diacritics if remove_diacritics else remove_symbols
         self.split_letters = split_letters
 
     def __call__(self, s: str):
+        """
+        This method normalizes the input text by converting it to lowercase, removing certain patterns and characters,
+        and optionally splitting the text into individual letters.
+
+        Args:
+            self (object): The instance of the BasicTextNormalizer class.
+            s (str): The input text to be normalized. It should be a valid string.
+
+        Returns:
+            None: This method does not return any value. The input text 's' is modified in place.
+
+        Raises:
+            None.
+        """
         s = s.lower()
         s = re.sub(r"[<\[][^>\]]*[>\]]", "", s)  # remove words between brackets
         s = re.sub(r"\(([^)]+?)\)", "", s)  # remove words between parenthesis
@@ -107,8 +152,53 @@ class EnglishNumberNormalizer:
     - spell out `one` and `ones`
     - interpret successive single-digit numbers as nominal: `one oh one` -> `101`
     """
-
     def __init__(self):
+        """
+        Initializes an instance of the EnglishNumberNormalizer class.
+
+        Args:
+            self: The instance of the class.
+
+        Returns:
+            None.
+
+        Raises:
+            None.
+
+        This method initializes the instance of the EnglishNumberNormalizer class.
+        It sets up various dictionaries and mappings that are used for normalizing English numbers.
+        The dictionaries include:
+
+        - 'zeros': A set of strings representing the words 'o', 'oh', and 'zero'.
+        - 'ones': A dictionary with number names as keys and their corresponding values as integers.
+        - 'ones_plural': A dictionary with number names in plural form as keys and their corresponding values and
+        suffixes as tuples.
+        - 'ones_ordinal': A dictionary with ordinal number names as keys and their corresponding values and
+        suffixes as tuples.
+        - 'ones_suffixed': A dictionary combining 'ones_plural' and 'ones_ordinal' dictionaries.
+        - 'tens': A dictionary with tens names as keys and their corresponding values as integers.
+        - 'tens_plural': A dictionary with tens names in plural form as keys and their corresponding values and
+        suffixes as tuples.
+        - 'tens_ordinal': A dictionary with tens names in ordinal form as keys and their corresponding values and
+        suffixes as tuples.
+        - 'tens_suffixed': A dictionary combining 'tens_plural' and 'tens_ordinal' dictionaries.
+        - 'multipliers': A dictionary with multiplier names as keys and their corresponding values as integers.
+        - 'multipliers_plural': A dictionary with multiplier names in plural form as keys and their corresponding values
+        and suffixes as tuples.
+        - 'multipliers_ordinal': A dictionary with multiplier names in ordinal form as keys and their corresponding
+        values and suffixes as tuples.
+        - 'multipliers_suffixed': A dictionary combining 'multipliers_plural' and 'multipliers_ordinal' dictionaries.
+        - 'decimals': A set of strings representing the number names for ones, tens, and zeros.
+        - 'preceding_prefixers': A dictionary with preceding prefix names as keys and their corresponding symbols
+        as values.
+        - 'following_prefixers': A dictionary with following prefix names as keys and their corresponding symbols
+        as values.
+        - 'prefixes': A set of symbols representing both preceding and following prefixes.
+        - 'suffixers': A dictionary with 'per' as key and a dictionary with 'cent' as key and '%' as value.
+        - 'specials': A set of special words.
+        - 'words': A set of all words used for number normalization, derived from various dictionaries.
+        - 'literal_words': A set of literal number words 'one' and 'ones'.
+        """
         super().__init__()
 
         self.zeros = {"o", "oh", "zero"}
@@ -215,6 +305,26 @@ class EnglishNumberNormalizer:
         self.literal_words = {"one", "ones"}
 
     def process_words(self, words: List[str]) -> Iterator[str]:
+        """
+        Process a list of words to normalize English numbers.
+
+        Args:
+            self: Instance of the EnglishNumberNormalizer class.
+            words (List[str]): A list of words representing the English number to be normalized.
+
+        Returns:
+            Iterator[str]: An iterator that yields the normalized version of the English number words.
+
+        Raises:
+            ValueError: If there is an unexpected token or if converting a fraction fails.
+
+        Note:
+            - The method normalizes English numbers by converting them into their numerical representation.
+            - The normalized numbers are returned as strings.
+            - The method handles various cases including prefixes, suffixes, special words, and multipliers.
+            - The method supports decimal numbers.
+            - The method may raise a ValueError if there is an unexpected token or if converting a fraction fails.
+        """
         prefix: Optional[str] = None
         value: Optional[Union[str, int]] = None
         skip = False
@@ -437,6 +547,19 @@ class EnglishNumberNormalizer:
             yield output(value)
 
     def preprocess(self, s: str):
+        """
+        This method preprocesses the input string 's' to normalize English number representations.
+
+        Args:
+            self: The instance of the EnglishNumberNormalizer class.
+            s (str): The input string containing English number representations to be preprocessed.
+
+        Returns:
+            None.
+
+        Raises:
+            None.
+        """
         # replace "<number> and a half" with "<number> point five"
         results = []
 
@@ -466,6 +589,26 @@ class EnglishNumberNormalizer:
         return s
 
     def postprocess(self, s: str):
+        """
+        This method postprocesses a given string to normalize English numbers and currencies.
+
+        Args:
+            self: The instance of the EnglishNumberNormalizer class.
+            s (str): The input string to be postprocessed. It may contain English numbers, currencies, and
+                specific patterns.
+
+        Returns:
+            str: The postprocessed string with normalized English numbers and currencies.
+
+        Raises:
+            ValueError: If the provided string contains invalid numeric values.
+
+        The postprocess method performs the following operations on the input string:
+
+        1. Combines the numeric values of currencies and cents into a standardized format.
+        2. Extracts the cents value and replaces it with the cent symbol '¢'.
+        3. Replaces the numeric representation of '1' with the word 'one'.
+        """
         def combine_cents(m: Match):
             try:
                 currency = m.group(1)
@@ -491,6 +634,19 @@ class EnglishNumberNormalizer:
         return s
 
     def __call__(self, s: str):
+        """
+        This method normalizes English numbers in a given string.
+
+        Args:
+            self (EnglishNumberNormalizer): An instance of the EnglishNumberNormalizer class.
+            s (str): The input string to be normalized.
+
+        Returns:
+            str: The normalized string with English numbers converted to their numerical form.
+
+        Raises:
+            None.
+        """
         s = self.preprocess(s)
         s = " ".join(word for word in self.process_words(s.split()) if word is not None)
         s = self.postprocess(s)
@@ -504,16 +660,82 @@ class EnglishSpellingNormalizer:
 
     [1] https://www.tysto.com/uk-us-spelling-list.html
     """
-
     def __init__(self, english_spelling_mapping):
+        """
+        Initialize a new instance of the EnglishSpellingNormalizer class.
+
+        Args:
+            self (EnglishSpellingNormalizer): The instance of the class.
+            english_spelling_mapping (dict): A dictionary representing the mapping of English words and their
+                normalized spellings.
+
+        Returns:
+            None
+
+        Raises:
+            None
+        """
         self.mapping = english_spelling_mapping
 
     def __call__(self, s: str):
+        """
+        The '__call__' method in the 'EnglishSpellingNormalizer' class normalizes the spelling of English words in a
+        given string.
+
+        Args:
+            self (EnglishSpellingNormalizer): The instance of the EnglishSpellingNormalizer class.
+            s (str): The input string containing English words to be normalized.
+
+        Returns:
+            None.
+
+        Raises:
+            None.
+        """
         return " ".join(self.mapping.get(word, word) for word in s.split())
 
 
 class EnglishTextNormalizer:
+
+    """
+    The EnglishTextNormalizer class represents a tool for normalizing English text by standardizing spellings, numbers,
+    and formatting. It utilizes various patterns and replacement rules to clean and enhance input text.
+
+    Attributes:
+        ignore_patterns (str): Regular expression pattern to identify and ignore specific words or phrases during text
+            normalization.
+        replacers (dict): Dictionary mapping specific patterns to their corresponding replacements for spellings
+            and contractions.
+        standardize_numbers (EnglishNumberNormalizer): Instance of the EnglishNumberNormalizer class for standardizing
+            numerical expressions.
+        standardize_spellings (EnglishSpellingNormalizer): Instance of the EnglishSpellingNormalizer class for
+            standardizing English spellings based on a provided mapping.
+
+    Methods:
+        __call__:
+            Normalize the input text 's' by applying various normalization operations such as lowercase conversion,
+            pattern substitution, symbol removal, and spelling standardization.
+
+    Example:
+        ```python
+        >>> english_normalizer = EnglishTextNormalizer(english_spelling_mapping)
+        >>> normalized_text = english_normalizer("He won't be able to make it. Let's go!")
+        ```
+    """
     def __init__(self, english_spelling_mapping):
+        """
+        Args:
+            self (object): The instance of the EnglishTextNormalizer class.
+            english_spelling_mapping (dict): A dictionary containing English spelling mappings.
+                The keys are the original spellings, and the values are the corresponding standardized spellings.
+                This parameter is used to initialize the EnglishSpellingNormalizer.
+        
+        Returns:
+            None.
+        
+        Raises:
+            None.
+        """
         self.ignore_patterns = r"\b(hmm|mm|mhm|mmm|uh|um)\b"
         self.replacers = {
             # common contractions
@@ -574,6 +796,20 @@ class EnglishTextNormalizer:
         self.standardize_spellings = EnglishSpellingNormalizer(english_spelling_mapping)
 
     def __call__(self, s: str):
+        """
+        This method '__call__' in the class 'EnglishTextNormalizer' normalizes English text by applying various
+        transformations to the input string 's'.
+        
+        Args:
+            self (EnglishTextNormalizer): An instance of the EnglishTextNormalizer class.
+            s (str): The input English text to be normalized. It should be a valid string.
+        
+        Returns:
+            str: The normalized English text after applying all the transformations.
+        
+        Raises:
+            None
+        """
         s = s.lower()
 
         s = re.sub(r"[<\[][^>\]]*[>\]]", "", s)  # remove words between brackets

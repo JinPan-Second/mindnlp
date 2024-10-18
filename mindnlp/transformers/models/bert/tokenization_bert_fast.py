@@ -30,87 +30,87 @@ VOCAB_FILES_NAMES = {"vocab_file": "vocab.txt", "tokenizer_file": "tokenizer.jso
 
 PRETRAINED_VOCAB_FILES_MAP = {
     "vocab_file": {
-        "bert-base-uncased": "https://huggingface.co/bert-base-uncased/resolve/main/vocab.txt",
-        "bert-large-uncased": "https://huggingface.co/bert-large-uncased/resolve/main/vocab.txt",
-        "bert-base-cased": "https://huggingface.co/bert-base-cased/resolve/main/vocab.txt",
-        "bert-large-cased": "https://huggingface.co/bert-large-cased/resolve/main/vocab.txt",
+        "bert-base-uncased": "https://hf-mirror.com/bert-base-uncased/resolve/main/vocab.txt",
+        "bert-large-uncased": "https://hf-mirror.com/bert-large-uncased/resolve/main/vocab.txt",
+        "bert-base-cased": "https://hf-mirror.com/bert-base-cased/resolve/main/vocab.txt",
+        "bert-large-cased": "https://hf-mirror.com/bert-large-cased/resolve/main/vocab.txt",
         "bert-base-multilingual-uncased": (
-            "https://huggingface.co/bert-base-multilingual-uncased/resolve/main/vocab.txt"
+            "https://hf-mirror.com/bert-base-multilingual-uncased/resolve/main/vocab.txt"
         ),
-        "bert-base-multilingual-cased": "https://huggingface.co/bert-base-multilingual-cased/resolve/main/vocab.txt",
-        "bert-base-chinese": "https://huggingface.co/bert-base-chinese/resolve/main/vocab.txt",
-        "bert-base-german-cased": "https://huggingface.co/bert-base-german-cased/resolve/main/vocab.txt",
+        "bert-base-multilingual-cased": "https://hf-mirror.com/bert-base-multilingual-cased/resolve/main/vocab.txt",
+        "bert-base-chinese": "https://hf-mirror.com/bert-base-chinese/resolve/main/vocab.txt",
+        "bert-base-german-cased": "https://hf-mirror.com/bert-base-german-cased/resolve/main/vocab.txt",
         "bert-large-uncased-whole-word-masking": (
-            "https://huggingface.co/bert-large-uncased-whole-word-masking/resolve/main/vocab.txt"
+            "https://hf-mirror.com/bert-large-uncased-whole-word-masking/resolve/main/vocab.txt"
         ),
         "bert-large-cased-whole-word-masking": (
-            "https://huggingface.co/bert-large-cased-whole-word-masking/resolve/main/vocab.txt"
+            "https://hf-mirror.com/bert-large-cased-whole-word-masking/resolve/main/vocab.txt"
         ),
         "bert-large-uncased-whole-word-masking-finetuned-squad": (
-            "https://huggingface.co/bert-large-uncased-whole-word-masking-finetuned-squad/resolve/main/vocab.txt"
+            "https://hf-mirror.com/bert-large-uncased-whole-word-masking-finetuned-squad/resolve/main/vocab.txt"
         ),
         "bert-large-cased-whole-word-masking-finetuned-squad": (
-            "https://huggingface.co/bert-large-cased-whole-word-masking-finetuned-squad/resolve/main/vocab.txt"
+            "https://hf-mirror.com/bert-large-cased-whole-word-masking-finetuned-squad/resolve/main/vocab.txt"
         ),
         "bert-base-cased-finetuned-mrpc": (
-            "https://huggingface.co/bert-base-cased-finetuned-mrpc/resolve/main/vocab.txt"
+            "https://hf-mirror.com/bert-base-cased-finetuned-mrpc/resolve/main/vocab.txt"
         ),
-        "bert-base-german-dbmdz-cased": "https://huggingface.co/bert-base-german-dbmdz-cased/resolve/main/vocab.txt",
+        "bert-base-german-dbmdz-cased": "https://hf-mirror.com/bert-base-german-dbmdz-cased/resolve/main/vocab.txt",
         "bert-base-german-dbmdz-uncased": (
-            "https://huggingface.co/bert-base-german-dbmdz-uncased/resolve/main/vocab.txt"
+            "https://hf-mirror.com/bert-base-german-dbmdz-uncased/resolve/main/vocab.txt"
         ),
         "TurkuNLP/bert-base-finnish-cased-v1": (
-            "https://huggingface.co/TurkuNLP/bert-base-finnish-cased-v1/resolve/main/vocab.txt"
+            "https://hf-mirror.com/TurkuNLP/bert-base-finnish-cased-v1/resolve/main/vocab.txt"
         ),
         "TurkuNLP/bert-base-finnish-uncased-v1": (
-            "https://huggingface.co/TurkuNLP/bert-base-finnish-uncased-v1/resolve/main/vocab.txt"
+            "https://hf-mirror.com/TurkuNLP/bert-base-finnish-uncased-v1/resolve/main/vocab.txt"
         ),
         "wietsedv/bert-base-dutch-cased": (
-            "https://huggingface.co/wietsedv/bert-base-dutch-cased/resolve/main/vocab.txt"
+            "https://hf-mirror.com/wietsedv/bert-base-dutch-cased/resolve/main/vocab.txt"
         ),
     },
     "tokenizer_file": {
-        "bert-base-uncased": "https://huggingface.co/bert-base-uncased/resolve/main/tokenizer.json",
-        "bert-large-uncased": "https://huggingface.co/bert-large-uncased/resolve/main/tokenizer.json",
-        "bert-base-cased": "https://huggingface.co/bert-base-cased/resolve/main/tokenizer.json",
-        "bert-large-cased": "https://huggingface.co/bert-large-cased/resolve/main/tokenizer.json",
+        "bert-base-uncased": "https://hf-mirror.com/bert-base-uncased/resolve/main/tokenizer.json",
+        "bert-large-uncased": "https://hf-mirror.com/bert-large-uncased/resolve/main/tokenizer.json",
+        "bert-base-cased": "https://hf-mirror.com/bert-base-cased/resolve/main/tokenizer.json",
+        "bert-large-cased": "https://hf-mirror.com/bert-large-cased/resolve/main/tokenizer.json",
         "bert-base-multilingual-uncased": (
-            "https://huggingface.co/bert-base-multilingual-uncased/resolve/main/tokenizer.json"
+            "https://hf-mirror.com/bert-base-multilingual-uncased/resolve/main/tokenizer.json"
         ),
         "bert-base-multilingual-cased": (
-            "https://huggingface.co/bert-base-multilingual-cased/resolve/main/tokenizer.json"
+            "https://hf-mirror.com/bert-base-multilingual-cased/resolve/main/tokenizer.json"
         ),
-        "bert-base-chinese": "https://huggingface.co/bert-base-chinese/resolve/main/tokenizer.json",
-        "bert-base-german-cased": "https://huggingface.co/bert-base-german-cased/resolve/main/tokenizer.json",
+        "bert-base-chinese": "https://hf-mirror.com/bert-base-chinese/resolve/main/tokenizer.json",
+        "bert-base-german-cased": "https://hf-mirror.com/bert-base-german-cased/resolve/main/tokenizer.json",
         "bert-large-uncased-whole-word-masking": (
-            "https://huggingface.co/bert-large-uncased-whole-word-masking/resolve/main/tokenizer.json"
+            "https://hf-mirror.com/bert-large-uncased-whole-word-masking/resolve/main/tokenizer.json"
         ),
         "bert-large-cased-whole-word-masking": (
-            "https://huggingface.co/bert-large-cased-whole-word-masking/resolve/main/tokenizer.json"
+            "https://hf-mirror.com/bert-large-cased-whole-word-masking/resolve/main/tokenizer.json"
         ),
         "bert-large-uncased-whole-word-masking-finetuned-squad": (
-            "https://huggingface.co/bert-large-uncased-whole-word-masking-finetuned-squad/resolve/main/tokenizer.json"
+            "https://hf-mirror.com/bert-large-uncased-whole-word-masking-finetuned-squad/resolve/main/tokenizer.json"
         ),
         "bert-large-cased-whole-word-masking-finetuned-squad": (
-            "https://huggingface.co/bert-large-cased-whole-word-masking-finetuned-squad/resolve/main/tokenizer.json"
+            "https://hf-mirror.com/bert-large-cased-whole-word-masking-finetuned-squad/resolve/main/tokenizer.json"
         ),
         "bert-base-cased-finetuned-mrpc": (
-            "https://huggingface.co/bert-base-cased-finetuned-mrpc/resolve/main/tokenizer.json"
+            "https://hf-mirror.com/bert-base-cased-finetuned-mrpc/resolve/main/tokenizer.json"
         ),
         "bert-base-german-dbmdz-cased": (
-            "https://huggingface.co/bert-base-german-dbmdz-cased/resolve/main/tokenizer.json"
+            "https://hf-mirror.com/bert-base-german-dbmdz-cased/resolve/main/tokenizer.json"
         ),
         "bert-base-german-dbmdz-uncased": (
-            "https://huggingface.co/bert-base-german-dbmdz-uncased/resolve/main/tokenizer.json"
+            "https://hf-mirror.com/bert-base-german-dbmdz-uncased/resolve/main/tokenizer.json"
         ),
         "TurkuNLP/bert-base-finnish-cased-v1": (
-            "https://huggingface.co/TurkuNLP/bert-base-finnish-cased-v1/resolve/main/tokenizer.json"
+            "https://hf-mirror.com/TurkuNLP/bert-base-finnish-cased-v1/resolve/main/tokenizer.json"
         ),
         "TurkuNLP/bert-base-finnish-uncased-v1": (
-            "https://huggingface.co/TurkuNLP/bert-base-finnish-uncased-v1/resolve/main/tokenizer.json"
+            "https://hf-mirror.com/TurkuNLP/bert-base-finnish-uncased-v1/resolve/main/tokenizer.json"
         ),
         "wietsedv/bert-base-dutch-cased": (
-            "https://huggingface.co/wietsedv/bert-base-dutch-cased/resolve/main/tokenizer.json"
+            "https://hf-mirror.com/wietsedv/bert-base-dutch-cased/resolve/main/tokenizer.json"
         ),
     },
 }
@@ -197,7 +197,6 @@ class BertTokenizerFast(PreTrainedTokenizerFast):
         wordpieces_prefix (`str`, *optional*, defaults to `"##"`):
             The prefix for subwords.
     """
-
     vocab_files_names = VOCAB_FILES_NAMES
     pretrained_vocab_files_map = PRETRAINED_VOCAB_FILES_MAP
     pretrained_init_configuration = PRETRAINED_INIT_CONFIGURATION
@@ -218,6 +217,29 @@ class BertTokenizerFast(PreTrainedTokenizerFast):
         strip_accents=None,
         **kwargs,
     ):
+        """
+        Initialize the BertTokenizerFast class.
+        
+        Args:
+            self: The instance of the class.
+            vocab_file (str): The file path to the vocabulary file. Defaults to None.
+            tokenizer_file (str): The file path to the tokenizer file. Defaults to None.
+            do_lower_case (bool): Flag indicating whether to convert tokens to lowercase. Defaults to True.
+            unk_token (str): The special token for unknown tokens. Defaults to '[UNK]'.
+            sep_token (str): The special token for separating sequences. Defaults to '[SEP]'.
+            pad_token (str): The special token for padding sequences. Defaults to '[PAD]'.
+            cls_token (str): The special token for classifying sequences. Defaults to '[CLS]'.
+            mask_token (str): The special token for masking tokens. Defaults to '[MASK]'.
+            tokenize_chinese_chars (bool): Flag indicating whether to tokenize Chinese characters. Defaults to True.
+            strip_accents (str or None): Flag indicating whether to strip accents. Defaults to None.
+            **kwargs: Additional keyword arguments.
+        
+        Returns:
+            None.
+        
+        Raises:
+            Exception: If an error occurs during the initialization process.
+        """
         super().__init__(
             vocab_file,
             tokenizer_file=tokenizer_file,
@@ -300,6 +322,20 @@ class BertTokenizerFast(PreTrainedTokenizerFast):
         return len(cls + token_ids_0 + sep) * [0] + len(token_ids_1 + sep) * [1]
 
     def save_vocabulary(self, save_directory: str, filename_prefix: Optional[str] = None) -> Tuple[str]:
+        """
+        Save the vocabulary of the BertTokenizerFast model to the specified directory.
+        
+        Args:
+            self (BertTokenizerFast): The instance of the BertTokenizerFast class.
+            save_directory (str): The directory where the vocabulary files will be saved.
+            filename_prefix (Optional[str]): An optional prefix for the saved vocabulary files. Defaults to None.
+        
+        Returns:
+            Tuple[str]: A tuple containing the names of the saved files.
+        
+        Raises:
+            This method does not explicitly raise any exceptions.
+        """
         files = self._tokenizer.model.save(save_directory, name=filename_prefix)
         return tuple(files)
 

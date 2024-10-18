@@ -12,8 +12,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-# pylint: disable=no-else-return
-# pylint: disable=cyclic-import
 """
 Speech processor class for Wav2Vec2
 """
@@ -43,17 +41,48 @@ class Wav2Vec2Processor(ProcessorMixin):
         tokenizer ([`PreTrainedTokenizer`]):
             An instance of [`PreTrainedTokenizer`]. The tokenizer is a required input.
     """
-
     feature_extractor_class = "Wav2Vec2FeatureExtractor"
     tokenizer_class = "AutoTokenizer"
 
     def __init__(self, feature_extractor, tokenizer):
+        """
+        Initializes a new instance of the Wav2Vec2Processor class.
+        
+        Args:
+            self (Wav2Vec2Processor): The current instance of the Wav2Vec2Processor class.
+            feature_extractor (object): The feature extractor used for processing input data.
+                It should be an instance of a feature extraction class.
+            tokenizer (object): The tokenizer used for tokenizing input data.
+                It should be an instance of a tokenizer class.
+        
+        Returns:
+            None.
+        
+        Raises:
+            None.
+        """
         super().__init__(feature_extractor, tokenizer)
         self.current_processor = self.feature_extractor
         self._in_target_context_manager = False
 
     @classmethod
     def from_pretrained(cls, pretrained_model_name_or_path, **kwargs):
+        """
+        This method creates an instance of the Wav2Vec2Processor class from a pre-trained model.
+        
+        Args:
+            cls (class): The class itself.
+            pretrained_model_name_or_path (str): The name or path of the pre-trained model to load.
+        
+        Returns:
+            None.
+        
+        Raises:
+            OSError: If an OSError occurs during the loading process.
+            FutureWarning: If the tokenizer is being loaded from a config that does not include a `tokenizer_class`
+                attribute, a FutureWarning is issued. It advises adding a `'tokenizer_class': 'Wav2Vec2CTCTokenizer'`
+                attribute to either the `config.json` or `tokenizer_config.json` file to suppress the warning.
+        """
         try:
             return super().from_pretrained(pretrained_model_name_or_path, **kwargs)
         except OSError:
@@ -160,7 +189,7 @@ class Wav2Vec2Processor(ProcessorMixin):
         Wav2Vec2.
         """
         warnings.warn(
-            "`as_target_processor` is deprecated and will be removed in v5 of Transformers. You can process your "
+            "`as_target_processor` is deprecated. You can process your "
             "labels by using the argument `text` of the regular `__call__` method (either in the same call as "
             "your audio inputs, or in a separate call."
         )

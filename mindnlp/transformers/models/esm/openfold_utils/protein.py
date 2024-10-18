@@ -13,10 +13,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ============================================================================
-# pylint: disable=invalid-name
-# pylint: disable=missing-function-docstring
-# pylint: disable=consider-using-generator
-# pylint: disable=consider-using-enumerate
 """Protein data type."""
 import dataclasses
 import re
@@ -36,7 +32,6 @@ PICO_TO_ANGSTROM = 0.01
 @dataclasses.dataclass(frozen=True)
 class Protein:
     """Protein structure representation."""
-
     # Cartesian coordinates of atoms in angstroms. The atom types correspond to
     # residue_constants.atom_types, i.e. the first three are N, CA, CB.
     atom_positions: np.ndarray  # [num_res, num_atom_type, 3]
@@ -72,6 +67,18 @@ class Protein:
 
 
 def from_proteinnet_string(proteinnet_str: str) -> Protein:
+    """
+    This function parses a ProteinNet string and extracts relevant information to create a Protein object.
+    
+    Args:
+        proteinnet_str (str): A string containing ProteinNet formatted data to be parsed.
+    
+    Returns:
+        Protein: A data structure containing atom positions, atom mask, amino acid type, residue index, and B-factors.
+    
+    Raises:
+        AssertionError: If the amino acid type (aatype) extracted from the ProteinNet string is None.
+    """
     tag_re = r"(\[[A-Z]+\]\n)"
     tags: List[str] = [tag.strip() for tag in re.split(tag_re, proteinnet_str) if len(tag) > 0]
     groups: Iterator[Tuple[str, List[str]]] = zip(tags[0::2], [l.split("\n") for l in tags[1::2]])
@@ -122,6 +129,19 @@ def from_proteinnet_string(proteinnet_str: str) -> Protein:
 
 
 def get_pdb_headers(prot: Protein, chain_id: int = 0) -> List[str]:
+    """
+    Get PDB headers.
+    
+    Args:
+        prot (Protein): The protein object.
+        chain_id (int, optional): The ID of the chain. Defaults to 0.
+    
+    Returns:
+        List[str]: A list of PDB headers.
+    
+    Raises:
+        None.
+    """
     pdb_headers: List[str] = []
 
     remark = prot.remark
@@ -161,7 +181,7 @@ def add_pdb_headers(prot: Protein, pdb_str: str) -> str:
                 parent_dict.setdefault(str(i), [])
                 parent_dict[str(i)].append(p)
 
-            max_idx = max([int(chain_idx) for chain_idx in parent_dict])
+            max_idx = max(int(chain_idx) for chain_idx in parent_dict)
             for i in range(max_idx + 1):
                 chain_parents = parent_dict.get(str(i), ["N/A"])
                 parents_per_chain.append(chain_parents)

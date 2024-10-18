@@ -54,8 +54,8 @@ class MiniCPMConfig(PretrainedConfig):
         num_key_value_heads (`int`, *optional*):
             This is the number of key_value heads that should be used to implement Grouped Query Attention. If
             `num_key_value_heads=num_attention_heads`, the model will use Multi Head Attention (MHA), if
-            `num_key_value_heads=1 the model will use Multi Query Attention (MQA) otherwise GQA is used. When
-            converting a multi-head checkpoint to a GQA checkpoint, each group key and value head should be constructed
+            `num_key_value_heads=1` the model will use Multi Query Attention (MQA) otherwise GQA is used. When
+            converting a multi-head checkpoint to a GQA checkpoint, each group key and value head should be forwarded
             by meanpooling all the original heads within that group. For more details checkout [this
             paper](https://arxiv.org/pdf/2305.13245.pdf). If it is not specified, will default to
             `num_attention_heads`.
@@ -79,7 +79,7 @@ class MiniCPMConfig(PretrainedConfig):
             End of stream token id.
         pretraining_tp (`int`, *optional*, defaults to 1):
             Experimental feature. Tensor parallelism rank used during pretraining. Please refer to [this
-            document](https://huggingface.co/docs/transformers/parallelism) to understand more about it. This value is
+            document](https://hf-mirror.com/docs/transformers/parallelism) to understand more about it. This value is
             necessary to ensure exact reproducibility of the pretraining results. Please refer to [this
             issue](https://github.com/pytorch/pytorch/issues/76232).
         tie_word_embeddings (`bool`, *optional*, defaults to `False`):
@@ -99,19 +99,20 @@ class MiniCPMConfig(PretrainedConfig):
         attention_dropout (`float`, *optional*, defaults to 0.0):
             The dropout ratio for the attention probabilities.
 
-    ```python
-    >>> from transformers import MiniCPMModel, MiniCPMConfig
-
-    >>> # Initializing a MiniCPM minicpm-7b style configuration
-    >>> configuration = MiniCPMConfig()
-
-    >>> # Initializing a model from the minicpm-7b style configuration
-    >>> model = MiniCPMModel(configuration)
-
-    >>> # Accessing the model configuration
-    >>> configuration = model.config
-    ```"""
-
+    Example:
+        ```python
+        >>> from transformers import MiniCPMModel, MiniCPMConfig
+        ...
+        >>> # Initializing a MiniCPM minicpm-7b style configuration
+        >>> configuration = MiniCPMConfig()
+        ...
+        >>> # Initializing a model from the minicpm-7b style configuration
+        >>> model = MiniCPMModel(configuration)
+        ...
+        >>> # Accessing the model configuration
+        >>> configuration = model.config
+        ```
+    """
     model_type = "minicpm"
     keys_to_ignore_at_inference = ["past_key_values"]
 
@@ -142,6 +143,42 @@ class MiniCPMConfig(PretrainedConfig):
         scale_depth=1,
         **kwargs,
     ):
+        """
+        Initializes an instance of the MiniCPMConfig class.
+        
+        Args:
+            self: The instance of the MiniCPMConfig class.
+            vocab_size (int, optional): The size of the vocabulary. Defaults to 32000.
+            hidden_size (int, optional): The size of the hidden layers. Defaults to 4096.
+            intermediate_size (int, optional): The size of the intermediate layers. Defaults to 11008.
+            num_hidden_layers (int, optional): The number of hidden layers. Defaults to 32.
+            num_attention_heads (int, optional): The number of attention heads. Defaults to 32.
+            num_key_value_heads (int, optional): The number of key-value heads. Defaults to None.
+                If not provided, it will default to the value of num_attention_heads.
+            hidden_act (str, optional): The activation function for the hidden layers. Defaults to 'silu'.
+            max_position_embeddings (int, optional): The maximum number of position embeddings. Defaults to 2048.
+            initializer_range (float, optional): The range for initializer values. Defaults to 0.02.
+            rms_norm_eps (float, optional): The epsilon value for RMS normalization. Defaults to 1e-06.
+            use_cache (bool, optional): Flag to indicate whether to use cache or not. Defaults to True.
+            pad_token_id (int, optional): The ID of the padding token. Defaults to None.
+            bos_token_id (int, optional): The ID of the beginning-of-sentence token. Defaults to 1.
+            eos_token_id (int, optional): The ID of the end-of-sentence token. Defaults to 2.
+            pretraining_tp (int, optional): The pretraining TP value. Defaults to 1.
+            tie_word_embeddings (bool, optional): Flag to indicate whether to tie word embeddings or not. Defaults to True.
+            rope_theta (float, optional): The theta value for the rope. Defaults to 10000.0.
+            rope_scaling (None or float, optional): The scaling value for the rope. Defaults to None.
+            attention_bias (bool, optional): Flag to indicate whether to use attention bias or not. Defaults to False.
+            attention_dropout (float, optional): The dropout rate for attention layers. Defaults to 0.0.
+            scale_emb (int, optional): The scaling factor for embeddings. Defaults to 1.
+            dim_model_base (int, optional): The base dimension for the model. Defaults to 1.
+            scale_depth (int, optional): The scaling factor for the depth of the model. Defaults to 1.
+        
+        Returns:
+            None.
+        
+        Raises:
+            None.
+        """
         self.vocab_size = vocab_size
         self.max_position_embeddings = max_position_embeddings
         self.hidden_size = hidden_size

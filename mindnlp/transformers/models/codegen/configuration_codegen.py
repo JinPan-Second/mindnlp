@@ -24,18 +24,18 @@ logger = logging.get_logger(__name__)
 
 
 CODEGEN_PRETRAINED_CONFIG_ARCHIVE_MAP = {
-    "Salesforce/codegen-350M-nl": "https://huggingface.co/Salesforce/codegen-350M-nl/resolve/main/config.json",
-    "Salesforce/codegen-350M-multi": "https://huggingface.co/Salesforce/codegen-350M-multi/resolve/main/config.json",
-    "Salesforce/codegen-350M-mono": "https://huggingface.co/Salesforce/codegen-350M-mono/resolve/main/config.json",
-    "Salesforce/codegen-2B-nl": "https://huggingface.co/Salesforce/codegen-2B-nl/resolve/main/config.json",
-    "Salesforce/codegen-2B-multi": "https://huggingface.co/Salesforce/codegen-2B-multi/resolve/main/config.json",
-    "Salesforce/codegen-2B-mono": "https://huggingface.co/Salesforce/codegen-2B-mono/resolve/main/config.json",
-    "Salesforce/codegen-6B-nl": "https://huggingface.co/Salesforce/codegen-6B-nl/resolve/main/config.json",
-    "Salesforce/codegen-6B-multi": "https://huggingface.co/Salesforce/codegen-6B-multi/resolve/main/config.json",
-    "Salesforce/codegen-6B-mono": "https://huggingface.co/Salesforce/codegen-6B-mono/resolve/main/config.json",
-    "Salesforce/codegen-16B-nl": "https://huggingface.co/Salesforce/codegen-16B-nl/resolve/main/config.json",
-    "Salesforce/codegen-16B-multi": "https://huggingface.co/Salesforce/codegen-16B-multi/resolve/main/config.json",
-    "Salesforce/codegen-16B-mono": "https://huggingface.co/Salesforce/codegen-16B-mono/resolve/main/config.json",
+    "Salesforce/codegen-350M-nl": "https://hf-mirror.com/Salesforce/codegen-350M-nl/resolve/main/config.json",
+    "Salesforce/codegen-350M-multi": "https://hf-mirror.com/Salesforce/codegen-350M-multi/resolve/main/config.json",
+    "Salesforce/codegen-350M-mono": "https://hf-mirror.com/Salesforce/codegen-350M-mono/resolve/main/config.json",
+    "Salesforce/codegen-2B-nl": "https://hf-mirror.com/Salesforce/codegen-2B-nl/resolve/main/config.json",
+    "Salesforce/codegen-2B-multi": "https://hf-mirror.com/Salesforce/codegen-2B-multi/resolve/main/config.json",
+    "Salesforce/codegen-2B-mono": "https://hf-mirror.com/Salesforce/codegen-2B-mono/resolve/main/config.json",
+    "Salesforce/codegen-6B-nl": "https://hf-mirror.com/Salesforce/codegen-6B-nl/resolve/main/config.json",
+    "Salesforce/codegen-6B-multi": "https://hf-mirror.com/Salesforce/codegen-6B-multi/resolve/main/config.json",
+    "Salesforce/codegen-6B-mono": "https://hf-mirror.com/Salesforce/codegen-6B-mono/resolve/main/config.json",
+    "Salesforce/codegen-16B-nl": "https://hf-mirror.com/Salesforce/codegen-16B-nl/resolve/main/config.json",
+    "Salesforce/codegen-16B-multi": "https://hf-mirror.com/Salesforce/codegen-16B-multi/resolve/main/config.json",
+    "Salesforce/codegen-16B-mono": "https://hf-mirror.com/Salesforce/codegen-16B-mono/resolve/main/config.json",
 }
 
 
@@ -44,7 +44,7 @@ class CodeGenConfig(PretrainedConfig):
     This is the configuration class to store the configuration of a [`CodeGenModel`]. It is used to instantiate a
     CodeGen model according to the specified arguments, defining the model architecture. Instantiating a configuration
     with the defaults will yield a similar configuration to that of the CodeGen
-    [Salesforce/codegen-2B-mono](https://huggingface.co/Salesforce/codegen-2B-mono) architecture. Configuration objects
+    [Salesforce/codegen-2B-mono](https://hf-mirror.com/Salesforce/codegen-2B-mono) architecture. Configuration objects
     inherit from [`PretrainedConfig`] and can be used to control the model outputs. Read the documentation from
     [`PretrainedConfig`] for more information.
 
@@ -90,20 +90,19 @@ class CodeGenConfig(PretrainedConfig):
             model has a output word embedding layer.
 
     Example:
-
-    ```python
-    >>> from transformers import CodeGenConfig, CodeGenModel
-
-    >>> # Initializing a CodeGen 6B configuration
-    >>> configuration = CodeGenConfig()
-
-    >>> # Initializing a model (with random weights) from the configuration
-    >>> model = CodeGenModel(configuration)
-
-    >>> # Accessing the model configuration
-    >>> configuration = model.config
-    ```"""
-
+        ```python
+        >>> from transformers import CodeGenConfig, CodeGenModel
+        ...
+        >>> # Initializing a CodeGen 6B configuration
+        >>> configuration = CodeGenConfig()
+        ...
+        >>> # Initializing a model (with random weights) from the configuration
+        >>> model = CodeGenModel(configuration)
+        ...
+        >>> # Accessing the model configuration
+        >>> configuration = model.config
+        ```
+    """
     model_type = "codegen"
     attribute_map = {
         "max_position_embeddings": "n_positions",
@@ -134,6 +133,36 @@ class CodeGenConfig(PretrainedConfig):
         tie_word_embeddings=False,
         **kwargs,
     ):
+        """
+        Initializes an instance of the CodeGenConfig class.
+        
+        Args:
+            self: The instance of the class.
+            vocab_size (int, optional): The size of the vocabulary. Defaults to 50400.
+            n_positions (int, optional): The number of positions. Defaults to 2048.
+            n_ctx (int, optional): The context size. Defaults to 2048.
+            n_embd (int, optional): The embedding size. Defaults to 4096.
+            n_layer (int, optional): The number of layers. Defaults to 28.
+            n_head (int, optional): The number of attention heads. Defaults to 16.
+            rotary_dim (int, optional): The dimension for rotary positional embeddings. Defaults to 64.
+            n_inner (int, optional): The inner size of the feed-forward networks. Defaults to None.
+            activation_function (str, optional): The activation function to use. Defaults to 'gelu_new'.
+            resid_pdrop (float, optional): The dropout rate for residual connections. Defaults to 0.0.
+            embd_pdrop (float, optional): The dropout rate for embeddings. Defaults to 0.0.
+            attn_pdrop (float, optional): The dropout rate for attention probabilities. Defaults to 0.0.
+            layer_norm_epsilon (float, optional): The epsilon value for layer normalization. Defaults to 1e-05.
+            initializer_range (float, optional): The range for weight initialization. Defaults to 0.02.
+            use_cache (bool, optional): Whether to use caching. Defaults to True.
+            bos_token_id (int, optional): The ID of the beginning-of-sentence token. Defaults to 50256.
+            eos_token_id (int, optional): The ID of the end-of-sentence token. Defaults to 50256.
+            tie_word_embeddings (bool, optional): Whether to tie word embeddings. Defaults to False.
+        
+        Returns:
+            None.
+        
+        Raises:
+            None.
+        """
         self.vocab_size = vocab_size
         self.n_ctx = n_ctx
         self.n_positions = n_positions

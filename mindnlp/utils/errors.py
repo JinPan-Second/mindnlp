@@ -12,13 +12,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ============================================================================
-# pylint: disable=too-many-ancestors
 """
 MindNLP defined Errors.
 """
 from typing import Optional
 from requests import HTTPError, Response
 from requests import JSONDecodeError
+
+class OfflineModeIsEnabled(ConnectionError):
+    """Raised when a request is made but `HF_HUB_OFFLINE=1` is set as environment variable."""
 
 class MSHTTPError(HTTPError):
     """
@@ -32,11 +34,24 @@ class MSHTTPError(HTTPError):
     - Server error message from the header "X-Error-Message".
     - Server error message if we can found one in the response body.
     """
-
     request_id: Optional[str] = None
     server_message: Optional[str] = None
 
     def __init__(self, message: str, response: Optional[Response] = None):
+        """
+        Initializes an instance of MSHTTPError.
+        
+        Args:
+            self: The instance of the MSHTTPError class.
+            message (str): The error message associated with the HTTP error.
+            response (Optional[Response]): The optional response object received during the HTTP request. Defaults to None.
+        
+        Returns:
+            None. This method does not return any value.
+        
+        Raises:
+            JSONDecodeError: If an error occurs while decoding the JSON response.
+        """
         # Parse server information if any.
         if response is not None:
             self.request_id = response.headers.get("X-Request-Id")
@@ -89,13 +104,11 @@ class ModelNotFoundError(MSHTTPError):
     Raised when trying to access a hf.co URL with an invalid repository name, or
     with a private repo name the user does not have access to.
     """
-
 class RepositoryNotFoundError(MSHTTPError):
     """
     Raised when trying to access a hf.co URL with an invalid repository name, or
     with a private repo name the user does not have access to.
     """
-
 class GatedRepoError(RepositoryNotFoundError):
     """
     Raised when trying to access a gated repository for which the user is not on the
@@ -111,12 +124,11 @@ class GatedRepoError(RepositoryNotFoundError):
     (...)
     huggingface_hub.utils._errors.GatedRepoError: 403 Client Error. (Request ID: ViT1Bf7O_026LGSQuVqfa)
 
-    Cannot access gated repo for url https://huggingface.co/api/models/ardent-figment/gated-model.
+    Cannot access gated repo for url https://hf-mirror.com/api/models/ardent-figment/gated-model.
     Access to model ardent-figment/gated-model is restricted and you are not in the authorized list.
-    Visit https://huggingface.co/ardent-figment/gated-model to ask for access.
+    Visit https://hf-mirror.com/ardent-figment/gated-model to ask for access.
     ```
     """
-
 class EntryNotFoundError(MSHTTPError):
     """
     Raised when trying to access a hf.co URL with a valid repository and revision
@@ -130,11 +142,9 @@ class EntryNotFoundError(MSHTTPError):
     (...)
     huggingface_hub.utils._errors.EntryNotFoundError: 404 Client Error. (Request ID: 53pNl6M0MxsnG5Sw8JA6x)
 
-    Entry Not Found for url: https://huggingface.co/bert-base-cased/resolve/main/%3Cnon-existent-file%3E.
+    Entry Not Found for url: https://hf-mirror.com/bert-base-cased/resolve/main/%3Cnon-existent-file%3E.
     ```
     """
-
-
 class LocalEntryNotFoundError(EntryNotFoundError, FileNotFoundError, ValueError):
     """
     Raised when trying to access a file that is not on the disk when network is
@@ -144,26 +154,53 @@ class LocalEntryNotFoundError(EntryNotFoundError, FileNotFoundError, ValueError)
     Note: `LocalEntryNotFoundError` derives from `HTTPError` because of `EntryNotFoundError`
           even when it is not a network issue.
     """
-
     def __init__(self, message: str):
+        """Initialize a LocalEntryNotFoundError object.
+        
+        Args:
+            self (LocalEntryNotFoundError): The instance of the LocalEntryNotFoundError class.
+            message (str): The error message associated with the exception.
+        
+        Returns:
+            None: This method does not return any value.
+        
+        Raises:
+            None: This method does not raise any exceptions.
+        """
         super().__init__(message, response=None)
 
 
 class BadRequestError(MSHTTPError, ValueError):
     """
-    Raised by `hf_raise_for_status` when the server returns a HTTP 400 error.
+    Raised by `raise_for_status` when the server returns a HTTP 400 error.
 
     Example:
 
     ```py
     >>> resp = requests.post("hf.co/api/check", ...)
-    >>> hf_raise_for_status(resp, endpoint_name="check")
+    >>> raise_for_status(resp, endpoint_name="check")
     huggingface_hub.utils._errors.BadRequestError: Bad request for check endpoint: {details} (Request ID: XXX)
     ```
     """
 
+class RevisionNotFoundError(MSHTTPError):
+    """
+    Raised when trying to access a hf.co URL with a valid repository but an invalid
+    revision.
 
-def hf_raise_for_status(response: Response, endpoint_name: Optional[str] = None) -> None:
+    Example:
+
+    ```py
+    >>> from huggingface_hub import hf_hub_download
+    >>> hf_hub_download('bert-base-cased', 'config.json', revision='<non-existent-revision>')
+    (...)
+    huggingface_hub.utils._errors.RevisionNotFoundError: 404 Client Error. (Request ID: Mwhe_c3Kt650GcdKEFomX)
+
+    Revision Not Found for url: https://huggingface.co/bert-base-cased/resolve/%3Cnon-existent-revision%3E/config.json.
+    ```
+    """
+
+def raise_for_status(response: Response, endpoint_name: Optional[str] = None) -> None:
     """
     Internal version of `response.raise_for_status()` that will refine a
     potential HTTPError. Raised exception will be an instance of `MSHTTPError`.
@@ -174,11 +211,11 @@ def hf_raise_for_status(response: Response, endpoint_name: Optional[str] = None)
     Example:
     ```py
         import requests
-        from huggingface_hub.utils import get_session, hf_raise_for_status, MSHTTPError
+        from huggingface_hub.utils import get_session, raise_for_status, MSHTTPError
 
         response = get_session().post(...)
         try:
-            hf_raise_for_status(response)
+            raise_for_status(response)
         except MSHTTPError as e:
             print(str(e)) # formatted message
             e.request_id, e.server_message # details returned by server

@@ -12,8 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-# pylint: disable=import-outside-toplevel
-# pylint: disable=invalid-name
+# ============================================================================
 """
  Feature extraction saving/loading class for common feature extractors.
 """
@@ -65,8 +64,23 @@ class BatchFeature(UserDict):
             You can give a tensor_type here to convert the lists of integers in PyTorch/TensorFlow/Numpy Tensors at
             initialization.
     """
-
     def __init__(self, data: Optional[Dict[str, Any]] = None, tensor_type: Union[None, str, TensorType] = None):
+        """
+        Initializes a new instance of the BatchFeature class.
+        
+        Args:
+            self: The instance of the BatchFeature class.
+            data (Optional[Dict[str, Any]]): A dictionary containing the data for the batch feature. Defaults to None.
+                If provided, it should be a dictionary with string keys and values of any type.
+            tensor_type (Union[None, str, TensorType]): The type of tensor to convert the data to. Defaults to None.
+                It can be None, a string, or an instance of the TensorType class.
+        
+        Returns:
+            None.
+        
+        Raises:
+            None.
+        """
         super().__init__(data)
         self.convert_to_tensors(tensor_type=tensor_type)
 
@@ -80,31 +94,149 @@ class BatchFeature(UserDict):
         raise KeyError("Indexing with integers is not available when using Python based feature extractors")
 
     def __getattr__(self, item: str):
+        """
+        This method allows access to attributes of the BatchFeature class that are not directly defined.
+        
+        Args:
+            self: Instance of the BatchFeature class.
+                - Type: BatchFeature
+                - Purpose: Represents the current instance of the class.
+                - Restrictions: Must be an instance of the BatchFeature class.
+        
+            item: The attribute name being accessed.
+                - Type: str
+                - Purpose: Indicates the name of the attribute to retrieve.
+                - Restrictions: Must be a string representing a valid attribute name.
+        
+        Returns:
+            None:
+                If the attribute 'item' does not exist in the data dictionary of the BatchFeature instance.
+        
+        Raises:
+            AttributeError: Raised when the specified 'item' attribute does not exist in the data dictionary of the
+                BatchFeature instance.
+        """
         try:
             return self.data[item]
         except KeyError as exc:
             raise AttributeError from exc
 
     def __getstate__(self):
+        """
+        
+        Description:
+            This method is used to retrieve the state of an instance of the 'BatchFeature' class. It returns a
+            dictionary containing the 'data' attribute of the instance.
+
+        Args:
+            self: Represents the instance of the 'BatchFeature' class. It is automatically passed as the first
+                argument when the method is called.
+
+        Returns:
+            None: This method does not explicitly return a value.
+                However, it implicitly returns a dictionary containing the 'data' attribute of the instance.
+
+        Raises:
+            None.
+
+        """
         return {"data": self.data}
 
     def __setstate__(self, state):
+        """
+        Sets the state of the BatchFeature object.
+
+        Args:
+            self (BatchFeature): The BatchFeature object to set the state for.
+            state (dict): A dictionary containing the state information to be set. It should include the 'data' key.
+
+        Returns:
+            None.
+
+        Raises:
+            None.
+
+        This method is automatically called by the pickle module when unpickling a BatchFeature object.
+        It sets the state of the object based on the provided 'state' dictionary.
+        The 'data' key in the 'state' dictionary is used to set the 'data' attribute of the BatchFeature object.
+        """
         if "data" in state:
             self.data = state["data"]
 
     # Copied from transformers.tokenization_utils_base.BatchEncoding.keys
     def keys(self):
+        '''
+        Method: keys
+
+        Description:
+            This method returns a list of all the keys in the BatchFeature's data dictionary.
+
+        Args:
+            self: (object) The instance of the BatchFeature class.
+
+        Returns:
+            None: This method does not return any value, as it directly operates on the instance's data.
+
+        Raises:
+            None.
+        '''
         return self.data.keys()
 
     # Copied from transformers.tokenization_utils_base.BatchEncoding.values
     def values(self):
+        """
+        Retrieves and returns the values stored in the 'data' attribute of the BatchFeature class instance.
+
+        Args:
+            self (BatchFeature): The current instance of the BatchFeature class.
+
+        Returns:
+            None.
+
+        Raises:
+            None.
+        """
         return self.data.values()
 
     # Copied from transformers.tokenization_utils_base.BatchEncoding.items
     def items(self):
+        """
+        Method items in class BatchFeature.
+
+        Args:
+            self: BatchFeature object
+                The self parameter refers to the instance of the BatchFeature class.
+
+        Returns:
+            dict_items
+                Returns a view object that displays a list of a given dictionary's (key, value) tuple pairs.
+
+        Raises:
+            None
+        """
         return self.data.items()
 
     def _get_is_as_tensor_fns(self, tensor_type: Optional[Union[str, TensorType]] = None):
+        """
+        This method '_get_is_as_tensor_fns' in the class 'BatchFeature' is responsible for returning functions
+        for checking if a given input is a tensor and converting values to tensors based on the specified
+        tensor type.
+
+        Args:
+            self: An instance of the class BatchFeature.
+            tensor_type: An optional parameter indicating the type of tensor to be used for conversion.
+                It can be a string or an instance of the enum TensorType. If not provided, the default value is None.
+
+        Returns:
+            tuple:
+                A tuple containing two functions:
+
+                - is_tensor: A function that checks whether a given value is a tensor.
+                - as_tensor: A function that converts a given value to a tensor based on the specified tensor_type.
+
+        Raises:
+            ImportError: If the tensor_type is set to MindSpore but MindSpore is not installed.
+        """
         if tensor_type is None:
             return None, None
 
@@ -124,13 +256,14 @@ class BatchFeature(UserDict):
 
             is_tensor = ops.is_tensor
         else:
-
             def as_tensor(value, dtype=None):
                 if isinstance(value, (list, tuple)) and isinstance(value[0], (list, tuple, np.ndarray)):
                     value_lens = [len(val) for val in value]
                     if len(set(value_lens)) > 1 and dtype is None:
                         # we have a ragged list so handle explicitly
                         value = as_tensor([np.asarray(val) for val in value], dtype=object)
+                elif isinstance(value, mindspore.Tensor):
+                    return value.asnumpy()
                 return np.asarray(value, dtype=dtype)
 
             is_tensor = is_numpy_array
@@ -155,7 +288,6 @@ class BatchFeature(UserDict):
             try:
                 if not is_tensor(value):
                     tensor = as_tensor(value)
-
                     self[key] = tensor
             except Exception as exc:  # noqa E722
                 if key == "overflowing_values":
@@ -164,7 +296,6 @@ class BatchFeature(UserDict):
                     "Unable to create tensor, you should probably activate padding "
                     "with 'padding=True' to have batched tensors with the same length."
                 ) from exc
-
         return self
 
     def to(self, *args, **kwargs) -> "BatchFeature":
@@ -188,7 +319,7 @@ class BatchFeature(UserDict):
         if len(args) > 0:
             # device should be always the first argument
             arg = args[0]
-            if isinstance(arg, mindspore.common.dtype.TensorType):
+            if isinstance(arg, mindspore._c_expression.typing.Type):
                 # The first argument is a dtype
                 pass
             else:
@@ -211,7 +342,6 @@ class FeatureExtractionMixin():
     This is a feature extraction mixin used to provide saving/loading functionality for sequential and image feature
     extractors.
     """
-
     _auto_class = None
 
     def __init__(self, **kwargs):
@@ -250,7 +380,7 @@ class FeatureExtractionMixin():
                 This can be either:
 
                 - a string, the *model id* of a pretrained feature_extractor hosted inside a model repo on
-                  huggingface.co. Valid model ids can be located at the root-level, like `bert-base-uncased`, or
+                  hf-mirror.com. Valid model ids can be located at the root-level, like `bert-base-uncased`, or
                   namespaced under a user or organization name, like `dbmdz/bert-base-german-cased`.
                 - a path to a *directory* containing a feature extractor file saved using the
                   [`~feature_extraction_utils.FeatureExtractionMixin.save_pretrained`] method, e.g.,
@@ -274,9 +404,8 @@ class FeatureExtractionMixin():
                 the token generated when running `huggingface-cli login` (stored in `~/.huggingface`).
             revision (`str`, *optional*, defaults to `"main"`):
                 The specific model version to use. It can be a branch name, a tag name, or a commit id, since we use a
-                git-based system for storing models and other artifacts on huggingface.co, so `revision` can be any
+                git-based system for storing models and other artifacts on hf-mirror.com, so `revision` can be any
                 identifier allowed by git.
-
 
                 <Tip>
 
@@ -297,28 +426,28 @@ class FeatureExtractionMixin():
         Returns:
             A feature extractor of type [`~feature_extraction_utils.FeatureExtractionMixin`].
 
-        Examples:
-
-        ```python
-        # We can't instantiate directly the base class *FeatureExtractionMixin* nor *SequenceFeatureExtractor* so let's show the examples on a
-        # derived class: *Wav2Vec2FeatureExtractor*
-        feature_extractor = Wav2Vec2FeatureExtractor.from_pretrained(
-            "facebook/wav2vec2-base-960h"
-        )  # Download feature_extraction_config from huggingface.co and cache.
-        feature_extractor = Wav2Vec2FeatureExtractor.from_pretrained(
-            "./test/saved_model/"
-        )  # E.g. feature_extractor (or model) was saved using *save_pretrained('./test/saved_model/')*
-        feature_extractor = Wav2Vec2FeatureExtractor.from_pretrained("./test/saved_model/preprocessor_config.json")
-        feature_extractor = Wav2Vec2FeatureExtractor.from_pretrained(
-            "facebook/wav2vec2-base-960h", return_attention_mask=False, foo=False
-        )
-        assert feature_extractor.return_attention_mask is False
-        feature_extractor, unused_kwargs = Wav2Vec2FeatureExtractor.from_pretrained(
-            "facebook/wav2vec2-base-960h", return_attention_mask=False, foo=False, return_unused_kwargs=True
-        )
-        assert feature_extractor.return_attention_mask is False
-        assert unused_kwargs == {"foo": False}
-        ```"""
+        Example:
+            ```python
+            >>> # We can't instantiate directly the base class *FeatureExtractionMixin* nor *SequenceFeatureExtractor* so let's show the examples on a
+            >>> # derived class: *Wav2Vec2FeatureExtractor*
+            >>> feature_extractor = Wav2Vec2FeatureExtractor.from_pretrained(
+            >>>     "facebook/wav2vec2-base-960h"
+            >>> )  # Download feature_extraction_config from hf-mirror.com and cache.
+            >>> feature_extractor = Wav2Vec2FeatureExtractor.from_pretrained(
+            >>>     "./test/saved_model/"
+            >>> )  # E.g. feature_extractor (or model) was saved using *save_pretrained('./test/saved_model/')*
+            >>> feature_extractor = Wav2Vec2FeatureExtractor.from_pretrained("./test/saved_model/preprocessor_config.json")
+            >>> feature_extractor = Wav2Vec2FeatureExtractor.from_pretrained(
+            >>>     "facebook/wav2vec2-base-960h", return_attention_mask=False, foo=False
+            >>> )
+            >>> assert feature_extractor.return_attention_mask is False
+            >>> feature_extractor, unused_kwargs = Wav2Vec2FeatureExtractor.from_pretrained(
+            >>>     "facebook/wav2vec2-base-960h", return_attention_mask=False, foo=False, return_unused_kwargs=True
+            >>> )
+            >>> assert feature_extractor.return_attention_mask is False
+            >>> assert unused_kwargs == {"foo": False}
+            ```
+        """
         kwargs["cache_dir"] = cache_dir
         kwargs["force_download"] = force_download
         kwargs["local_files_only"] = local_files_only
@@ -327,7 +456,7 @@ class FeatureExtractionMixin():
         use_auth_token = kwargs.pop("use_auth_token", None)
         if use_auth_token is not None:
             warnings.warn(
-                "The `use_auth_token` argument is deprecated and will be removed in v5 of Transformers. Please use `token` instead.",
+                "The `use_auth_token` argument is deprecated. Please use `token` instead.",
                 FutureWarning,
             )
             if token is not None:
@@ -362,7 +491,7 @@ class FeatureExtractionMixin():
 
         if use_auth_token is not None:
             warnings.warn(
-                "The `use_auth_token` argument is deprecated and will be removed in v5 of Transformers. Please use `token` instead.",
+                "The `use_auth_token` argument is deprecated. Please use `token` instead.",
                 FutureWarning,
             )
             if kwargs.get("token", None) is not None:
@@ -383,7 +512,6 @@ class FeatureExtractionMixin():
 
         self.to_json_file(output_feature_extractor_file)
         logger.info(f"Feature extractor saved in {output_feature_extractor_file}")
-
 
         return [output_feature_extractor_file]
 
@@ -410,6 +538,7 @@ class FeatureExtractionMixin():
         from_pipeline = kwargs.pop("_from_pipeline", None)
         from_auto_class = kwargs.pop("_from_auto", False)
         revision = kwargs.pop('revision', 'main')
+        mirror = kwargs.pop('mirror', 'huggingface')
 
         user_agent = {"file_type": "feature extractor", "from_auto_class": from_auto_class}
         if from_pipeline is not None:
@@ -443,6 +572,7 @@ class FeatureExtractionMixin():
                     local_files_only=local_files_only,
                     user_agent=user_agent,
                     revision=revision,
+                    mirror=mirror,
                 )
             except EnvironmentError:
                 # Raise any environment error raise by `cached_file`. It will have a helpful error message adapted to
@@ -452,7 +582,7 @@ class FeatureExtractionMixin():
                 # For any other exception, we throw a generic error.
                 raise EnvironmentError(
                     f"Can't load feature extractor for '{pretrained_model_name_or_path}'. If you were trying to load"
-                    " it from 'https://huggingface.co/models', make sure you don't have a local directory with the"
+                    " it from 'https://hf-mirror.com/models', make sure you don't have a local directory with the"
                     f" same name. Otherwise, make sure '{pretrained_model_name_or_path}' is the correct path to a"
                     f" directory containing a {FEATURE_EXTRACTOR_NAME} file"
                 ) from exc
@@ -475,7 +605,6 @@ class FeatureExtractionMixin():
                 f"loading configuration file {feature_extractor_file} from cache at {resolved_feature_extractor_file}"
             )
 
-
         return feature_extractor_dict, kwargs
 
     @classmethod
@@ -493,8 +622,8 @@ class FeatureExtractionMixin():
                 Additional parameters from which to initialize the feature extractor object.
 
         Returns:
-            [`~feature_extraction_utils.FeatureExtractionMixin`]: The feature extractor object instantiated from those
-            parameters.
+            [`~feature_extraction_utils.FeatureExtractionMixin`]:
+                The feature extractor object instantiated from those parameters.
         """
         return_unused_kwargs = kwargs.pop("return_unused_kwargs", False)
 
@@ -538,8 +667,8 @@ class FeatureExtractionMixin():
                 Path to the JSON file containing the parameters.
 
         Returns:
-            A feature extractor of type [`~feature_extraction_utils.FeatureExtractionMixin`]: The feature_extractor
-            object instantiated from that JSON file.
+            A feature extractor of type [`~feature_extraction_utils.FeatureExtractionMixin`]:
+                The feature_extractor object instantiated from that JSON file.
         """
         with open(json_file, "r", encoding="utf-8") as reader:
             text = reader.read()
@@ -579,6 +708,21 @@ class FeatureExtractionMixin():
             writer.write(self.to_json_string())
 
     def __repr__(self):
+        """
+        This method '__repr__' in the 'FeatureExtractionMixin' class generates a string representation of the object.
+        
+        Args:
+            self (object): The instance of the class.
+                This parameter refers to the current instance of the class.
+        
+        Returns:
+            None:
+                This method does not return any value explicitly;
+                it generates a formatted string representation of the object.
+        
+        Raises:
+            None.
+        """
         return f"{self.__class__.__name__} {self.to_json_string()}"
 
     @classmethod

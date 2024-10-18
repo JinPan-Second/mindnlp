@@ -1,6 +1,5 @@
 # coding=utf-8
 # Copyright 2020, The T5 Authors and HuggingFace Inc.
-# Copyright 2022 Huawei Technologies Co., Ltd
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -13,21 +12,13 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-# ============================================================================
-""" T5 model configuration"""
-from mindnlp.utils import logging
+"""T5 model configuration"""
+
 from ...configuration_utils import PretrainedConfig
+from ....utils import logging
 
 
 logger = logging.get_logger(__name__)
-
-T5_PRETRAINED_CONFIG_ARCHIVE_MAP = {
-    "t5-small": "https://huggingface.co/t5-small/resolve/main/config.json",
-    "t5-base": "https://huggingface.co/t5-base/resolve/main/config.json",
-    "t5-large": "https://huggingface.co/t5-large/resolve/main/config.json",
-    "t5-3b": "https://huggingface.co/t5-3b/resolve/main/config.json",
-    "t5-11b": "https://huggingface.co/t5-11b/resolve/main/config.json",
-}
 
 
 class T5Config(PretrainedConfig):
@@ -35,7 +26,7 @@ class T5Config(PretrainedConfig):
     This is the configuration class to store the configuration of a [`T5Model`] or a [`TFT5Model`]. It is used to
     instantiate a T5 model according to the specified arguments, defining the model architecture. Instantiating a
     configuration with the defaults will yield a similar configuration to that of the T5
-    [t5-small](https://huggingface.co/t5-small) architecture.
+    [google-t5/t5-small](https://huggingface.co/google-t5/t5-small) architecture.
 
     Configuration objects inherit from [`PretrainedConfig`] and can be used to control the model outputs. Read the
     documentation from [`PretrainedConfig`] for more information.

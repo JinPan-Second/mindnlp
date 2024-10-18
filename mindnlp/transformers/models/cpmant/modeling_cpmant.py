@@ -12,27 +12,20 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-# ============================================================================
-# pylint: disable=missing-class-docstring
-# pylint: disable=invalid-name
-# pylint: disable=unexpected-keyword-arg
-# pylint: disable=arguments-renamed
-# pylint: disable=unused-argument
-""" MindSpore CPMAnt"""
+"""MindSpore CPMAnt"""
 
 import math
 from typing import List, Optional, Tuple, Union
 
-import numpy as np
 import mindspore
-from mindspore import nn, ops, Parameter, Tensor
-from mindspore.common.initializer import initializer, Normal
+import mindnlp.core.nn.functional as F
+from mindnlp.core import nn, ops, no_grad
+from mindnlp.core.nn import CrossEntropyLoss
 
-from mindnlp.utils import logging
-import mindnlp.modules.functional as F
 from ...activations import ACT2FN
 from ...modeling_outputs import BaseModelOutputWithPast, CausalLMOutputWithPast
 from ...modeling_utils import PreTrainedModel
+from ....utils import logging
 from .configuration_cpmant import CpmAntConfig
 
 
@@ -41,13 +34,8 @@ logger = logging.get_logger(__name__)
 _CHECKPOINT_FOR_DOC = "openbmb/cpm-ant-10b"
 _CONFIG_FOR_DOC = "CpmAntConfig"
 
-CPMANT_PRETRAINED_MODEL_ARCHIVE_LIST = [
-    "openbmb/cpm-ant-10b",
-    # See all CPMAnt models at https://huggingface.co/models?filter=cpmant
-]
 
-
-class CpmAntLayerNorm(nn.Cell):
+class CpmAntLayerNorm(nn.Module):
     """
     We use Root Mean Square (RMS) Layer Normalization, please see https://arxiv.org/abs/1910.07467 for details."
     """
@@ -57,9 +45,9 @@ class CpmAntLayerNorm(nn.Cell):
 
         self.eps = config.eps
         self.dim_norm = config.hidden_size
-        self.weight = Parameter(ops.zeros(config.hidden_size))
+        self.weight = nn.Parameter(ops.empty(config.hidden_size))
 
-    def construct(self, hidden_states: mindspore.Tensor):
+    def forward(self, hidden_states: mindspore.Tensor):
         """
         Args:
             hidden_states (`mindspore.Tensor` of shape `(batch, seq_len, dim_in)`)
@@ -67,32 +55,32 @@ class CpmAntLayerNorm(nn.Cell):
         if hidden_states.shape[-1] != self.dim_norm:
             raise AssertionError("hidden_states.shape[-1] != self.dim_norm")
         old_dtype = hidden_states.dtype
-        variance = hidden_states.to(mindspore.float32).pow(2).mean(axis=-1, keep_dims=True)
+        variance = ops.mean(hidden_states.to(mindspore.float32).pow(2), dim=-1, keepdim=True)
         hidden_states = (hidden_states * ops.rsqrt(variance + self.eps)).to(old_dtype) * self.weight
         return hidden_states
 
 
-class CpmAntAttention(nn.Cell):
+class CpmAntAttention(nn.Module):
     def __init__(self, config: CpmAntConfig):
         super().__init__()
         self.dim_model = config.hidden_size
         self.num_heads = config.num_attention_heads
         self.dim_head = config.dim_head
 
-        self.project_q = nn.Dense(self.dim_model, self.num_heads * self.dim_head, has_bias=False)
-        self.project_k = nn.Dense(self.dim_model, self.num_heads * self.dim_head, has_bias=False)
-        self.project_v = nn.Dense(self.dim_model, self.num_heads * self.dim_head, has_bias=False)
+        self.project_q = nn.Linear(self.dim_model, self.num_heads * self.dim_head, bias=False)
+        self.project_k = nn.Linear(self.dim_model, self.num_heads * self.dim_head, bias=False)
+        self.project_v = nn.Linear(self.dim_model, self.num_heads * self.dim_head, bias=False)
 
-        self.attention_out = nn.Dense(self.num_heads * self.dim_head, self.dim_model, has_bias=False)
+        self.attention_out = nn.Linear(self.num_heads * self.dim_head, self.dim_model, bias=False)
 
-        self.softmax = nn.Softmax(axis=-1)
+        self.softmax = nn.Softmax(dim=-1)
 
         if config.dropout_p is not None:
             self.dropout = nn.Dropout(p=config.dropout_p)
         else:
             self.dropout = None
 
-    def construct(
+    def forward(
         self,
         hidden_q: mindspore.Tensor,
         hidden_kv: mindspore.Tensor,
@@ -133,25 +121,25 @@ class CpmAntAttention(nn.Cell):
         value = value.view(batch_size, len_k, self.num_heads, self.dim_head).permute(0, 2, 1, 3)
 
         if past_key_values is not None:
-            key = ops.cat([past_key_values[0], key], axis=-2)
-            value = ops.cat([past_key_values[1], value], axis=-2)
+            key = ops.cat([past_key_values[0], key], dim=-2)
+            value = ops.cat([past_key_values[1], value], dim=-2)
             len_k = key.shape[-2]
 
         # (batch_size, num_heads, len_q, dim_head) @ (batch_size, num_heads, dim_head, len_k) -> (batch_size, num_heads, len_q, len_k)
-        score = ops.matmul(query, key.swapaxes(-1, -2)) / math.sqrt(self.dim_head)
+        score = ops.matmul(query, ops.transpose(key, -1, -2)) / math.sqrt(self.dim_head)
         score = score + position_bias
 
         score = ops.masked_fill(
             score,
-            attention_mask.view(batch_size, 1, len_q, len_k) == mindspore.Tensor(False),
-            ops.scalar_to_tensor(float("-inf"), dtype=score.dtype),
+            attention_mask.view(batch_size, 1, len_q, len_k) == mindspore.tensor(False),
+            float(ops.finfo(score.dtype).min)
         )
         score = self.softmax(score)
 
         score = ops.masked_fill(
             score,
-            attention_mask.view(batch_size, 1, len_q, len_k) == mindspore.Tensor(False),
-            ops.scalar_to_tensor(0, dtype=score.dtype),
+            attention_mask.view(batch_size, 1, len_q, len_k) == mindspore.tensor(False),
+            0.
         )
         if output_attentions:
             attn_weights = score
@@ -176,17 +164,17 @@ class CpmAntAttention(nn.Cell):
         return score, attn_weights, past_key_values
 
 
-class CpmAntSelfAttentionBlock(nn.Cell):
+class CpmAntSelfAttentionBlock(nn.Module):
     def __init__(self, config: CpmAntConfig):
         super().__init__()
         self.layernorm_before_attention = CpmAntLayerNorm(config)
         self.self_attention = CpmAntAttention(config)
         if config.dropout_p:
-            self.dropout = nn.Dropout(p=config.dropout_p)
+            self.dropout = nn.Dropout(config.dropout_p)
         else:
             self.dropout = None
 
-    def construct(
+    def forward(
         self,
         hidden_states: mindspore.Tensor,
         attention_mask: mindspore.Tensor,
@@ -205,7 +193,7 @@ class CpmAntSelfAttentionBlock(nn.Cell):
                 Provide positional information to self-attention block.
             output_attentions (`bool`, *optional*):
                 Whether or not to return the attentions tensors of all attention layers.
-            past_key_values (`Tuple(torch.FloatTensor)`, *optional*):
+            past_key_values (`Tuple(mindspore.Tensor)`, *optional*):
                 Cached past key and value projection states.
             use_cache (`bool`, *optional*):
                 If set to `True`, `past_key_values` key value states are returned and can be used to speed up decoding
@@ -225,14 +213,14 @@ class CpmAntSelfAttentionBlock(nn.Cell):
         return hidden_states, attn_weights, current_key_value
 
 
-class CpmAntDenseGatedACT(nn.Cell):
+class CpmAntDenseGatedACT(nn.Module):
     def __init__(self, config: CpmAntConfig):
         super().__init__()
-        self.w_0 = nn.Dense(config.hidden_size, config.dim_ff, has_bias=False)
-        self.w_1 = nn.Dense(config.hidden_size, config.dim_ff, has_bias=False)
+        self.w_0 = nn.Linear(config.hidden_size, config.dim_ff, bias=False)
+        self.w_1 = nn.Linear(config.hidden_size, config.dim_ff, bias=False)
         self.act = nn.GELU()
 
-    def construct(self, hidden_states: mindspore.Tensor):
+    def forward(self, hidden_states: mindspore.Tensor):
         """Transform an input tensor from one feature space to another via a nonlinear operation
 
         Args:
@@ -245,18 +233,18 @@ class CpmAntDenseGatedACT(nn.Cell):
         return hidden_states
 
 
-class CpmAntFeedForward(nn.Cell):
+class CpmAntFeedForward(nn.Module):
     def __init__(self, config: CpmAntConfig):
         super().__init__()
         self.w_in = CpmAntDenseGatedACT(config)
         if config.dropout_p is not None:
-            self.dropout = nn.Dropout(p=config.dropout_p)
+            self.dropout = nn.Dropout(config.dropout_p)
         else:
             self.dropout = None
 
-        self.w_out = nn.Dense(config.dim_ff, config.hidden_size, has_bias=False)
+        self.w_out = nn.Linear(config.dim_ff, config.hidden_size, bias=False)
 
-    def construct(self, hidden_states: mindspore.Tensor):
+    def forward(self, hidden_states: mindspore.Tensor):
         """
         Args:
             hidden_states (`mindspore.Tensor` of shape `(batch, seq_len, dim_in)`)
@@ -271,17 +259,17 @@ class CpmAntFeedForward(nn.Cell):
         return hidden_states
 
 
-class CpmAntFFNBlock(nn.Cell):
+class CpmAntFFNBlock(nn.Module):
     def __init__(self, config: CpmAntConfig):
         super().__init__()
         self.layernorm_before_ffn = CpmAntLayerNorm(config)
         self.ffn = CpmAntFeedForward(config)
         if config.dropout_p:
-            self.dropout = nn.Dropout(p=config.dropout_p)
+            self.dropout = nn.Dropout(config.dropout_p)
         else:
             self.dropout = None
 
-    def construct(
+    def forward(
         self,
         hidden_states: mindspore.Tensor,
     ):
@@ -298,13 +286,13 @@ class CpmAntFFNBlock(nn.Cell):
         return hidden_states
 
 
-class CpmAntTransformerBlock(nn.Cell):
+class CpmAntTransformerBlock(nn.Module):
     def __init__(self, config: CpmAntConfig):
         super().__init__()
         self.self_att = CpmAntSelfAttentionBlock(config)
         self.ffn = CpmAntFFNBlock(config)
 
-    def construct(
+    def forward(
         self,
         hidden_states: mindspore.Tensor,
         attention_mask: mindspore.Tensor,
@@ -345,15 +333,15 @@ class CpmAntTransformerBlock(nn.Cell):
         return hidden_states, attn_weights, current_key_value
 
 
-class CpmAntEncoder(nn.Cell):
+class CpmAntEncoder(nn.Module):
     def __init__(self, config: CpmAntConfig):
         super().__init__()
         self.num_layers = config.num_hidden_layers
-        self.layers = nn.CellList([CpmAntTransformerBlock(config) for ith in range(self.num_layers)])
+        self.layers = nn.ModuleList([CpmAntTransformerBlock(config) for ith in range(self.num_layers)])
 
         self.output_layernorm = CpmAntLayerNorm(config)
 
-    def construct(
+    def forward(
         self,
         hidden_states: mindspore.Tensor,
         attention_mask: mindspore.Tensor,
@@ -411,22 +399,22 @@ class CpmAntEncoder(nn.Cell):
 
 
 # Copied from transformers.models.bert.modeling_bert.BertIntermediate with Bert->CPMAnt
-class CpmAntIntermediate(nn.Cell):
+class CpmAntIntermediate(nn.Module):
     def __init__(self, config):
         super().__init__()
-        self.dense = nn.Dense(config.hidden_size, config.intermediate_size)
+        self.dense = nn.Linear(config.hidden_size, config.intermediate_size)
         if isinstance(config.hidden_act, str):
             self.intermediate_act_fn = ACT2FN[config.hidden_act]
         else:
             self.intermediate_act_fn = config.hidden_act
 
-    def construct(self, hidden_states: mindspore.Tensor) -> mindspore.Tensor:
+    def forward(self, hidden_states: mindspore.Tensor) -> mindspore.Tensor:
         hidden_states = self.dense(hidden_states)
         hidden_states = self.intermediate_act_fn(hidden_states)
         return hidden_states
 
 
-class CpmAntSegmentPositionEmbedding(nn.Cell):
+class CpmAntSegmentPositionEmbedding(nn.Module):
     def __init__(self, config: CpmAntConfig):
         super().__init__()
 
@@ -435,57 +423,58 @@ class CpmAntSegmentPositionEmbedding(nn.Cell):
         self.max_distance = config.position_bias_max_distance
         self.num_segments = config.segment_types
 
-        self.relative_attention_bias = Parameter(
-            ops.zeros(
+        self.relative_attention_bias = nn.Parameter(
+            ops.empty(
                 config.segment_types * config.segment_types + config.position_bias_num_buckets,
                 config.num_attention_heads,
             )
         )
 
-    def construct(
+    def forward(
         self,
         key_pos: mindspore.Tensor,
         query_pos: mindspore.Tensor,
         key_segment: mindspore.Tensor,
         query_segment: mindspore.Tensor,
     ):
-        batch = key_pos.shape[0]
-        keylen = key_pos.shape[1]
-        querylen = query_pos.shape[1]
+        with no_grad():
+            batch = key_pos.shape[0]
+            keylen = key_pos.shape[1]
+            querylen = query_pos.shape[1]
 
-        if key_pos.shape[0] != query_pos.shape[0]:
-            raise AssertionError(
-                f"key_pos.shape[0] should be equal to query_pos.shape[0], but got {key_pos.shape[0]} and {query_pos.shape[0]}!"
+            if key_pos.shape[0] != query_pos.shape[0]:
+                raise AssertionError(
+                    f"key_pos.shape[0] should be equal to query_pos.shape[0], but got {key_pos.shape[0]} and {query_pos.shape[0]}!"
+                )
+            if keylen != key_segment.shape[1] or querylen != query_segment.shape[1]:
+                raise AssertionError(
+                    f"keylen should be equal to key_segment.shape[1], but got {keylen} and {key_segment.shape[1]}!"
+                )
+            if querylen != query_segment.shape[1]:
+                raise AssertionError(
+                    f"querylen should be equal to query_segment.shape[1], but got {querylen} and {query_segment.szie(1)}!"
+                )
+
+            key_pos = key_pos.view(batch, -1, keylen)
+            query_pos = query_pos.view(batch, querylen, -1)
+            key_segment = key_segment.view(batch, -1, keylen)
+            query_segment = query_segment.view(batch, querylen, -1)
+
+            relative_position_bucket = self._segment_relative_position_bucket(query_segment, key_segment)
+            relative_position_bucket = relative_position_bucket + self.num_buckets
+
+            # (batch, len_q, len_k)
+            absolute_position_bucket = self._position_bucket(
+                ops.arange(keylen, dtype=mindspore.int32)[None, :]
+                - ops.arange(querylen, dtype=mindspore.int32)[:, None],
+                num_buckets=self.num_buckets,
+                max_distance=self.max_distance,
             )
-        if keylen != key_segment.shape[1] or querylen != query_segment.shape[1]:
-            raise AssertionError(
-                f"keylen should be equal to key_segment.shape[1], but got {keylen} and {key_segment.shape[1]}!"
+            relative_position_bucket = ops.where(
+                (key_segment == query_segment),
+                absolute_position_bucket[None, :, :],
+                relative_position_bucket,
             )
-        if querylen != query_segment.shape[1]:
-            raise AssertionError(
-                f"querylen should be equal to query_segment.shape[1], but got {querylen} and {query_segment.szie(1)}!"
-            )
-
-        key_pos = key_pos.view(batch, -1, keylen)
-        query_pos = query_pos.view(batch, querylen, -1)
-        key_segment = key_segment.view(batch, -1, keylen)
-        query_segment = query_segment.view(batch, querylen, -1)
-
-        relative_position_bucket = self._segment_relative_position_bucket(query_segment, key_segment)
-        relative_position_bucket = relative_position_bucket + self.num_buckets
-
-        # (batch, len_q, len_k)
-        absolute_position_bucket = self._position_bucket(
-            ops.arange(keylen, dtype=mindspore.int32)[None, :]
-            - ops.arange(querylen, dtype=mindspore.int32)[:, None],
-            num_buckets=self.num_buckets,
-            max_distance=self.max_distance,
-        )
-        relative_position_bucket = ops.where(
-            (key_segment == query_segment),
-            absolute_position_bucket[None, :, :],
-            relative_position_bucket,
-        )
 
         # (batch, len_q, len_k, num_heads)
         embeds = F.embedding(relative_position_bucket, self.relative_attention_bias)
@@ -518,14 +507,14 @@ class CpmAntSegmentPositionEmbedding(nn.Cell):
 
 
 # Copied from transformers.models.bert.modeling_bert.BertOutput with Bert->CPMAnt
-class CpmAntOutput(nn.Cell):
+class CpmAntOutput(nn.Module):
     def __init__(self, config):
         super().__init__()
-        self.dense = nn.Dense(config.intermediate_size, config.hidden_size)
+        self.dense = nn.Linear(config.intermediate_size, config.hidden_size)
         self.LayerNorm = nn.LayerNorm(config.hidden_size, eps=config.layer_norm_eps)
-        self.dropout = nn.Dropout(p=config.hidden_dropout_prob)
+        self.dropout = nn.Dropout(config.hidden_dropout_prob)
 
-    def construct(self, hidden_states: mindspore.Tensor, input_tensor: mindspore.Tensor) -> mindspore.Tensor:
+    def forward(self, hidden_states: mindspore.Tensor, input_tensor: mindspore.Tensor) -> mindspore.Tensor:
         hidden_states = self.dense(hidden_states)
         hidden_states = self.dropout(hidden_states)
         hidden_states = self.LayerNorm(hidden_states + input_tensor)
@@ -541,27 +530,23 @@ class CpmAntPreTrainedModel(PreTrainedModel):
     config_class = CpmAntConfig
     base_model_prefix = "cpmant"
 
-    def _init_weights(self, cell):
+    def _init_weights(self, module):
         """Initialize the weights"""
-        std = self.config.init_std
-        if isinstance(cell, nn.Dense):
-            cell.weight.set_data(initializer(Normal(std), cell.weight.shape, cell.weight.dtype))
-            if cell.bias is not None:
-                cell.bias.set_data(initializer('zeros', cell.bias.shape, cell.bias.dtype))
-        elif isinstance(cell, nn.Embedding):
-            weight = np.random.normal(0.0, std, cell.weight.shape)
-            if cell.padding_idx:
-                weight[cell.padding_idx] = 0
-
-            cell.weight.set_data(Tensor(weight, cell.weight.dtype))
-        elif isinstance(cell, nn.LayerNorm):
-            cell.weight.set_data(initializer('ones', cell.weight.shape, cell.weight.dtype))
-            cell.bias.set_data(initializer('zeros', cell.bias.shape, cell.bias.dtype))
-        elif isinstance(cell, CpmAntLayerNorm):
-            cell.weight.set_data(initializer('ones', cell.weight.shape, cell.weight.dtype))
-        elif isinstance(cell, CpmAntSegmentPositionEmbedding):
-            cell.relative_attention_bias.set_data(initializer(
-                Normal(std), cell.relative_attention_bias.shape, cell.relative_attention_bias.dtype))
+        if isinstance(module, nn.Linear):
+            nn.init.normal_(module.weight, mean=0.0, std=self.config.init_std)
+            if module.bias is not None:
+                nn.init.zeros_(module.bias)
+        elif isinstance(module, nn.Embedding):
+            nn.init.normal_(module.weight, mean=0.0, std=self.config.init_std)
+            if module.padding_idx is not None:
+                module.weight[module.padding_idx] = 0
+        elif isinstance(module, nn.LayerNorm):
+            nn.init.zeros_(module.bias)
+            nn.init.ones_(module.weight)
+        elif isinstance(module, CpmAntLayerNorm):
+            nn.init.ones_(module.weight)
+        elif isinstance(module, CpmAntSegmentPositionEmbedding):
+            nn.init.normal_(module.relative_attention_bias, mean=0.0, std=self.config.init_std)
 
 
 class CpmAntModel(CpmAntPreTrainedModel):
@@ -594,14 +579,14 @@ class CpmAntModel(CpmAntPreTrainedModel):
         attention_mask = attention_mask & (span[:, None, :] == span[:, :, None])
         # mask for left padding
         mask_1d = (
-            mindspore.Tensor(list(range(seqlen - self.prompt_length))[::-1])[None, :].repeat(batch, 1)
+            mindspore.tensor(list(range(seqlen - self.prompt_length))[::-1])[None, :].tile((batch, 1))
             < length[:, None]
         )
-        mask_1d = ops.cat((ops.ones(batch, self.prompt_length).bool(), mask_1d), axis=1)
+        mask_1d = ops.cat((ops.ones(batch, self.prompt_length).bool(), mask_1d), dim=1)
         attention_mask = mask_1d.view(batch, seqlen, 1) & mask_1d.view(batch, 1, seqlen) & attention_mask
         return attention_mask
 
-    def construct(
+    def forward(
         self,
         input_ids: Optional[mindspore.Tensor] = None,
         output_attentions: Optional[bool] = None,
@@ -622,7 +607,7 @@ class CpmAntModel(CpmAntPreTrainedModel):
         if input_ids.dtype != mindspore.int32:
             input_ids = input_ids.to(mindspore.int32)
         dtype = input_ids.dtype
-        segment = ops.where(input_ids != 0, mindspore.tensor(2), 0).to(dtype=dtype)
+        segment = ops.where(input_ids != 0, 2, 0).to(dtype=dtype)
         length = (segment != 0).sum(-1).to(dtype=dtype)
         input_ids = ops.cat(
             (
@@ -633,12 +618,12 @@ class CpmAntModel(CpmAntPreTrainedModel):
                 ).tile((input_ids.shape[0], 1)),
                 input_ids,
             ),
-            axis=1,
+            dim=1,
         )
         batch, seq_length = input_ids.shape
-        segment = ops.cat((ops.zeros(batch, self.prompt_length, dtype=dtype), segment), axis=1)
+        segment = ops.cat((ops.zeros(batch, self.prompt_length, dtype=dtype), segment), dim=1)
         context = ops.full((batch, seq_length), 1, dtype=dtype)
-        position = ops.arange(seq_length, dtype=dtype).repeat(batch, 1)
+        position = ops.arange(seq_length, dtype=dtype).tile((batch, 1))
         span = ops.full((batch, seq_length), 0, dtype=dtype)
 
         if past_key_values is None:
@@ -704,12 +689,12 @@ class CpmAntForCausalLM(CpmAntPreTrainedModel):
         self.cpmant = CpmAntModel(config)
 
         # lm_head.weight is tied to cpmant.input_embedding.weight
-        self.lm_head = nn.Dense(
-            config.hidden_size, config.vocab_size + config.prompt_types * config.prompt_length, has_bias=False
+        self.lm_head = nn.Linear(
+            config.hidden_size, config.vocab_size + config.prompt_types * config.prompt_length, bias=False
         )
         self.post_init()
 
-    def construct(
+    def forward(
         self,
         input_ids: Optional[mindspore.Tensor] = None,
         past_key_values: Optional[List[Tuple[mindspore.Tensor, mindspore.Tensor]]] = None,
@@ -730,7 +715,7 @@ class CpmAntForCausalLM(CpmAntPreTrainedModel):
                 [`PreTrainedTokenizer.__call__`] for details.
 
                 [What are input IDs?](../glossary#input-ids)
-            past_key_values (`tuple(tuple(torch.FloatTensor))`, *optional*, returned when `use_cache=True` is passed or when `config.use_cache=True`):
+            past_key_values (`tuple(tuple(mindspore.Tensor))`, *optional*, returned when `use_cache=True` is passed or when `config.use_cache=True`):
                 Contains pre-computed hidden-states (key and values in the self-attention blocks and in the
                 cross-attention blocks) that can be used (see `past_key_values` input) to speed up sequential decoding.
             use_cache (`bool`, *optional*):
@@ -775,7 +760,8 @@ class CpmAntForCausalLM(CpmAntPreTrainedModel):
 
         loss = None
         if labels is not None:
-            loss = ops.cross_entropy(logits.view(-1, logits.shape[-1]), labels.view(-1))
+            loss_func = CrossEntropyLoss()
+            loss = loss_func(logits.view(-1, logits.shape[-1]), labels.view(-1))
 
         if not return_dict:
             output = (logits,) + model_output[1:]
@@ -821,7 +807,6 @@ class CpmAntForCausalLM(CpmAntPreTrainedModel):
         return past_key_values
 
 __all__ = [
-    "CPMANT_PRETRAINED_MODEL_ARCHIVE_LIST",
     "CpmAntForCausalLM",
     "CpmAntModel",
     "CpmAntPreTrainedModel",

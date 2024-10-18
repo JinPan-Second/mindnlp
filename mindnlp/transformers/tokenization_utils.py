@@ -12,18 +12,11 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-# pylint: disable=invalid-name
-# pylint: disable=missing-function-docstring
-# pylint: disable=too-many-nested-blocks
-# pylint: disable=too-many-boolean-expressions
-# pylint: disable=chained-comparison
-# pylint: disable=logging-fstring-interpolation
-# pylint: disable=dangerous-default-value
-# pylint: disable=unused-argument
 """
- Tokenization classes for python tokenizers. For fast tokenizers (provided by HuggingFace's tokenizers library) see
- tokenization_utils_fast.py
+Tokenization classes for python tokenizers. For fast tokenizers (provided by HuggingFace's tokenizers library) see
+tokenization_utils_fast.py
 """
+
 import bisect
 import itertools
 import re
@@ -31,7 +24,6 @@ import unicodedata
 from collections import OrderedDict
 from typing import Any, Dict, List, Optional, Tuple, Union, overload
 
-from mindnlp.utils import PaddingStrategy, TensorType, logging
 from .tokenization_utils_base import (
     AddedToken,
     BatchEncoding,
@@ -44,6 +36,7 @@ from .tokenization_utils_base import (
     TextInputPair,
     TruncationStrategy,
 )
+from ..utils import PaddingStrategy, TensorType, logging
 
 
 logger = logging.get_logger(__name__)
@@ -60,14 +53,26 @@ class Trie:
     Loose reference https://en.wikipedia.org/wiki/Trie
     """
 
-    def __init__(self):
+    def __init__(self, *args):
         self.data = {}
         self._tokens = set()
+        self._termination_char = ""
+        self.update(*args)
+
+    def update(self, *args):
+        """
+        Updates the Trie with new tokens provided as arguments.
+
+        Args:
+            *args: Variable number of words to be added to the Trie.
+        """
+        for token in tuple(*args):
+            self.add(token)
 
     def add(self, word: str):
         """
         Passes over every char (utf-8 char) on word and recursively adds it to the internal `data` trie representation.
-        The special key `""` is used to represent termination.
+        The special key `""` in `self._termination_char` is used to represent termination.
 
         This function is idempotent, adding twice the same word will leave the trie unchanged
 
@@ -91,9 +96,9 @@ class Trie:
         self._tokens.add(word)
         ref = self.data
         for char in word:
-            ref[char] = char in ref and ref[char] or {}
+            ref[char] = ref.setdefault(char, {})
             ref = ref[char]
-        ref[""] = 1
+        ref[self._termination_char] = 1
 
     def split(self, text: str) -> List[str]:
         """
@@ -170,7 +175,7 @@ class Trie:
                         if lookstart > start:
                             # This partial match is later, we can stop looking
                             break
-                        if lookstart < start:
+                        elif lookstart < start:
                             # This partial match is earlier, the trie pointer
                             # was already updated, so index is + 1
                             lookahead_index = current + 1
@@ -206,7 +211,7 @@ class Trie:
                     offsets.append(end)
                     reset = True
                     break
-                if current_char in trie_pointer:
+                elif current_char in trie_pointer:
                     # The current character being looked at has a match within the trie
                     # update the pointer (it will be stored back into states later).
                     trie_pointer = trie_pointer[current_char]
@@ -273,6 +278,59 @@ class Trie:
         return tokens
 
 
+class ExtensionsTrie(Trie):
+    def extensions(self, prefix: str):
+        """
+        Generates all extensions of a given prefix token in the Trie.
+
+        Example:
+
+        ```python
+        >>> trie = Trie()
+        >>> trie.add("apple")
+        >>> trie.add("app")
+        >>> trie.add("application")
+        >>> trie.extensions("app")
+        ['app', 'apple', 'application']
+        ```
+        """
+        prefix_node = self._get_node(prefix)
+        ret = self._collect_tokens(prefix_node)
+        return [prefix + token for token in ret]
+
+    def _get_node(self, token: str) -> dict:
+        """
+        Retrieves the node corresponding to the given token in the Trie.
+
+        Args:
+            token (str): The token for which the corresponding node needs to be retrieved.
+
+        Returns:
+            dict: The node in the Trie corresponding to the given token.
+        """
+        node = self.data
+        for char in token:
+            node = node[char]
+        return node
+
+    def _collect_tokens(self, node: dict) -> list:
+        """
+        Generates all tokens in the Trie starting from a given node.
+
+        Args:
+            node (dict): The node in the Trie from which tokens need to be generated.
+
+        Returns:
+            list: List of tokens generated from the given node.
+        """
+        tokens = [self._termination_char] if self._termination_char in node else []
+        for token, subtrie_head in node.items():
+            if token != self._termination_char:
+                subtokens = self._collect_tokens(subtrie_head)
+                tokens.extend([token + subtoken for subtoken in subtokens])
+        return tokens
+
+
 def _is_whitespace(char):
     """Checks whether `char` is a whitespace character."""
     # \t, \n, and \r are technically control characters but we treat them
@@ -333,7 +391,8 @@ def _insert_one_token_to_ordered_list(token_list: List[str], new_token: str):
     if insertion_idx < len(token_list) and token_list[insertion_idx] == new_token:
         # new_token is in token_list, don't add
         return
-    token_list.insert(insertion_idx, new_token)
+    else:
+        token_list.insert(insertion_idx, new_token)
 
 
 class PreTrainedTokenizer(PreTrainedTokenizerBase):
@@ -408,7 +467,7 @@ class PreTrainedTokenizer(PreTrainedTokenizerBase):
         # Always raise an error if string because users should define the behavior
         for index, token in value.items():
             if not isinstance(token, (str, AddedToken)) or not isinstance(index, int):
-                raise ValueError(
+                raise TypeError(
                     f"The provided `added_tokens_decoder` has an element of type {index.__class__, token.__class__}, should be a dict of {int, Union[AddedToken, str]}"
                 )
 
@@ -455,8 +514,8 @@ class PreTrainedTokenizer(PreTrainedTokenizerBase):
 
         ```python
         # Let's see how to increase the vocabulary of Bert model and tokenizer
-        tokenizer = BertTokenizer.from_pretrained("bert-base-uncased")
-        model = BertModel.from_pretrained("bert-base-uncased")
+        tokenizer = BertTokenizer.from_pretrained("google-bert/bert-base-uncased")
+        model = BertModel.from_pretrained("google-bert/bert-base-uncased")
 
         num_added_toks = tokenizer.add_tokens(["new_tok1", "my_new-tok2"])
         print("We have added", num_added_toks, "tokens")
@@ -542,7 +601,7 @@ class PreTrainedTokenizer(PreTrainedTokenizerBase):
 
     def tokenize(self, text: TextInput, **kwargs) -> List[str]:
         """
-        Converts a string in a sequence of tokens, using the tokenizer.
+        Converts a string into a sequence of tokens, using the tokenizer.
 
         Split in words for word-based vocabulary or sub-words for sub-word-based vocabularies
         (BPE/SentencePieces/WordPieces). Takes care of added tokens.
@@ -622,7 +681,7 @@ class PreTrainedTokenizer(PreTrainedTokenizerBase):
 
     def _tokenize(self, text, **kwargs):
         """
-        Converts a string in a sequence of tokens (string), using the tokenizer. Split in words for word-based
+        Converts a string into a sequence of tokens (string), using the tokenizer. Split in words for word-based
         vocabulary or sub-words for sub-word-based vocabularies (BPE/SentencePieces/WordPieces).
 
         Do NOT take care of added tokens.
@@ -687,24 +746,27 @@ class PreTrainedTokenizer(PreTrainedTokenizerBase):
             if isinstance(text, str):
                 tokens = self.tokenize(text, **kwargs)
                 return self.convert_tokens_to_ids(tokens)
-            if isinstance(text, (list, tuple)) and len(text) > 0 and isinstance(text[0], str):
+            elif isinstance(text, (list, tuple)) and len(text) > 0 and isinstance(text[0], str):
                 if is_split_into_words:
                     tokens = list(
                         itertools.chain(*(self.tokenize(t, is_split_into_words=True, **kwargs) for t in text))
                     )
                     return self.convert_tokens_to_ids(tokens)
-                return self.convert_tokens_to_ids(text)
-            if isinstance(text, (list, tuple)) and len(text) > 0 and isinstance(text[0], int):
+                else:
+                    return self.convert_tokens_to_ids(text)
+            elif isinstance(text, (list, tuple)) and len(text) > 0 and isinstance(text[0], int):
                 return text
-            if is_split_into_words:
-                raise ValueError(
-                    f"Input {text} is not valid. Should be a string or a list/tuple of strings when"
-                    " `is_split_into_words=True`."
-                )
-            raise ValueError(
-                f"Input {text} is not valid. Should be a string, a list/tuple of strings or a list/tuple of"
-                " integers."
-            )
+            else:
+                if is_split_into_words:
+                    raise ValueError(
+                        f"Input {text} is not valid. Should be a string or a list/tuple of strings when"
+                        " `is_split_into_words=True`."
+                    )
+                else:
+                    raise ValueError(
+                        f"Input {text} is not valid. Should be a string, a list/tuple of strings or a list/tuple of"
+                        " integers."
+                    )
 
         if return_offsets_mapping:
             raise NotImplementedError(
@@ -762,24 +824,27 @@ class PreTrainedTokenizer(PreTrainedTokenizerBase):
         return_offsets_mapping: bool = False,
         return_length: bool = False,
         verbose: bool = True,
+        split_special_tokens: bool = False,
         **kwargs,
     ) -> BatchEncoding:
         def get_input_ids(text):
             if isinstance(text, str):
                 tokens = self.tokenize(text, **kwargs)
                 return self.convert_tokens_to_ids(tokens)
-            if isinstance(text, (list, tuple)) and len(text) > 0 and isinstance(text[0], str):
+            elif isinstance(text, (list, tuple)) and len(text) > 0 and isinstance(text[0], str):
                 if is_split_into_words:
                     tokens = list(
                         itertools.chain(*(self.tokenize(t, is_split_into_words=True, **kwargs) for t in text))
                     )
                     return self.convert_tokens_to_ids(tokens)
-                return self.convert_tokens_to_ids(text)
-            if isinstance(text, (list, tuple)) and len(text) > 0 and isinstance(text[0], int):
+                else:
+                    return self.convert_tokens_to_ids(text)
+            elif isinstance(text, (list, tuple)) and len(text) > 0 and isinstance(text[0], int):
                 return text
-            raise ValueError(
-                "Input is not valid. Should be a string, a list/tuple of strings or a list/tuple of integers."
-            )
+            else:
+                raise ValueError(
+                    "Input is not valid. Should be a string, a list/tuple of strings or a list/tuple of integers."
+                )
 
         if return_offsets_mapping:
             raise NotImplementedError(
@@ -816,6 +881,7 @@ class PreTrainedTokenizer(PreTrainedTokenizerBase):
             return_length=return_length,
             return_tensors=return_tensors,
             verbose=verbose,
+            split_special_tokens=split_special_tokens,
         )
 
         return BatchEncoding(batch_outputs)
@@ -836,6 +902,7 @@ class PreTrainedTokenizer(PreTrainedTokenizerBase):
         return_special_tokens_mask: bool = False,
         return_length: bool = False,
         verbose: bool = True,
+        split_special_tokens: bool = False,
     ) -> BatchEncoding:
         """
         Prepares a sequence of input id, or a pair of sequences of inputs ids so that it can be used by the model. It
@@ -865,6 +932,7 @@ class PreTrainedTokenizer(PreTrainedTokenizerBase):
                 return_tensors=None,  # We convert the whole batch to tensors at the end
                 prepend_batch_axis=False,
                 verbose=verbose,
+                split_special_tokens=split_special_tokens,
             )
 
             for key, value in outputs.items():
@@ -939,12 +1007,10 @@ class PreTrainedTokenizer(PreTrainedTokenizerBase):
         return [0] * ((len(token_ids_1) if token_ids_1 else 0) + len(token_ids_0))
 
     @overload
-    def convert_ids_to_tokens(self, ids: int, skip_special_tokens: bool = False) -> str:
-        ...
+    def convert_ids_to_tokens(self, ids: int, skip_special_tokens: bool = False) -> str: ...
 
     @overload
-    def convert_ids_to_tokens(self, ids: List[int], skip_special_tokens: bool = False) -> List[str]:
-        ...
+    def convert_ids_to_tokens(self, ids: List[int], skip_special_tokens: bool = False) -> List[str]: ...
 
     def convert_ids_to_tokens(
         self, ids: Union[int, List[int]], skip_special_tokens: bool = False
@@ -965,7 +1031,8 @@ class PreTrainedTokenizer(PreTrainedTokenizerBase):
         if isinstance(ids, int):
             if ids in self._added_tokens_decoder:
                 return self._added_tokens_decoder[ids].content
-            return self._convert_id_to_token(ids)
+            else:
+                return self._convert_id_to_token(ids)
         tokens = []
         for index in ids:
             index = int(index)
@@ -1031,4 +1098,5 @@ class PreTrainedTokenizer(PreTrainedTokenizerBase):
         if clean_up_tokenization_spaces:
             clean_text = self.clean_up_tokenization(text)
             return clean_text
-        return text
+        else:
+            return text

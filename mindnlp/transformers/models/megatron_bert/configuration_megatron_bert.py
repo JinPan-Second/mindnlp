@@ -21,7 +21,7 @@ from ...configuration_utils import PretrainedConfig
 logger = logging.get_logger(__name__)
 
 MEGATRON_BERT_PRETRAINED_CONFIG_ARCHIVE_MAP = {
-    # See all MEGATRON_BERT models at https://huggingface.co/models?filter=bert
+    # See all MEGATRON_BERT models at https://hf-mirror.com/models?filter=bert
 }
 
 
@@ -30,7 +30,7 @@ class MegatronBertConfig(PretrainedConfig):
     This is the configuration class to store the configuration of a [`MegatronBertModel`]. It is used to instantiate a
     MEGATRON_BERT model according to the specified arguments, defining the model architecture. Instantiating a
     configuration with the defaults will yield a similar configuration to that of the MEGATRON_BERT
-    [nvidia/megatron-bert-uncased-345m](https://huggingface.co/nvidia/megatron-bert-uncased-345m) architecture.
+    [nvidia/megatron-bert-uncased-345m](https://hf-mirror.com/nvidia/megatron-bert-uncased-345m) architecture.
 
     Configuration objects inherit from [`PretrainedConfig`] and can be used to control the model outputs. Read the
     documentation from [`PretrainedConfig`] for more information.
@@ -76,20 +76,20 @@ class MegatronBertConfig(PretrainedConfig):
             Whether or not the model should return the last key/values attentions (not used by all models). Only
             relevant if `config.is_decoder=True`.
 
-    Examples:
-
-    ```python
-    >>> from transformers import MegatronBertConfig, MegatronBertModel
-
-    >>> # Initializing a MEGATRON_BERT bert-base-uncased style configuration
-    >>> configuration = MegatronBertConfig()
-
-    >>> # Initializing a model (with random weights) from the bert-base-uncased style configuration
-    >>> model = MegatronBertModel(configuration)
-
-    >>> # Accessing the model configuration
-    >>> configuration = model.config
-    ```"""
+    Example:
+        ```python
+        >>> from transformers import MegatronBertConfig, MegatronBertModel
+        ...
+        >>> # Initializing a MEGATRON_BERT bert-base-uncased style configuration
+        >>> configuration = MegatronBertConfig()
+        ...
+        >>> # Initializing a model (with random weights) from the bert-base-uncased style configuration
+        >>> model = MegatronBertModel(configuration)
+        ...
+        >>> # Accessing the model configuration
+        >>> configuration = model.config
+        ```
+    """
     model_type = "megatron-bert"
 
     def __init__(
@@ -111,6 +111,32 @@ class MegatronBertConfig(PretrainedConfig):
         use_cache=True,
         **kwargs,
     ):
+        """
+        Initialize a MegatronBertConfig object with the provided parameters.
+
+        Args:
+            vocab_size (int): The size of the vocabulary used for tokenization.
+            hidden_size (int): The size of the hidden layers in the model.
+            num_hidden_layers (int): The number of hidden layers in the model.
+            num_attention_heads (int): The number of attention heads in the model.
+            intermediate_size (int): The size of the intermediate (feed-forward) layer.
+            hidden_act (str): The activation function used in the hidden layers.
+            hidden_dropout_prob (float): The dropout probability for the hidden layers.
+            attention_probs_dropout_prob (float): The dropout probability for attention probabilities.
+            max_position_embeddings (int): The maximum length of input sequences.
+            type_vocab_size (int): The size of the token type embeddings.
+            initializer_range (float): The range for parameter initializations.
+            layer_norm_eps (float): The epsilon value for layer normalization.
+            pad_token_id (int): The ID of the padding token.
+            position_embedding_type (str): The type of position embeddings used.
+            use_cache (bool): Whether to use caching during inference.
+
+        Returns:
+            None.
+
+        Raises:
+            ValueError: If any argument is invalid or out of range.
+        """
         super().__init__(pad_token_id=pad_token_id, **kwargs)
 
         self.vocab_size = vocab_size

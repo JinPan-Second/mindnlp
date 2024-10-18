@@ -20,18 +20,17 @@
 from ...configuration_utils import PretrainedConfig
 
 
-
 RWKV_PRETRAINED_CONFIG_ARCHIVE_MAP = {
-    "RWKV/rwkv-4-169m-pile": "https://huggingface.co/RWKV/rwkv-4-169m-pile/resolve/main/config.json",
-    "RWKV/rwkv-4-430m-pile": "https://huggingface.co/RWKV/rwkv-4-430m-pile/resolve/main/config.json",
-    "RWKV/rwkv-4-1b5-pile": "https://huggingface.co/RWKV/rwkv-4-1b5-pile/resolve/main/config.json",
-    "RWKV/rwkv-4-3b-pile": "https://huggingface.co/RWKV/rwkv-4-3b-pile/resolve/main/config.json",
-    "RWKV/rwkv-4-7b-pile": "https://huggingface.co/RWKV/rwkv-4-7b-pile/resolve/main/config.json",
-    "RWKV/rwkv-4-14b-pile": "https://huggingface.co/RWKV/rwkv-4-14b-pile/resolve/main/config.json",
-    "RWKV/rwkv-raven-1b5": "https://huggingface.co/RWKV/rwkv-raven-1b5/resolve/main/config.json",
-    "RWKV/rwkv-raven-3b": "https://huggingface.co/RWKV/rwkv-raven-3b/resolve/main/config.json",
-    "RWKV/rwkv-raven-7b": "https://huggingface.co/RWKV/rwkv-raven-7b/resolve/main/config.json",
-    "RWKV/rwkv-raven-14b": "https://huggingface.co/RWKV/rwkv-raven-14b/resolve/main/config.json",
+    "RWKV/rwkv-4-169m-pile": "https://hf-mirror.com/RWKV/rwkv-4-169m-pile/resolve/main/config.json",
+    "RWKV/rwkv-4-430m-pile": "https://hf-mirror.com/RWKV/rwkv-4-430m-pile/resolve/main/config.json",
+    "RWKV/rwkv-4-1b5-pile": "https://hf-mirror.com/RWKV/rwkv-4-1b5-pile/resolve/main/config.json",
+    "RWKV/rwkv-4-3b-pile": "https://hf-mirror.com/RWKV/rwkv-4-3b-pile/resolve/main/config.json",
+    "RWKV/rwkv-4-7b-pile": "https://hf-mirror.com/RWKV/rwkv-4-7b-pile/resolve/main/config.json",
+    "RWKV/rwkv-4-14b-pile": "https://hf-mirror.com/RWKV/rwkv-4-14b-pile/resolve/main/config.json",
+    "RWKV/rwkv-raven-1b5": "https://hf-mirror.com/RWKV/rwkv-raven-1b5/resolve/main/config.json",
+    "RWKV/rwkv-raven-3b": "https://hf-mirror.com/RWKV/rwkv-raven-3b/resolve/main/config.json",
+    "RWKV/rwkv-raven-7b": "https://hf-mirror.com/RWKV/rwkv-raven-7b/resolve/main/config.json",
+    "RWKV/rwkv-raven-14b": "https://hf-mirror.com/RWKV/rwkv-raven-14b/resolve/main/config.json",
 }
 
 
@@ -40,7 +39,7 @@ class RwkvConfig(PretrainedConfig):
     This is the configuration class to store the configuration of a [`RwkvModel`]. It is used to instantiate a RWKV
     model according to the specified arguments, defining the model architecture. Instantiating a configuration with the
     defaults will yield a similar configuration to that of the RWVK-4
-    [RWKV/rwkv-4-169m-pile](https://huggingface.co/RWKV/rwkv-4-169m-pile) architecture.
+    [RWKV/rwkv-4-169m-pile](https://hf-mirror.com/RWKV/rwkv-4-169m-pile) architecture.
 
     Configuration objects inherit from [`PretrainedConfig`] and can be used to control the model outputs. Read the
     documentation from [`PretrainedConfig`] for more information.
@@ -79,20 +78,19 @@ class RwkvConfig(PretrainedConfig):
 
 
     Example:
-
-    ```python
-    >>> from transformers import RwkvConfig, RwkvModel
-
-    >>> # Initializing a Rwkv configuration
-    >>> configuration = RwkvConfig()
-
-    >>> # Initializing a model (with random weights) from the configuration
-    >>> model = RwkvModel(configuration)
-
-    >>> # Accessing the model configuration
-    >>> configuration = model.config
-    ```"""
-
+        ```python
+        >>> from transformers import RwkvConfig, RwkvModel
+        ...
+        >>> # Initializing a Rwkv configuration
+        >>> configuration = RwkvConfig()
+        ...
+        >>> # Initializing a model (with random weights) from the configuration
+        >>> model = RwkvModel(configuration)
+        ...
+        >>> # Accessing the model configuration
+        >>> configuration = model.config
+        ```
+    """
     model_type = "rwkv"
     attribute_map = {"max_position_embeddings": "context_length"}
     pretrained_config_archive_map = RWKV_PRETRAINED_CONFIG_ARCHIVE_MAP
@@ -113,6 +111,35 @@ class RwkvConfig(PretrainedConfig):
         use_cache=True,
         **kwargs,
     ):
+        """
+        Initializes an instance of RwkvConfig.
+
+        Args:
+            self: The instance itself.
+            vocab_size (int): The size of the vocabulary. Default is 50277.
+            context_length (int): The length of the context. Default is 1024.
+            hidden_size (int): The size of the hidden layers. Default is 4096.
+            num_hidden_layers (int): The number of hidden layers. Default is 32.
+            attention_hidden_size (int, optional): The size of the attention hidden layer.
+                Defaults to hidden_size if not provided.
+            intermediate_size (int, optional): The size of the intermediate layer. Defaults to 4 times hidden_size
+                if not provided.
+            layer_norm_epsilon (float): The epsilon value for layer normalization. Default is 1e-05.
+            bos_token_id (int): The beginning of sentence token id. Default is 0.
+            eos_token_id (int): The end of sentence token id. Default is 0.
+            rescale_every (int): The frequency of rescaling. Default is 6.
+            tie_word_embeddings (bool): Whether to tie word embeddings. Default is False.
+            use_cache (bool): Whether to use cache. Default is True.
+
+        Returns:
+            None.
+
+        Raises:
+            ValueError: If the provided vocab_size, context_length, hidden_size, num_hidden_layers,
+                attention_hidden_size, intermediate_size, layer_norm_epsilon, bos_token_id, eos_token_id,
+                or rescale_every is not a positive integer.
+            TypeError: If any of the provided parameters has an unexpected type.
+        """
         self.vocab_size = vocab_size
         self.context_length = context_length
         self.hidden_size = hidden_size

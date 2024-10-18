@@ -22,8 +22,8 @@ from ...configuration_utils import PretrainedConfig
 logger = logging.get_logger(__name__)
 
 CPMANT_PRETRAINED_CONFIG_ARCHIVE_MAP = {
-    "openbmb/cpm-ant-10b": "https://huggingface.co/openbmb/cpm-ant-10b/blob/main/config.json"
-    # See all CPMAnt models at https://huggingface.co/models?filter=cpmant
+    "openbmb/cpm-ant-10b": "https://hf-mirror.com/openbmb/cpm-ant-10b/blob/main/config.json"
+    # See all CPMAnt models at https://hf-mirror.com/models?filter=cpmant
 }
 
 
@@ -32,7 +32,7 @@ class CpmAntConfig(PretrainedConfig):
     This is the configuration class to store the configuration of a [`CpmAntModel`]. It is used to instantiate an
     CPMAnt model according to the specified arguments, defining the model architecture. Instantiating a configuration
     with the defaults will yield a similar configuration to that of the CPMAnt
-    [openbmb/cpm-ant-10b](https://huggingface.co/openbmb/cpm-ant-10b) architecture.
+    [openbmb/cpm-ant-10b](https://hf-mirror.com/openbmb/cpm-ant-10b) architecture.
 
     Configuration objects inherit from [`PretrainedConfig`] and can be used to control the model outputs. Read the
     documentation from [`PretrainedConfig`] for more information.
@@ -72,20 +72,19 @@ class CpmAntConfig(PretrainedConfig):
             Whether to use cache.
 
     Example:
-
-    ```python
-    >>> from transformers import CpmAntModel, CpmAntConfig
-
-    >>> # Initializing a CPMAnt cpm-ant-10b style configuration
-    >>> configuration = CpmAntConfig()
-
-    >>> # Initializing a model from the cpm-ant-10b style configuration
-    >>> model = CpmAntModel(configuration)
-
-    >>> # Accessing the model configuration
-    >>> configuration = model.config
-    ```"""
-
+        ```python
+        >>> from transformers import CpmAntModel, CpmAntConfig
+        ...
+        >>> # Initializing a CPMAnt cpm-ant-10b style configuration
+        >>> configuration = CpmAntConfig()
+        ...
+        >>> # Initializing a model from the cpm-ant-10b style configuration
+        >>> model = CpmAntModel(configuration)
+        ...
+        >>> # Accessing the model configuration
+        >>> configuration = model.config
+        ```
+    """
     model_type = "cpmant"
 
     def __init__(
@@ -107,6 +106,34 @@ class CpmAntConfig(PretrainedConfig):
         use_cache: bool = True,
         **kwargs,
     ):
+        """
+        Initializes an instance of the CpmAntConfig class.
+        
+        Args:
+            self (CpmAntConfig): The instance of the CpmAntConfig class.
+            vocab_size (int): The size of the vocabulary. Defaults to 30720.
+            hidden_size (int): The size of the hidden state. Defaults to 4096.
+            num_attention_heads (int): The number of attention heads. Defaults to 32.
+            dim_head (int): The dimension of each attention head. Defaults to 128.
+            dim_ff (int): The dimension of the feed-forward layer. Defaults to 10240.
+            num_hidden_layers (int): The number of hidden layers. Defaults to 48.
+            dropout_p (float): The dropout rate. Defaults to 0.0.
+            position_bias_num_buckets (int): The number of buckets for position bias. Defaults to 512.
+            position_bias_max_distance (int): The maximum distance for position bias. Defaults to 2048.
+            eps (float): The epsilon value for numerical stability. Defaults to 1e-06.
+            init_std (float): The standard deviation for weight initialization. Defaults to 1.0.
+            prompt_types (int): The number of prompt types. Defaults to 32.
+            prompt_length (int): The length of the prompt. Defaults to 32.
+            segment_types (int): The number of segment types. Defaults to 32.
+            use_cache (bool): Whether to use cache. Defaults to True.
+        
+        Returns:
+            None.
+        
+        Raises:
+            None.
+        """
+        """"""
         super().__init__(**kwargs)
         self.prompt_types = prompt_types
         self.prompt_length = prompt_length

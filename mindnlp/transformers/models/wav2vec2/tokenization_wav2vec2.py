@@ -12,11 +12,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-# pylint: disable=arguments-renamed
-# pylint: disable=no-else-return
-# pylint: disable=inconsistent-return-statements
-# pylint: disable=not-an-iterable
-# pylint: disable=invalid-name
 """Tokenization class for Wav2Vec2."""
 
 import json
@@ -54,11 +49,11 @@ VOCAB_FILES_NAMES = {
 
 PRETRAINED_VOCAB_FILES_MAP = {
     "vocab_file": {
-        "facebook/wav2vec2-base-960h": "https://huggingface.co/facebook/wav2vec2-base-960h/resolve/main/vocab.json",
+        "facebook/wav2vec2-base-960h": "https://hf-mirror.com/facebook/wav2vec2-base-960h/resolve/main/vocab.json",
     },
     "tokenizer_config_file": {
         "facebook/wav2vec2-base-960h": (
-            "https://huggingface.co/facebook/wav2vec2-base-960h/resolve/main/tokenizer_config.json"
+            "https://hf-mirror.com/facebook/wav2vec2-base-960h/resolve/main/tokenizer_config.json"
         ),
     },
 }
@@ -85,7 +80,6 @@ class Wav2Vec2CTCTokenizerOutput(ModelOutput):
             Offsets of the decoded words. In combination with sampling rate and model downsampling rate word offsets
             can be used to compute time stamps for each word.
     """
-
     text: Union[List[str], str]
     char_offsets: Union[List[ListOfDict], ListOfDict] = None
     word_offsets: Union[List[ListOfDict], ListOfDict] = None
@@ -117,12 +111,11 @@ class Wav2Vec2CTCTokenizer(PreTrainedTokenizer):
             Whether or not to accept lowercase input and lowercase the output when decoding.
         target_lang (`str`, *optional*):
             A target language the tokenizer should set by default. `target_lang` has to be defined for multi-lingual,
-            nested vocabulary such as [facebook/mms-1b-all](https://huggingface.co/facebook/mms-1b-all).
+            nested vocabulary such as [facebook/mms-1b-all](https://hf-mirror.com/facebook/mms-1b-all).
 
         **kwargs
             Additional keyword arguments passed along to [`PreTrainedTokenizer`]
     """
-
     vocab_files_names = VOCAB_FILES_NAMES
     pretrained_vocab_files_map = PRETRAINED_VOCAB_FILES_MAP
     max_model_input_sizes = PRETRAINED_POSITIONAL_EMBEDDINGS_SIZES
@@ -141,6 +134,28 @@ class Wav2Vec2CTCTokenizer(PreTrainedTokenizer):
         target_lang=None,
         **kwargs,
     ):
+        """
+        Initializes a new instance of the Wav2Vec2CTCTokenizer class.
+        
+        Args:
+            self (Wav2Vec2CTCTokenizer): The instance of the Wav2Vec2CTCTokenizer class.
+            vocab_file (str): The path to the vocabulary file.
+            bos_token (str, optional): The beginning of sentence token. Default is '<s>'.
+            eos_token (str, optional): The end of sentence token. Default is '</s>'.
+            unk_token (str, optional): The unknown token. Default is '<unk>'.
+            pad_token (str, optional): The padding token. Default is '<pad>'.
+            word_delimiter_token (str, optional): The word delimiter token. Default is '|'.
+            replace_word_delimiter_char (str, optional): The character used to replace the word delimiter. Default is ' '.
+            do_lower_case (bool, optional): Whether to convert all tokens to lowercase. Default is False.
+            target_lang (str, optional): The target language for encoding. Default is None.
+            **kwargs: Additional keyword arguments.
+        
+        Returns:
+            None
+        
+        Raises:
+            None
+        """
         self._word_delimiter_token = word_delimiter_token
 
         self.do_lower_case = do_lower_case
@@ -220,22 +235,109 @@ class Wav2Vec2CTCTokenizer(PreTrainedTokenizer):
 
     @word_delimiter_token.setter
     def word_delimiter_token(self, value):
+        """
+        Sets the word delimiter token for the Wav2Vec2CTCTokenizer.
+        
+        Args:
+            self (Wav2Vec2CTCTokenizer): The instance of the Wav2Vec2CTCTokenizer class.
+            value (str): The word delimiter token to be set.
+        
+        Returns:
+            None.
+        
+        Raises:
+            None.
+        """
         self._word_delimiter_token = value
 
     @word_delimiter_token_id.setter
     def word_delimiter_token_id(self, value):
+        """
+        Sets the word delimiter token ID for the Wav2Vec2CTCTokenizer.
+        
+        Args:
+            self (Wav2Vec2CTCTokenizer): The Wav2Vec2CTCTokenizer instance.
+            value (list[int]): A list of integers representing the token IDs for word delimiters.
+        
+        Returns:
+            None.
+        
+        Raises:
+            TypeError: If the provided value is not a list of integers.
+            ValueError: If the provided value contains invalid token IDs.
+        """
         self._word_delimiter_token = self.convert_tokens_to_ids(value)
 
     @property
     def vocab_size(self) -> int:
+        """
+        Returns the size of the vocabulary used by the Wav2Vec2CTCTokenizer.
+        
+        Args:
+            self: An instance of the Wav2Vec2CTCTokenizer class.
+        
+        Returns:
+            int: The size of the vocabulary, which represents the total number of unique tokens in the decoder.
+        
+        Raises:
+            None.
+            
+        Example:
+            ```python
+            >>> tokenizer = Wav2Vec2CTCTokenizer()
+            >>> tokenizer.vocab_size()
+            50000
+            ```
+        """
         return len(self.decoder)
 
     def get_vocab(self) -> Dict:
+        """
+        Returns the vocabulary used by the Wav2Vec2CTCTokenizer.
+
+        Args:
+            self (Wav2Vec2CTCTokenizer): An instance of the Wav2Vec2CTCTokenizer class.
+
+        Returns:
+            Dict: A dictionary representing the vocabulary used by the tokenizer.
+                The keys are integers representing the token IDs, and the values are the corresponding tokens.
+
+        Raises:
+            None.
+
+        This method retrieves the vocabulary used by the Wav2Vec2CTCTokenizer instance. The vocabulary is a dictionary
+        that combines the encoder and added_tokens_encoder dictionaries. The encoder dictionary maps tokens to unique
+        integer IDs, while the added_tokens_encoder dictionary contains additional tokens added by the user.
+        The resulting vocabulary dictionary is returned.
+        """
         vocab = dict(self.encoder)
         vocab.update(self.added_tokens_encoder)
         return vocab
 
     def _add_tokens(self, new_tokens: Union[List[str], List[AddedToken]], special_tokens: bool = False) -> int:
+        """
+        Add tokens to the Wav2Vec2CTCTokenizer's vocabulary.
+
+        Args:
+            self (Wav2Vec2CTCTokenizer): The instance of the Wav2Vec2CTCTokenizer class.
+            new_tokens (Union[List[str], List[AddedToken]]): A list of new tokens to be added to the vocabulary.
+                Each token can be either a string or an instance of AddedToken.
+            special_tokens (bool, optional): A flag indicating whether the new tokens are special tokens.
+                Defaults to False.
+
+        Returns:
+            int: The number of tokens added to the vocabulary.
+
+        Raises:
+            None
+
+        This method takes a list of new tokens and adds them to the vocabulary of the Wav2Vec2CTCTokenizer.
+        The new tokens can be either strings or instances of AddedToken. If a token is a string, a default AddedToken
+        object will be created with the token as its text and the following default values for its attributes:
+        rstrip=False, lstrip=False, normalized=False. If a token is already an instance of AddedToken,
+        it will be added as is. The method then calls the super()._add_tokens() method to add the tokens to the
+        vocabulary. The special_tokens flag can be used to indicate whether the new tokens are special tokens.
+        """
         # Overwritten to never strip!
         to_add = []
         for token in new_tokens:
@@ -331,6 +433,21 @@ class Wav2Vec2CTCTokenizer(PreTrainedTokenizer):
     def _compute_offsets(
         char_repetitions: List[int], chars: List[str], ctc_token: int
     ) -> List[Dict[str, Union[str, int]]]:
+        """
+        Compute offsets for characters based on char repetitions and tokens.
+
+        Args:
+            char_repetitions (List[int]): A list of integers representing the number of repetitions for each character.
+            chars (List[str]): A list of characters.
+            ctc_token (int): The CTC token to be filtered out from the offsets.
+
+        Returns:
+            List[Dict[str, Union[str, int]]]: A list of dictionaries where each dictionary contains the character,
+                start offset, and end offset.
+
+        Raises:
+            None
+        """
         end_indices = np.asarray(char_repetitions).cumsum()
         start_indices = np.concatenate(([0], end_indices[:-1]))
 
@@ -346,6 +463,23 @@ class Wav2Vec2CTCTokenizer(PreTrainedTokenizer):
     def _get_word_offsets(
         offsets: Dict[str, Union[str, float]], word_delimiter_char: str = " "
     ) -> Dict[str, Union[str, float]]:
+        """
+        Method to extract word offsets from a given set of character offsets.
+
+        Args:
+            offsets (Dict[str, Union[str, float]]): A dictionary containing character offsets with keys 'char',
+                'start_offset', and 'end_offset'. The 'char' key represents the character, 'start_offset' represents
+                the start offset, and 'end_offset' represents the end offset.
+            word_delimiter_char (str, optional): The character used as a word delimiter. Defaults to a space character.
+
+        Returns:
+            Dict[str, Union[str, float]]: A dictionary containing word offsets with keys 'word', 'start_offset',
+                and 'end_offset'. The 'word' key represents the extracted word, 'start_offset' represents the start
+                offset, and 'end_offset' represents the end offset.
+
+        Raises:
+            None
+        """
         word_offsets = []
 
         last_state = "SPACE"
@@ -378,6 +512,23 @@ class Wav2Vec2CTCTokenizer(PreTrainedTokenizer):
         return word_offsets
 
     def prepare_for_tokenization(self, text, is_split_into_words=False, **kwargs):
+        """
+        Prepare the input text for tokenization.
+
+        Args:
+            self (Wav2Vec2CTCTokenizer): The instance of the Wav2Vec2CTCTokenizer class.
+            text (str): The input text to be prepared for tokenization.
+            is_split_into_words (bool): A flag indicating whether the input text is already split into words.
+                If True, the input text is expected to be split into words;
+                otherwise, the input text is treated as a continuous string.
+                Defaults to False.
+
+        Returns:
+            tuple: A tuple containing the prepared text and optional keyword arguments.
+
+        Raises:
+            None
+        """
         if is_split_into_words:
             text = " " + text
         return (text, kwargs)
@@ -483,8 +634,8 @@ class Wav2Vec2CTCTokenizer(PreTrainedTokenizer):
 
         Returns:
             `List[str]` or [`~models.wav2vec2.tokenization_wav2vec2.Wav2Vec2CTCTokenizerOutput`]: The list of decoded
-            sentences. Will be a [`~models.wav2vec2.tokenization_wav2vec2.Wav2Vec2CTCTokenizerOutput`] when
-            `output_char_offsets == True` or `output_word_offsets == True`.
+                sentences. Will be a [`~models.wav2vec2.tokenization_wav2vec2.Wav2Vec2CTCTokenizerOutput`] when
+                `output_char_offsets == True` or `output_word_offsets == True`.
         """
         batch_decoded = [
             self.decode(
@@ -552,52 +703,52 @@ class Wav2Vec2CTCTokenizer(PreTrainedTokenizer):
 
         Returns:
             `str` or [`~models.wav2vec2.tokenization_wav2vec2.Wav2Vec2CTCTokenizerOutput`]: The list of decoded
-            sentences. Will be a [`~models.wav2vec2.tokenization_wav2vec2.Wav2Vec2CTCTokenizerOutput`] when
-            `output_char_offsets == True` or `output_word_offsets == True`.
+                sentences. Will be a [`~models.wav2vec2.tokenization_wav2vec2.Wav2Vec2CTCTokenizerOutput`] when
+                `output_char_offsets == True` or `output_word_offsets == True`.
 
         Example:
-
-        ```python
-        >>> # Let's see how to retrieve time steps for a model
-        >>> from transformers import AutoTokenizer, AutoFeatureExtractor, AutoModelForCTC
-        >>> from datasets import load_dataset
-        >>> import datasets
-        >>> import torch
-
-        >>> # import model, feature extractor, tokenizer
-        >>> model = AutoModelForCTC.from_pretrained("facebook/wav2vec2-base-960h")
-        >>> tokenizer = AutoTokenizer.from_pretrained("facebook/wav2vec2-base-960h")
-        >>> feature_extractor = AutoFeatureExtractor.from_pretrained("facebook/wav2vec2-base-960h")
-
-        >>> # load first sample of English common_voice
-        >>> dataset = load_dataset("mozilla-foundation/common_voice_11_0", "en", split="train", streaming=True)
-        >>> dataset = dataset.cast_column("audio", datasets.Audio(sampling_rate=16_000))
-        >>> dataset_iter = iter(dataset)
-        >>> sample = next(dataset_iter)
-
-        >>> # forward sample through model to get greedily predicted transcription ids
-        >>> input_values = feature_extractor(sample["audio"]["array"], return_tensors="pt").input_values
-        >>> logits = model(input_values).logits[0]
-        >>> pred_ids = torch.argmax(logits, axis=-1)
-
-        >>> # retrieve word stamps (analogous commands for `output_char_offsets`)
-        >>> outputs = tokenizer.decode(pred_ids, output_word_offsets=True)
-        >>> # compute `time_offset` in seconds as product of downsampling ratio and sampling_rate
-        >>> time_offset = model.config.inputs_to_logits_ratio / feature_extractor.sampling_rate
-
-        >>> word_offsets = [
-        ...     {
-        ...         "word": d["word"],
-        ...         "start_time": round(d["start_offset"] * time_offset, 2),
-        ...         "end_time": round(d["end_offset"] * time_offset, 2),
-        ...     }
-        ...     for d in outputs.word_offsets
-        ... ]
-        >>> # compare word offsets with audio `en_train_0/common_voice_en_19121553.mp3` online on the dataset viewer:
-        >>> # https://huggingface.co/datasets/mozilla-foundation/common_voice_11_0/viewer/en
-        >>> word_offsets[:3]
-        [{'word': 'THE', 'start_time': 0.7, 'end_time': 0.78}, {'word': 'TRICK', 'start_time': 0.88, 'end_time': 1.08}, {'word': 'APPEARS', 'start_time': 1.2, 'end_time': 1.64}]
-        ```"""
+            ```python
+            >>> # Let's see how to retrieve time steps for a model
+            >>> from transformers import AutoTokenizer, AutoFeatureExtractor, AutoModelForCTC
+            >>> from datasets import load_dataset
+            >>> import datasets
+            >>> import torch
+            ...
+            >>> # import model, feature extractor, tokenizer
+            >>> model = AutoModelForCTC.from_pretrained("facebook/wav2vec2-base-960h")
+            >>> tokenizer = AutoTokenizer.from_pretrained("facebook/wav2vec2-base-960h")
+            >>> feature_extractor = AutoFeatureExtractor.from_pretrained("facebook/wav2vec2-base-960h")
+            ...
+            >>> # load first sample of English common_voice
+            >>> dataset = load_dataset("mozilla-foundation/common_voice_11_0", "en", split="train", streaming=True)
+            >>> dataset = dataset.cast_column("audio", datasets.Audio(sampling_rate=16_000))
+            >>> dataset_iter = iter(dataset)
+            >>> sample = next(dataset_iter)
+            ...
+            >>> # forward sample through model to get greedily predicted transcription ids
+            >>> input_values = feature_extractor(sample["audio"]["array"], return_tensors="ms").input_values
+            >>> logits = model(input_values).logits[0]
+            >>> pred_ids = torch.argmax(logits, axis=-1)
+            ...
+            >>> # retrieve word stamps (analogous commands for `output_char_offsets`)
+            >>> outputs = tokenizer.decode(pred_ids, output_word_offsets=True)
+            >>> # compute `time_offset` in seconds as product of downsampling ratio and sampling_rate
+            >>> time_offset = model.config.inputs_to_logits_ratio / feature_extractor.sampling_rate
+            ...
+            >>> word_offsets = [
+            ...     {
+            ...         "word": d["word"],
+            ...         "start_time": round(d["start_offset"] * time_offset, 2),
+            ...         "end_time": round(d["end_offset"] * time_offset, 2),
+            ...     }
+            ...     for d in outputs.word_offsets
+            ... ]
+            >>> # compare word offsets with audio `en_train_0/common_voice_en_19121553.mp3` online on the dataset viewer:
+            >>> # https://hf-mirror.com/datasets/mozilla-foundation/common_voice_11_0/viewer/en
+            >>> word_offsets[:3]
+            [{'word': 'THE', 'start_time': 0.7, 'end_time': 0.78}, {'word': 'TRICK', 'start_time': 0.88, 'end_time': 1.08}, {'word': 'APPEARS', 'start_time': 1.2, 'end_time': 1.64}]
+            ```
+        """
         # Convert inputs to python lists
         token_ids = to_py_obj(token_ids)
 
@@ -611,6 +762,20 @@ class Wav2Vec2CTCTokenizer(PreTrainedTokenizer):
         )
 
     def save_vocabulary(self, save_directory: str, filename_prefix: Optional[str] = None) -> Tuple[str]:
+        """
+        Save the vocabulary to a specified directory.
+        
+        Args:
+            self: The instance of the Wav2Vec2CTCTokenizer class.
+            save_directory (str): The directory where the vocabulary will be saved.
+            filename_prefix (Optional[str]): An optional prefix to be added to the filename. Defaults to None.
+        
+        Returns:
+            Tuple[str]: A tuple containing the file path of the saved vocabulary.
+        
+        Raises:
+            OSError: If the save_directory is not a valid directory.
+        """
         if not os.path.isdir(save_directory):
             logger.error(f"Vocabulary path ({save_directory}) should be a directory")
             return
@@ -650,19 +815,19 @@ class Wav2Vec2Tokenizer(PreTrainedTokenizer):
         do_normalize (`bool`, *optional*, defaults to `False`):
             Whether or not to zero-mean unit-variance normalize the input. Normalizing can help to significantly
             improve the performance for some models, *e.g.*,
-            [wav2vec2-lv60](https://huggingface.co/models?search=lv60).
+            [wav2vec2-lv60](https://hf-mirror.com/models?search=lv60).
         return_attention_mask (`bool`, *optional*, defaults to `False`):
             Whether or not [`~Wav2Vec2Tokenizer.__call__`] should return `attention_mask`.
 
             <Tip>
 
             Wav2Vec2 models that have set `config.feat_extract_norm == "group"`, such as
-            [wav2vec2-base](https://huggingface.co/facebook/wav2vec2-base-960h), have **not** been trained using
+            [wav2vec2-base](https://hf-mirror.com/facebook/wav2vec2-base-960h), have **not** been trained using
             `attention_mask`. For such models, `input_values` should simply be padded with 0 and no `attention_mask`
             should be passed.
 
             For Wav2Vec2 models that have set `config.feat_extract_norm == "layer"`, such as
-            [wav2vec2-lv60](https://huggingface.co/facebook/wav2vec2-large-960h-lv60-self), `attention_mask` should be
+            [wav2vec2-lv60](https://hf-mirror.com/facebook/wav2vec2-large-960h-lv60-self), `attention_mask` should be
             passed for batched inference.
 
             </Tip>
@@ -670,15 +835,14 @@ class Wav2Vec2Tokenizer(PreTrainedTokenizer):
         **kwargs
             Additional keyword arguments passed along to [`PreTrainedTokenizer`]
     """
-
     vocab_files_names = VOCAB_FILES_NAMES
     pretrained_vocab_files_map = {
         "vocab_file": {
-            "facebook/wav2vec2-base-960h": "https://huggingface.co/facebook/wav2vec2-base-960h/resolve/main/vocab.json"
+            "facebook/wav2vec2-base-960h": "https://hf-mirror.com/facebook/wav2vec2-base-960h/resolve/main/vocab.json"
         },
         "tokenizer_config_file": {
             "facebook/wav2vec2-base-960h": (
-                "https://huggingface.co/facebook/wav2vec2-base-960h/resolve/main/tokenizer.json"
+                "https://hf-mirror.com/facebook/wav2vec2-base-960h/resolve/main/tokenizer.json"
             ),
         },
     }
@@ -697,8 +861,30 @@ class Wav2Vec2Tokenizer(PreTrainedTokenizer):
         return_attention_mask=False,
         **kwargs,
     ):
+        """
+        Initializes a new instance of the Wav2Vec2Tokenizer class.
+        
+        Args:
+            self: The instance of the class.
+            vocab_file (str): The path to the vocabulary file.
+            bos_token (str, optional): The beginning of sentence token. Default is '<s>'.
+            eos_token (str, optional): The end of sentence token. Default is '</s>'.
+            unk_token (str, optional): The unknown token. Default is '<unk>'.
+            pad_token (str, optional): The padding token. Default is '<pad>'.
+            word_delimiter_token (str, optional): The word delimiter token. Default is '|'.
+            do_lower_case (bool, optional): Whether to convert tokens to lowercase. Default is False.
+            do_normalize (bool, optional): Whether to apply text normalization. Default is False.
+            return_attention_mask (bool, optional): Whether to return the attention mask. Default is False.
+        
+        Returns:
+            None
+        
+        Raises:
+            FutureWarning: This class is deprecated.
+                Please use Wav2Vec2Processor or Wav2Vec2CTCTokenizer instead.
+        """
         warnings.warn(
-            "The class `Wav2Vec2Tokenizer` is deprecated and will be removed in version 5 of Transformers. Please use"
+            "The class `Wav2Vec2Tokenizer` is deprecated. Please use"
             " `Wav2Vec2Processor` or `Wav2Vec2CTCTokenizer` instead.",
             FutureWarning,
         )
@@ -748,14 +934,46 @@ class Wav2Vec2Tokenizer(PreTrainedTokenizer):
 
     @word_delimiter_token.setter
     def word_delimiter_token(self, value):
+        """
+        word_delimiter_token
+        
+        Setter method for setting the word delimiter token in the Wav2Vec2Tokenizer class.
+        
+        Args:
+            self (Wav2Vec2Tokenizer): The instance of the Wav2Vec2Tokenizer class.
+            value (str): The value to be set as the word delimiter token. Should be a string
+                representing the word delimiter token.
+        
+        Returns:
+            None.
+        
+        Raises:
+            None.
+        """
         self._word_delimiter_token = value
 
     @word_delimiter_token_id.setter
     def word_delimiter_token_id(self, value):
+        """
+        Method to set the token ID for word delimiter in the Wav2Vec2Tokenizer class.
+        
+        Args:
+            self (Wav2Vec2Tokenizer): The instance of the Wav2Vec2Tokenizer class.
+                This parameter refers to the tokenizer object itself.
+            value (Union[int, List[int]]): The new token ID or list of token IDs for word delimiter.
+                The value should be an integer or a list of integers representing token IDs.
+                If a list is provided, the tokens will be converted to their corresponding IDs.
+        
+        Returns:
+            None: This method does not return any value. It sets the word delimiter token ID internally.
+        
+        Raises:
+            ValueError: If the provided value is not a valid integer or list of integers.
+            TypeError: If the provided value is not of type int or list.
+        """
         self._word_delimiter_token = self.convert_tokens_to_ids(value)
 
-    def __call__(   # pylint: disable=signature-differs
-        self,
+    def __call__(           self,
         raw_speech: Union[np.ndarray, List[float], List[np.ndarray], List[List[float]]],
         padding: Union[bool, str, PaddingStrategy] = False,
         max_length: Optional[int] = None,
@@ -774,7 +992,6 @@ class Wav2Vec2Tokenizer(PreTrainedTokenizer):
                 values, a list of numpy array or a list of list of float values. Must be mono channel audio, not
                 stereo, i.e. single float per timestep.
         """
-
         is_batched_numpy = isinstance(raw_speech, np.ndarray) and len(raw_speech.shape) > 1
         if is_batched_numpy and len(raw_speech.shape) > 2:
             raise ValueError(f"Only mono-channel audio is supported for input to {self}")
@@ -813,9 +1030,36 @@ class Wav2Vec2Tokenizer(PreTrainedTokenizer):
 
     @property
     def vocab_size(self) -> int:
+        """
+        Method to retrieve the vocabulary size of the Wav2Vec2Tokenizer instance.
+        
+        Args:
+            self (Wav2Vec2Tokenizer): The instance of the Wav2Vec2Tokenizer class.
+                This parameter refers to the current instance of the Wav2Vec2Tokenizer class.
+                It is used to access the decoder attribute to calculate the vocabulary size.
+        
+        Returns:
+            int: An integer representing the size of the vocabulary.
+                The return value corresponds to the number of elements in the decoder attribute of the instance.
+        
+        Raises:
+            None.
+        """
         return len(self.decoder)
 
     def get_vocab(self) -> Dict:
+        """
+        This method returns a vocabulary dictionary containing the encoder and added tokens encoder.
+        
+        Args:
+            self (Wav2Vec2Tokenizer): The instance of the Wav2Vec2Tokenizer class.
+            
+        Returns:
+            Dict: A dictionary containing the combined encoder and added tokens encoder.
+        
+        Raises:
+            None.
+        """
         return dict(self.encoder, **self.added_tokens_encoder)
 
     def _convert_token_to_id(self, token: str) -> int:
@@ -879,6 +1123,21 @@ class Wav2Vec2Tokenizer(PreTrainedTokenizer):
             return text
 
     def save_vocabulary(self, save_directory: str, filename_prefix: Optional[str] = None) -> Tuple[str]:
+        """
+        Saves the vocabulary of the Wav2Vec2Tokenizer to a file.
+        
+        Args:
+            self (Wav2Vec2Tokenizer): An instance of the Wav2Vec2Tokenizer class.
+            save_directory (str): The directory where the vocabulary file will be saved.
+            filename_prefix (Optional[str], optional): A prefix to be added to the filename. Defaults to None.
+        
+        Returns:
+            Tuple[str]: A tuple containing the path to the saved vocabulary file.
+        
+        Raises:
+            FileNotFoundError: If the specified save_directory does not exist.
+            IsADirectoryError: If save_directory is not a directory.
+        """
         if not os.path.isdir(save_directory):
             logger.error(f"Vocabulary path ({save_directory}) should be a directory")
             return

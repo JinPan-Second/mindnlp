@@ -12,7 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-""" Testing suite for the PyTorch CpmBee model. """
+""" Testing suite for the MindSpore CpmBee model. """
 
 
 import unittest
@@ -33,7 +33,6 @@ if is_mindspore_available():
         CpmBeeModel,
         CpmBeeTokenizer,
     )
-
 
 @require_mindspore
 class CpmBeeModelTester:
@@ -79,9 +78,9 @@ class CpmBeeModelTester:
 
     def prepare_config_and_inputs(self):
         input_ids = {}
-        input_ids["input_ids"] = ids_tensor([self.batch_size, self.seq_length], self.vocab_size).astype(mindspore.int32)
-        input_ids["span"] = ids_tensor([self.batch_size, self.seq_length], self.vocab_size).astype(mindspore.int32)
-        input_ids["length"] = ops.full((self.batch_size,), self.seq_length).astype(mindspore.int32)
+        input_ids["input_ids"] = ids_tensor([self.batch_size, self.seq_length], self.vocab_size)
+        input_ids["span"] = ids_tensor([self.batch_size, self.seq_length], self.vocab_size)
+        input_ids["length"] = ops.full((self.batch_size,), self.seq_length, dtype=mindspore.int64)
         input_ids["use_cache"] = False
 
         config = self.get_config()

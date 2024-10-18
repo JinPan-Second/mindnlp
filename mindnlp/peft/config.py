@@ -12,7 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ============================================================================
-# pylint: disable=W0613
 """configs"""
 
 import json
@@ -33,11 +32,22 @@ class PeftConfigMixin():
     Args:
         peft_type (Union[[`~peft.utils.config.PeftType`], `str`]): The type of Peft method to use.
     """
-
     peft_type: Optional[PeftType] = field(default=None, metadata={"help": "The type of PEFT model."})
 
     @property
     def __dict__(self):
+        r"""
+        Method '__dict__' in the class 'PeftConfigMixin' returns a dictionary representation of the object using the 'asdict' function.
+        
+        Args:
+            self: The instance of the class. This parameter represents the object for which the dictionary representation is generated.
+        
+        Returns:
+            None. The method does not return any value explicitly, as the dictionary representation is retrieved internally.
+        
+        Raises:
+            No exceptions are explicitly raised by this method.
+        """
         return asdict(self)
 
     def to_dict(self):
@@ -60,14 +70,16 @@ class PeftConfigMixin():
 
         os.makedirs(save_directory, exist_ok=True)
 
-        output_dict = self.__dict__
+        output_dict = asdict(self)
+        # converting set type to list
+        for key, value in output_dict.items():
+            if isinstance(value, set):
+                output_dict[key] = list(value)
         output_path = os.path.join(save_directory, CONFIG_NAME)
 
         # save it
         with open(output_path, "w", encoding='utf-8') as writer:
             writer.write(json.dumps(output_dict, indent=2, sort_keys=True))
-
-
 
     @classmethod
     def from_pretrained(cls, pretrained_model_name_or_path, subfolder=None, **kwargs):
@@ -115,12 +127,16 @@ class PeftConfigMixin():
 
         return json_object
 
-
     @property
     def is_prompt_learning(self):
         r"""
         Utility method to check if the configuration is for prompt learning.
         """
+        return False
+
+    @property
+    def is_adaption_prompt(self) -> bool:
+        """Return True if this is an adaption prompt config."""
         return False
 
 
@@ -134,7 +150,6 @@ class PeftConfig(PeftConfigMixin):
         task_type (Union[[`~peft.utils.config.TaskType`], `str`]): The type of task to perform.
         inference_mode (`bool`, defaults to `False`): Whether to use the Peft model in inference mode.
     """
-
     base_model_name_or_path: str = field(default=None, metadata={"help": "The name of the base model to use."})
     peft_type: Union[str, PeftType] = field(default=None, metadata={"help": "Peft type"})
     task_type: Union[str, TaskType] = field(default=None, metadata={"help": "Task type"})
@@ -150,18 +165,17 @@ class PromptLearningConfig(PeftConfig):
 
     Args:
         num_virtual_tokens (`int`): The number of virtual tokens to use.
-        token_dim (`int`): The hidden embedding dimension of the base transformer model.
-        num_transformer_submodules (`int`): The number of transformer submodules in the base transformer model.
+        token_dim (`int`): The hidd-en embedding dimension of the base transformer model.
+        num_transformer_submodules (`int`): The number of transformer subcells in the base transformer model.
         num_attention_heads (`int`): The number of attention heads in the base transformer model.
         num_layers (`int`): The number of layers in the base transformer model.
     """
-
     num_virtual_tokens: int = field(default=None, metadata={"help": "Number of virtual tokens"})
     token_dim: int = field(
         default=None, metadata={"help": "The hidden embedding dimension of the base transformer model"}
     )
     num_transformer_submodules: Optional[int] = field(
-        default=None, metadata={"help": "Number of transformer submodules"}
+        default=None, metadata={"help": "Number of transformer subcells"}
     )
     num_attention_heads: Optional[int] = field(default=None, metadata={"help": "Number of attention heads"})
     num_layers: Optional[int] = field(default=None, metadata={"help": "Number of transformer layers"})

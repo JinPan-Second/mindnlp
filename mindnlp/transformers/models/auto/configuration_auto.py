@@ -12,9 +12,9 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-# pylint: disable=C0116
-# pylint: disable=C0103
-""" Auto Config class."""
+# ============================================================================
+"""Auto Config class."""
+
 import importlib
 import re
 import warnings
@@ -22,9 +22,8 @@ from collections import OrderedDict
 from typing import List, Union
 
 from mindnlp.configs import CONFIG_NAME
+from mindnlp.transformers.configuration_utils import PretrainedConfig
 from mindnlp.utils import logging
-from mindnlp.transformers.configuration_utils import PretrainedConfig # pylint: disable=R0401
-
 
 logger = logging.get_logger(__name__)
 
@@ -32,46 +31,221 @@ CONFIG_MAPPING_NAMES = OrderedDict(
     [
         # Add configs here
         ("albert", "AlbertConfig"),
+        ("align", "AlignConfig"),
+        ("altclip", "AltCLIPConfig"),
+        ("audio-spectrogram-transformer", "ASTConfig"),
         ("autoformer", "AutoformerConfig"),
         ("bark", "BarkConfig"),
         ("bart", "BartConfig"),
+        ("beit", "BeitConfig"),
         ("bert", "BertConfig"),
+        ("bert-generation", "BertGenerationConfig"),
+        ("bge-m3", "BgeM3Config"),
+        ("big_bird", "BigBirdConfig"),
+        ("bigbird_pegasus", "BigBirdPegasusConfig"),
+        ("biogpt", "BioGptConfig"),
+        ("bit", "BitConfig"),
+        ("blenderbot", "BlenderbotConfig"),
+        ("blenderbot-small", "BlenderbotSmallConfig"),
+        ("blip", "BlipConfig"),
+        ("blip-2", "Blip2Config"),
         ("bloom", "BloomConfig"),
-        ('chatglm', 'ChatGLMConfig'),
+        ("bridgetower", "BridgeTowerConfig"),
+        ("bros", "BrosConfig"),
+        ("camembert", "CamembertConfig"),
+        ("canine", "CanineConfig"),
+        ("chinese_clip", "ChineseCLIPConfig"),
+        ("chinese_clip_vision_model", "ChineseCLIPVisionConfig"),
+        ("chatglm", "ChatGLMConfig"),
+        ("chatglm2", "ChatGLM2Config"),
+        ("chatglm3", "ChatGLM3Config"),
+        ("chatglm4", "ChatGLM4Config"),
+        ("clap", "ClapConfig"),
         ("clip", "CLIPConfig"),
+        ("clipseg", "CLIPSegConfig"),
+        ("clipseg_vision_model", "CLIPSegVisionConfig"),
         ("clip_vision_model", "CLIPVisionConfig"),
         ("codegen", "CodeGenConfig"),
+        ("cohere", "CohereConfig"),
+        ("cogvlm", "CogVLMConfig"),
+        ("convbert", "ConvBertConfig"),
+        ("convnext", "ConvNextConfig"),
         ("cpmant", "CpmAntConfig"),
+        ("ctrl", "CTRLConfig"),
         ("cpmbee", "CpmBeeConfig"),
-        ("distilbert","DistilBertConfig"),
-        ("encodec","EncodecConfig"),
+        ("cvt", "CvtConfig"),
+        ("data2vec-text", "Data2VecTextConfig"),
+        ("data2vec-audio","Data2VecAudioConfig"),
+        ("dbrx", "DbrxConfig"),
+        ("deit", "DeiTConfig"),
+        ("deberta", "DebertaConfig"),
+        ("deberta-v2", "DebertaV2Config"),
+        ("deepseek_v2", "DeepseekV2Config"),
+        ("detr", "DetrConfig"),
+        ("depth_anything", "DepthAnythingConfig"),
+        ("deta", "DetaConfig"),
+        ("dinov2", "Dinov2Config"),
+        ("distilbert", "DistilBertConfig"),
+        ("donut-swin", "DonutSwinConfig"),
+        ("dpr", "DPRConfig"),
+        ("dpt", "DPTConfig"),
+        ("efficientformer", "EfficientFormerConfig"),
+        ("electra", "ElectraConfig"),
+        ("encodec", "EncodecConfig"),
+        ("ernie", "ErnieConfig"),
+        ("ernie_m", "ErnieMConfig"),
         ("esm", "EsmConfig"),
         ("falcon", "FalconConfig"),
+        ("flaubert", "FlaubertConfig"),
+        ("flava", "FlavaConfig"),
+        ("florence2", "Florence2Config"),
+        ("fnet", "FNetConfig"),
+        ("focalnet", "FocalNetConfig"),
+        ("funnel", "FunnelConfig"),
+        ("fuyu","FuyuConfig"),
+        ("fastspeech2_conformer", "FastSpeech2ConformerConfig"),
+        ("fsmt","FSMTConfig"),
         ("gemma", "GemmaConfig"),
+        ("gemma2", "Gemma2Config"),
+        ("git", "GitConfig"),
         ("gpt2", "GPT2Config"),
-        ('gpt_bigcode', 'GPTBigCodeConfig'),
+        ("gpt_bigcode", "GPTBigCodeConfig"),
+        ("gptj", "GPTJConfig"),
+        ("gpt_neo", "GPTNeoConfig"),
+        ("gpt_neox", "GPTNeoXConfig"),
         ("gpt_pangu", "GPTPanguConfig"),
-        ('hubert', 'HubertConfig'),
-        ("mbart","MBartConfig"),
-        ('minicpm', 'MiniCPMConfig'),
-        ('mt5', 'MT5Config'),
+        ("groupvit", "GroupViTConfig"),
+        ("hubert", "HubertConfig"),
+        ("ibert", "IBertConfig"),
+        ("idefics", "IdeficsConfig"),
+        ("instructblip", "InstructBlipConfig"),
+        ("jamba", "JambaConfig"),
+        ("jetmoe", "JetMoeConfig"),
+        ("kosmos-2", "Kosmos2Config"),
+        ("layoutlm", "LayoutLMConfig"),
+        ("layoutlmv2", "LayoutLMv2Config"),
+        ("layoutlmv3", "LayoutLMv3Config"),
+        ("led", "LEDConfig"),
+        ("lilt", "LiltConfig"),
+        ("llama", "LlamaConfig"),
+        ("llava", "LlavaConfig"),
+        ("llava_next", "LlavaNextConfig"),
+        ("longformer", "LongformerConfig"),
+        ("luke", "LukeConfig"),
+        ("lxmert", "LxmertConfig"),
+        ("m2m_100", "M2M100Config"),
+        ("mamba", "MambaConfig"),
+        ("marian", "MarianConfig"),
+        ('markuplm', "MarkupLMConfig"),
+        ("mask2former", "Mask2FormerConfig"),
+        ("mbart", "MBartConfig"),
+        ("mctct", "MCTCTConfig"),
+        ("megatron-bert", 'MegatronBertConfig'),
+        ("minicpm", "MiniCPMConfig"),
+        ("mistral", "MistralConfig"),
+        ("mixtral", "MixtralConfig"),
+        ("mllama", "MllamaConfig"),
+        ("mobilevit", "MobileViTConfig"),
+        ("mobilenet_v1", "MobileNetV1Config"),
+        ("mobilenet_v2", "MobileNetV2Config"),
+        ("mpnet", "MPNetConfig"),
+        ("mpt", "MptConfig"),
+        ("musicgen", "MusicgenConfig"),
+        ("musicgen_melody", "MusicgenMelodyConfig"),
+        ("mt5", "MT5Config"),
+        ("mvp", "MvpConfig"),
+        ("nystromformer", "NystromformerConfig"),
+        ("olmo", "OlmoConfig"),
+        ("oneformer", "OneFormerConfig"),
+        ("openelm", "OpenELMConfig"),
+        ("openai-gpt", "OpenAIGPTConfig"),
+        ("opt", "OPTConfig"),
+        ("owlv2", "Owlv2Config"),
+        ("owlvit", "OwlViTConfig"),
+        ("patchtst", "PatchTSTConfig"),
+        ("pegasus", "PegasusConfig"),
+        ("pegasus_x", "PegasusXConfig"),
+        ("perceiver", "PerceiverConfig"),
+        ("persimmon", "PersimmonConfig"),
         ("phi", "PhiConfig"),
+        ("phi3", "Phi3Config"),
+        ("pix2struct", "Pix2StructConfig"),
+        ("plbart", "PLBartConfig"),
+        ("prophetnet", "ProphetNetConfig"),
+        ("qdqbert", "QDQBertConfig"),
         ("qwen2", "Qwen2Config"),
+        ("qwen2_moe", "Qwen2MoeConfig"),
+        ("rag", "RagConfig"),
+        ("realm","RealmConfig"),
+        ("reformer", "ReformerConfig"),
+        ("rembert", "RemBertConfig"),
+        ("resnet", "ResNetConfig"),
         ("roberta", "RobertaConfig"),
+        ("roberta-prelayernorm", "RobertaPreLayerNormConfig"),
+        ("roc_bert", "RoCBertConfig"),
+        ("rwkv", "RwkvConfig"),
+        ("sam", "SamConfig"),
+        ("segformer", "SegformerConfig"),
+        ("speech-encoder-decoder", "SpeechEncoderDecoderConfig"),
+        ("speech_to_text", "Speech2TextConfig"),
+        ("speecht5", "SpeechT5Config"),
+        ("stablelm", "StableLmConfig"),
+        ("splinter", "SplinterConfig"),
+        ("squeezebert", "SqueezeBertConfig"),
         ("starcoder2", "Starcoder2Config"),
-        ('t5', 'T5Config'),
-        ('wav2vec2', 'Wav2Vec2Config'),
-        ('xlm-roberta', 'XLMRobertaConfig'),
+        ("swin", "SwinConfig"),
+        ("swiftformer", "SwiftFormerConfig"),
+        ("switch_transformers", "SwitchTransformersConfig"),
+        ("swin2sr", "Swin2SRConfig"),
+        ("t5", "T5Config"),
+        ("tapas", "TapasConfig"),
+        ("time_series_transformer", "TimeSeriesTransformerConfig"),
+        ("timesformer", "TimesformerConfig"),
+        ("trocr", "TrOCRConfig"),
+        ("tvlt","TvltConfig"),
+        ("udop", "UdopConfig"),
+        ("upernet", "UPerNetConfig"),
+        ("umt5", "UMT5Config"),
+        ("unispeech", "UniSpeechConfig"),
+        ("unispeech-sat", "UniSpeechSatConfig"),
+        ("univnet", "UnivNetConfig"),
+        ("videomae", "VideoMAEConfig"),
+        ("vit", "ViTConfig"),
+        ("vits", "VitsConfig"),
+        ("vilt", "ViltConfig"),
+        ("vit_hybrid", "ViTHybridConfig"),
+        ("vit_msn", "ViTMSNConfig"),
+        ("vision-encoder-decoder", "VisionEncoderDecoderConfig"),
+        ("vision-text-dual-encoder", "VisionTextDualEncoderConfig"),
+        ("vipllava", "VipLlavaConfig"),
+        ("visual_bert", "VisualBertConfig"),
+        ("vitdet", "VitDetConfig"),
+        ("vitmatte", "VitMatteConfig"),
+        ("wav2vec2", "Wav2Vec2Config"),
+        ("wavlm", "WavLMConfig"),
+        ("wav2vec2-bert", "Wav2Vec2BertConfig"),
+        ("wav2vec2-conformer", "Wav2Vec2ConformerConfig"),
+        ("whisper", "WhisperConfig"),
+        ("xclip", "XCLIPConfig"),
+        ("xlm", "XLMConfig"),
+        ("xlm-roberta", "XLMRobertaConfig"),
+        ("xlm-roberta-xl", "XLMRobertaXLConfig"),
+        ("xlm-prophetnet", "XLMProphetNetConfig"),
+        ("xlnet", "XLNetConfig"),
+        ("xmod", "XmodConfig"),
     ]
 )
 
 CONFIG_ARCHIVE_MAP_MAPPING_NAMES = OrderedDict(
     [
-        # Add archive maps here)
+        # Add archive maps here
         ("albert", "ALBERT_PRETRAINED_CONFIG_ARCHIVE_MAP"),
         ("align", "ALIGN_PRETRAINED_CONFIG_ARCHIVE_MAP"),
         ("altclip", "ALTCLIP_PRETRAINED_CONFIG_ARCHIVE_MAP"),
-        ("audio-spectrogram-transformer", "AUDIO_SPECTROGRAM_TRANSFORMER_PRETRAINED_CONFIG_ARCHIVE_MAP"),
+        (
+            "audio-spectrogram-transformer",
+            "AUDIO_SPECTROGRAM_TRANSFORMER_PRETRAINED_CONFIG_ARCHIVE_MAP",
+        ),
         ("autoformer", "AUTOFORMER_PRETRAINED_CONFIG_ARCHIVE_MAP"),
         ("bark", "BARK_PRETRAINED_CONFIG_ARCHIVE_MAP"),
         ("bart", "BART_PRETRAINED_CONFIG_ARCHIVE_MAP"),
@@ -96,6 +270,7 @@ CONFIG_ARCHIVE_MAP_MAPPING_NAMES = OrderedDict(
         ("clip", "CLIP_PRETRAINED_CONFIG_ARCHIVE_MAP"),
         ("clipseg", "CLIPSEG_PRETRAINED_CONFIG_ARCHIVE_MAP"),
         ("codegen", "CODEGEN_PRETRAINED_CONFIG_ARCHIVE_MAP"),
+        ("cohere", "COHERE_PRETRAINED_CONFIG_ARCHIVE_MAP"),
         ("conditional_detr", "CONDITIONAL_DETR_PRETRAINED_CONFIG_ARCHIVE_MAP"),
         ("convbert", "CONVBERT_PRETRAINED_CONFIG_ARCHIVE_MAP"),
         ("convnext", "CONVNEXT_PRETRAINED_CONFIG_ARCHIVE_MAP"),
@@ -109,8 +284,10 @@ CONFIG_ARCHIVE_MAP_MAPPING_NAMES = OrderedDict(
         ("data2vec-vision", "DATA2VEC_VISION_PRETRAINED_CONFIG_ARCHIVE_MAP"),
         ("deberta", "DEBERTA_PRETRAINED_CONFIG_ARCHIVE_MAP"),
         ("deberta-v2", "DEBERTA_V2_PRETRAINED_CONFIG_ARCHIVE_MAP"),
+        ("decision_transformer", "DECISION_TRANSFORMER_PRETRAINED_CONFIG_ARCHIVE_MAP"),
         ("deformable_detr", "DEFORMABLE_DETR_PRETRAINED_CONFIG_ARCHIVE_MAP"),
         ("deit", "DEIT_PRETRAINED_CONFIG_ARCHIVE_MAP"),
+        ("deepseek_v2", "DEEPSEEK_V2_PRETRAINED_CONFIG_ARCHIVE_MAP"),
         ("deta", "DETA_PRETRAINED_CONFIG_ARCHIVE_MAP"),
         ("detr", "DETR_PRETRAINED_CONFIG_ARCHIVE_MAP"),
         ("dinat", "DINAT_PRETRAINED_CONFIG_ARCHIVE_MAP"),
@@ -129,6 +306,7 @@ CONFIG_ARCHIVE_MAP_MAPPING_NAMES = OrderedDict(
         ("falcon", "FALCON_PRETRAINED_CONFIG_ARCHIVE_MAP"),
         ("flaubert", "FLAUBERT_PRETRAINED_CONFIG_ARCHIVE_MAP"),
         ("flava", "FLAVA_PRETRAINED_CONFIG_ARCHIVE_MAP"),
+        ("florence2", "FLORENCE2_PRETRAINED_CONFIG_ARCHIVE_MAP"),
         ("fnet", "FNET_PRETRAINED_CONFIG_ARCHIVE_MAP"),
         ("focalnet", "FOCALNET_PRETRAINED_CONFIG_ARCHIVE_MAP"),
         ("fsmt", "FSMT_PRETRAINED_CONFIG_ARCHIVE_MAP"),
@@ -148,7 +326,6 @@ CONFIG_ARCHIVE_MAP_MAPPING_NAMES = OrderedDict(
         ("graphormer", "GRAPHORMER_PRETRAINED_CONFIG_ARCHIVE_MAP"),
         ("groupvit", "GROUPVIT_PRETRAINED_CONFIG_ARCHIVE_MAP"),
         ("hubert", "HUBERT_PRETRAINED_CONFIG_ARCHIVE_MAP"),
-        ("ibert", "IBERT_PRETRAINED_CONFIG_ARCHIVE_MAP"),
         ("idefics", "IDEFICS_PRETRAINED_CONFIG_ARCHIVE_MAP"),
         ("imagegpt", "IMAGEGPT_PRETRAINED_CONFIG_ARCHIVE_MAP"),
         ("informer", "INFORMER_PRETRAINED_CONFIG_ARCHIVE_MAP"),
@@ -167,6 +344,8 @@ CONFIG_ARCHIVE_MAP_MAPPING_NAMES = OrderedDict(
         ("luke", "LUKE_PRETRAINED_CONFIG_ARCHIVE_MAP"),
         ("lxmert", "LXMERT_PRETRAINED_CONFIG_ARCHIVE_MAP"),
         ("m2m_100", "M2M_100_PRETRAINED_CONFIG_ARCHIVE_MAP"),
+        ("mamba", "MAMBA_PRETRAINED_CONFIG_ARCHIVE_MAP"),
+        ("marian", "MARIAN_PRETRAINED_CONFIG_ARCHIVE_MAP"),
         ("markuplm", "MARKUPLM_PRETRAINED_CONFIG_ARCHIVE_MAP"),
         ("mask2former", "MASK2FORMER_PRETRAINED_CONFIG_ARCHIVE_MAP"),
         ("maskformer", "MASKFORMER_PRETRAINED_CONFIG_ARCHIVE_MAP"),
@@ -176,6 +355,7 @@ CONFIG_ARCHIVE_MAP_MAPPING_NAMES = OrderedDict(
         ("megatron-bert", "MEGATRON_BERT_PRETRAINED_CONFIG_ARCHIVE_MAP"),
         ("mgp-str", "MGP_STR_PRETRAINED_CONFIG_ARCHIVE_MAP"),
         ("mistral", "MISTRAL_PRETRAINED_CONFIG_ARCHIVE_MAP"),
+        ("mixtral", "MIXTRAL_PRETRAINED_CONFIG_ARCHIVE_MAP"),
         ("mobilenet_v1", "MOBILENET_V1_PRETRAINED_CONFIG_ARCHIVE_MAP"),
         ("mobilenet_v2", "MOBILENET_V2_PRETRAINED_CONFIG_ARCHIVE_MAP"),
         ("mobilevit", "MOBILEVIT_PRETRAINED_CONFIG_ARCHIVE_MAP"),
@@ -208,11 +388,11 @@ CONFIG_ARCHIVE_MAP_MAPPING_NAMES = OrderedDict(
         ("pvt", "PVT_PRETRAINED_CONFIG_ARCHIVE_MAP"),
         ("qdqbert", "QDQBERT_PRETRAINED_CONFIG_ARCHIVE_MAP"),
         ("qwen2", "QWEN2_PRETRAINED_CONFIG_ARCHIVE_MAP"),
+        ("rag","RAG_PRETRAINED_CONFIG_ARCHIVE_MAP"),
         ("realm", "REALM_PRETRAINED_CONFIG_ARCHIVE_MAP"),
         ("regnet", "REGNET_PRETRAINED_CONFIG_ARCHIVE_MAP"),
         ("rembert", "REMBERT_PRETRAINED_CONFIG_ARCHIVE_MAP"),
         ("resnet", "RESNET_PRETRAINED_CONFIG_ARCHIVE_MAP"),
-        ("retribert", "RETRIBERT_PRETRAINED_CONFIG_ARCHIVE_MAP"),
         ("roberta", "ROBERTA_PRETRAINED_CONFIG_ARCHIVE_MAP"),
         ("roberta-prelayernorm", "ROBERTA_PRELAYERNORM_PRETRAINED_CONFIG_ARCHIVE_MAP"),
         ("roc_bert", "ROC_BERT_PRETRAINED_CONFIG_ARCHIVE_MAP"),
@@ -237,7 +417,10 @@ CONFIG_ARCHIVE_MAP_MAPPING_NAMES = OrderedDict(
         ("t5", "T5_PRETRAINED_CONFIG_ARCHIVE_MAP"),
         ("table-transformer", "TABLE_TRANSFORMER_PRETRAINED_CONFIG_ARCHIVE_MAP"),
         ("tapas", "TAPAS_PRETRAINED_CONFIG_ARCHIVE_MAP"),
-        ("time_series_transformer", "TIME_SERIES_TRANSFORMER_PRETRAINED_CONFIG_ARCHIVE_MAP"),
+        (
+            "time_series_transformer",
+            "TIME_SERIES_TRANSFORMER_PRETRAINED_CONFIG_ARCHIVE_MAP",
+        ),
         ("timesformer", "TIMESFORMER_PRETRAINED_CONFIG_ARCHIVE_MAP"),
         ("transfo-xl", "TRANSFO_XL_PRETRAINED_CONFIG_ARCHIVE_MAP"),
         ("tvlt", "TVLT_PRETRAINED_CONFIG_ARCHIVE_MAP"),
@@ -263,6 +446,7 @@ CONFIG_ARCHIVE_MAP_MAPPING_NAMES = OrderedDict(
         ("xlm", "XLM_PRETRAINED_CONFIG_ARCHIVE_MAP"),
         ("xlm-prophetnet", "XLM_PROPHETNET_PRETRAINED_CONFIG_ARCHIVE_MAP"),
         ("xlm-roberta", "XLM_ROBERTA_PRETRAINED_CONFIG_ARCHIVE_MAP"),
+        ("xlm-roberta-xl", "XLM_ROBERTA_XL_PRETRAINED_CONFIG_ARCHIVE_MAP"),
         ("xlnet", "XLNET_PRETRAINED_CONFIG_ARCHIVE_MAP"),
         ("xmod", "XMOD_PRETRAINED_CONFIG_ARCHIVE_MAP"),
         ("yolos", "YOLOS_PRETRAINED_CONFIG_ARCHIVE_MAP"),
@@ -287,6 +471,7 @@ MODEL_NAMES_MAPPING = OrderedDict(
         ("bert-generation", "Bert Generation"),
         ("bert-japanese", "BertJapanese"),
         ("bertweet", "BERTweet"),
+        ("bge-m3", "BgeM3"),
         ("big_bird", "BigBird"),
         ("bigbird_pegasus", "BigBird-Pegasus"),
         ("biogpt", "BioGpt"),
@@ -303,14 +488,21 @@ MODEL_NAMES_MAPPING = OrderedDict(
         ("camembert", "CamemBERT"),
         ("canine", "CANINE"),
         ("chinese_clip", "Chinese-CLIP"),
+        ("chinese_clip_vision_model", "ChineseCLIPVisionModel"),
         ("chatglm", "ChatGLM"),
+        ("chatglm2", "ChatGLM2"),
+        ("chatglm3", "ChatGLM3"),
+        ("chatglm4", "ChatGLM4"),
         ("clap", "CLAP"),
         ("clip", "CLIP"),
         ("clip_vision_model", "CLIPVisionModel"),
         ("clipseg", "CLIPSeg"),
+        ("clipseg_vision_model", "CLIPSegVisionModel"),
         ("code_llama", "CodeLlama"),
         ("codegen", "CodeGen"),
+        ("cohere", "Cohere"),
         ("conditional_detr", "Conditional DETR"),
+        ("cogvlm", "CogVLM"),
         ("convbert", "ConvBERT"),
         ("convnext", "ConvNeXT"),
         ("convnextv2", "ConvNeXTV2"),
@@ -322,11 +514,15 @@ MODEL_NAMES_MAPPING = OrderedDict(
         ("data2vec-audio", "Data2VecAudio"),
         ("data2vec-text", "Data2VecText"),
         ("data2vec-vision", "Data2VecVision"),
+        ("dbrx", "DBRX"),
         ("deberta", "DeBERTa"),
         ("deberta-v2", "DeBERTa-v2"),
         ("decision_transformer", "Decision Transformer"),
         ("deformable_detr", "Deformable DETR"),
+        ("deepseek_v2", "Deepseek_v2"),
         ("deit", "DeiT"),
+        ("depth_anything", "Depth Anything"),
+        ("depth_anything_v2", "Depth Anything V2"),
         ("deplot", "DePlot"),
         ("deta", "DETA"),
         ("detr", "DETR"),
@@ -334,6 +530,8 @@ MODEL_NAMES_MAPPING = OrderedDict(
         ("dinat", "DiNAT"),
         ("dinov2", "DINOv2"),
         ("distilbert", "DistilBERT"),
+        ("donut", "Donut"),
+        ("donut-swin", "DonutSwin"),
         ("dit", "DiT"),
         ("donut-swin", "DonutSwin"),
         ("dpr", "DPR"),
@@ -347,16 +545,19 @@ MODEL_NAMES_MAPPING = OrderedDict(
         ("ernie_m", "ErnieM"),
         ("esm", "ESM"),
         ("falcon", "Falcon"),
+        ("fastspeech2_conformer", "FastSpeech2ConformerModel"),
         ("flan-t5", "FLAN-T5"),
         ("flan-ul2", "FLAN-UL2"),
         ("flaubert", "FlauBERT"),
         ("flava", "FLAVA"),
+        ("florence2", "Florence2"),
         ("fnet", "FNet"),
         ("focalnet", "FocalNet"),
         ("fsmt", "FairSeq Machine-Translation"),
         ("funnel", "Funnel Transformer"),
         ("fuyu", "Fuyu"),
         ("gemma", "Gemma"),
+        ("gemma2", "Gemma2"),
         ("git", "GIT"),
         ("glpn", "GLPN"),
         ("gpt-sw3", "GPT-Sw3"),
@@ -378,6 +579,8 @@ MODEL_NAMES_MAPPING = OrderedDict(
         ("informer", "Informer"),
         ("instructblip", "InstructBLIP"),
         ("jukebox", "Jukebox"),
+        ("jamba", "Jamba"),
+        ("jetmoe", "JetMoE"),
         ("kosmos-2", "KOSMOS-2"),
         ("layoutlm", "LayoutLM"),
         ("layoutlmv2", "LayoutLMv2"),
@@ -388,11 +591,14 @@ MODEL_NAMES_MAPPING = OrderedDict(
         ("lilt", "LiLT"),
         ("llama", "LLaMA"),
         ("llama2", "Llama2"),
+        ("llava", "LLaVa"),
+        ("llava_next", "LLaVA-NeXT"),
         ("longformer", "Longformer"),
         ("longt5", "LongT5"),
         ("luke", "LUKE"),
         ("lxmert", "LXMERT"),
         ("m2m_100", "M2M100"),
+        ("mamba", "Mamba"),
         ("marian", "Marian"),
         ("markuplm", "MarkupLM"),
         ("mask2former", "Mask2Former"),
@@ -408,6 +614,8 @@ MODEL_NAMES_MAPPING = OrderedDict(
         ("mgp-str", "MGP-STR"),
         ("minicpm", "MiniCPM"),
         ("mistral", "Mistral"),
+        ("mixtral", "Mixtral"),
+        ("mllama", "Mllama"),
         ("mluke", "mLUKE"),
         ("mms", "MMS"),
         ("mobilebert", "MobileBERT"),
@@ -420,6 +628,7 @@ MODEL_NAMES_MAPPING = OrderedDict(
         ("mra", "MRA"),
         ("mt5", "MT5"),
         ("musicgen", "MusicGen"),
+        ("musicgen_melody", "MusicGen Melody"),
         ("mvp", "MVP"),
         ("nat", "NAT"),
         ("nezha", "Nezha"),
@@ -427,17 +636,21 @@ MODEL_NAMES_MAPPING = OrderedDict(
         ("nllb-moe", "NLLB-MOE"),
         ("nougat", "Nougat"),
         ("nystromformer", "Nyströmformer"),
+        ("olmo", "OLMo"),
+        ("openelm", "OpenELM"),
         ("oneformer", "OneFormer"),
         ("open-llama", "OpenLlama"),
         ("openai-gpt", "OpenAI GPT"),
         ("opt", "OPT"),
         ("owlv2", "OWLv2"),
         ("owlvit", "OWL-ViT"),
+        ("patchtst", "PatchTST"),
         ("pegasus", "Pegasus"),
         ("pegasus_x", "PEGASUS-X"),
         ("perceiver", "Perceiver"),
         ("persimmon", "Persimmon"),
         ("phi", "Phi"),
+        ("phi3", "Phi3"),
         ("phobert", "PhoBERT"),
         ("pix2struct", "Pix2Struct"),
         ("plbart", "PLBart"),
@@ -447,13 +660,13 @@ MODEL_NAMES_MAPPING = OrderedDict(
         ("pvt", "PVT"),
         ("qdqbert", "QDQBert"),
         ("qwen2", "Qwen2"),
+        ("qwen2_moe", "Qwen2MoE"),
         ("rag", "RAG"),
         ("realm", "REALM"),
         ("reformer", "Reformer"),
         ("regnet", "RegNet"),
         ("rembert", "RemBERT"),
         ("resnet", "ResNet"),
-        ("retribert", "RetriBERT"),
         ("roberta", "RoBERTa"),
         ("roberta-prelayernorm", "RoBERTa-PreLayerNorm"),
         ("roc_bert", "RoCBert"),
@@ -470,6 +683,7 @@ MODEL_NAMES_MAPPING = OrderedDict(
         ("speecht5", "SpeechT5"),
         ("splinter", "Splinter"),
         ("squeezebert", "SqueezeBERT"),
+        ("stablelm", "StableLm"),
         ("starcoder2", "Starcoder2"),
         ("swiftformer", "SwiftFormer"),
         ("swin", "Swin Transformer"),
@@ -489,13 +703,16 @@ MODEL_NAMES_MAPPING = OrderedDict(
         ("trocr", "TrOCR"),
         ("tvlt", "TVLT"),
         ("ul2", "UL2"),
+        ("udop", "UDOP"),
         ("umt5", "UMT5"),
         ("unispeech", "UniSpeech"),
         ("unispeech-sat", "UniSpeechSat"),
+        ("univnet", "UnivNet"),
         ("upernet", "UPerNet"),
         ("van", "VAN"),
         ("videomae", "VideoMAE"),
         ("vilt", "ViLT"),
+        ("vipllava", "VipLlava"),
         ("vision-encoder-decoder", "Vision Encoder decoder"),
         ("vision-text-dual-encoder", "VisionTextDualEncoder"),
         ("visual_bert", "VisualBERT"),
@@ -508,6 +725,7 @@ MODEL_NAMES_MAPPING = OrderedDict(
         ("vits", "VITS"),
         ("vivit", "ViViT"),
         ("wav2vec2", "Wav2Vec2"),
+        ("wav2vec2-bert", "Wav2Vec2-BERT"),
         ("wav2vec2-conformer", "Wav2Vec2-Conformer"),
         ("wav2vec2_phoneme", "Wav2Vec2Phoneme"),
         ("wavlm", "WavLM"),
@@ -529,14 +747,14 @@ MODEL_NAMES_MAPPING = OrderedDict(
 )
 
 DEPRECATED_MODELS = [
-    "bort",
-    "mctct",
-    "mmbt",
-    "open_llama",
-    "retribert",
-    "tapex",
-    "trajectory_transformer",
-    "van",
+    # "bort",
+    # "mctct",
+    # "mmbt",
+    # "open_llama",
+    # "retribert",
+    # "tapex",
+    # "trajectory_transformer",
+    # "van",
 ]
 
 SPECIAL_MODEL_TYPE_TO_MODULE_NAME = OrderedDict(
@@ -549,6 +767,8 @@ SPECIAL_MODEL_TYPE_TO_MODULE_NAME = OrderedDict(
         ("kosmos-2", "kosmos2"),
         ("maskformer-swin", "maskformer"),
         ("clip_vision_model", "clip"),
+        ("clipseg_vision_model", "clipseg"),
+        ("chinese_clip_vision_model", "chinese_clip"),
         ("xclip", "x_clip"),
     ]
 )
@@ -585,11 +805,48 @@ class _LazyConfigMapping(OrderedDict):
     """
 
     def __init__(self, mapping):
+        """
+        Initializes a new instance of the _LazyConfigMapping class.
+
+        Args:
+            self (object): The instance of the _LazyConfigMapping class.
+            mapping (dict): A dictionary containing the initial mapping for the configuration.
+               The keys represent the configuration keys, and the values represent the corresponding values.
+               This parameter is required and must be of type dict.
+
+        Returns:
+            None.
+
+        Raises:
+            None.
+        """
         self._mapping = mapping
         self._extra_content = {}
         self._modules = {}
 
     def __getitem__(self, key):
+        """
+                __getitem__
+
+                Retrieve the value associated with the given key from the _LazyConfigMapping object.
+
+                Args:
+                    self (_LazyConfigMapping): The instance of the _LazyConfigMapping class.
+                    key (str): The key used to retrieve the corresponding value. It should be a string.
+
+        Returns:
+            None:
+                - If the key is present in the _extra_content, the associated value is returned.
+                - If the key is not in _extra_content but is in _mapping, the value associated with the key is returned after
+                performing necessary module imports and attribute retrieval.
+
+        Raises:
+            KeyError: If the key is not found in either _extra_content or _mapping, a KeyError is raised.
+            AttributeError:
+                If the attribute associated with the value corresponding to the key is not found in the dynamically imported module,
+                an AttributeError is raised.
+            ModuleNotFoundError: If the required module is not found during dynamic import, a ModuleNotFoundError is raised.
+        """
         if key in self._extra_content:
             return self._extra_content[key]
         if key not in self._mapping:
@@ -597,7 +854,9 @@ class _LazyConfigMapping(OrderedDict):
         value = self._mapping[key]
         module_name = model_type_to_module_name(key)
         if module_name not in self._modules:
-            self._modules[module_name] = importlib.import_module(f".{module_name}", "mindnlp.transformers.models")
+            self._modules[module_name] = importlib.import_module(
+                f".{module_name}", "mindnlp.transformers.models"
+            )
         if hasattr(self._modules[module_name], value):
             return getattr(self._modules[module_name], value)
 
@@ -607,18 +866,85 @@ class _LazyConfigMapping(OrderedDict):
         return getattr(transformers_module, value)
 
     def keys(self):
+        """
+        This method returns a list of all the keys in the _LazyConfigMapping object.
+
+        Args:
+            self (_LazyConfigMapping): The instance of the _LazyConfigMapping class.
+
+        Returns:
+            list: A list containing all the keys in the _mapping and _extra_content attributes of the _LazyConfigMapping object.
+
+        Raises:
+            None
+        """
         return list(self._mapping.keys()) + list(self._extra_content.keys())
 
     def values(self):
-        return [self[k] for k in self._mapping.keys()] + list(self._extra_content.values())
+        """
+        This method returns a list containing the values of the mapping and any extra content in the _LazyConfigMapping class.
+
+        Args:
+            self (_LazyConfigMapping): The instance of the _LazyConfigMapping class.
+                This parameter is used to access the instance's mapping and extra content.
+
+        Returns:
+            list: A list containing the values of the mapping and any extra content in the _LazyConfigMapping class.
+
+        Raises:
+            None
+        """
+        return [self[k] for k in self._mapping.keys()] + list(
+            self._extra_content.values()
+        )
 
     def items(self):
-        return [(k, self[k]) for k in self._mapping.keys()] + list(self._extra_content.items())
+        """
+        items(self)
+            This method returns a list of key-value pairs from the _LazyConfigMapping instance.
+
+        Args:
+            self (_LazyConfigMapping): The instance of the _LazyConfigMapping class.
+
+        Returns:
+            list: A list of key-value pairs from the _LazyConfigMapping instance.
+
+        Raises:
+            None.
+        """
+        return [(k, self[k]) for k in self._mapping.keys()] + list(
+            self._extra_content.items()
+        )
 
     def __iter__(self):
+        """
+        Iterates over the keys of the '_LazyConfigMapping' instance.
+
+        Args:
+            self (object): The instance of the '_LazyConfigMapping' class.
+
+        Returns:
+            None.
+
+        Raises:
+            None.
+        """
         return iter(list(self._mapping.keys()) + list(self._extra_content.keys()))
 
     def __contains__(self, item):
+        """
+        Check if the given item is contained within the '_LazyConfigMapping' object.
+
+        Args:
+            self (_LazyConfigMapping): The instance of the '_LazyConfigMapping' class.
+            item: The item to be checked for containment within the object. It can be of any type.
+
+        Returns:
+            None.
+
+        Raises:
+            None.
+        """
         return item in self._mapping or item in self._extra_content
 
     def register(self, key, value, exist_ok=False):
@@ -626,7 +952,9 @@ class _LazyConfigMapping(OrderedDict):
         Register a new configuration in this mapping.
         """
         if key in self._mapping.keys() and not exist_ok:
-            raise ValueError(f"'{key}' is already used by a Transformers config, pick another name.")
+            raise ValueError(
+                f"'{key}' is already used by a Transformers config, pick another name."
+            )
         self._extra_content[key] = value
 
 
@@ -643,15 +971,41 @@ class _LazyLoadAllMappings(OrderedDict):
     """
 
     def __init__(self, mapping):
+        """
+        Initializes an instance of the '_LazyLoadAllMappings' class.
+
+        Args:
+            self: An instance of the '_LazyLoadAllMappings' class.
+            mapping: A dictionary containing the mapping data to be used by the instance.
+
+        Returns:
+            None.
+
+        Raises:
+            None.
+        """
         self._mapping = mapping
         self._initialized = False
         self._data = {}
 
     def _initialize(self):
+        """
+        Initializes the lazy loading of all mappings for the _LazyLoadAllMappings class.
+
+        Args:
+            self: _LazyLoadAllMappings - The instance of the _LazyLoadAllMappings class.
+
+        Returns:
+            None.
+
+        Raises:
+            FutureWarning: If ALL_PRETRAINED_CONFIG_ARCHIVE_MAP is deprecated.
+                It does not contain all available model checkpoints. Refer to hf.co/models for that.
+        """
         if self._initialized:
             return
         warnings.warn(
-            "ALL_PRETRAINED_CONFIG_ARCHIVE_MAP is deprecated and will be removed in v5 of Transformers. "
+            "ALL_PRETRAINED_CONFIG_ARCHIVE_MAP is deprecated. "
             "It does not contain all available model checkpoints, far from it. Checkout hf.co/models for that.",
             FutureWarning,
         )
@@ -665,45 +1019,177 @@ class _LazyLoadAllMappings(OrderedDict):
         self._initialized = True
 
     def __getitem__(self, key):
+        """
+        __getitem__
+
+        This method retrieves the value associated with the specified key from the _LazyLoadAllMappings instance.
+
+        Args:
+            self (_LazyLoadAllMappings): The instance of the _LazyLoadAllMappings class.
+            key: The key for which the associated value needs to be retrieved. Type: Any hashable object.
+
+        Returns:
+            `_data[key]`: This method returns the value associated with the specified key.
+                If the key is not found, a KeyError is raised.
+
+        Raises:
+            KeyError: If the specified key is not found in the _LazyLoadAllMappings instance.
+        """
         self._initialize()
         return self._data[key]
 
     def keys(self):
+        """
+        Returns a list of all the keys in the mappings.
+
+        Args:
+            self (obj): An instance of the _LazyLoadAllMappings class.
+
+        Returns:
+            None.
+
+        Raises:
+            None.
+        """
         self._initialize()
         return self._data.keys()
 
     def values(self):
+        """
+        Method 'values' in the class '_LazyLoadAllMappings' returns the values of the internal data dictionary after initialization.
+
+        Args:
+            self (object): The instance of the class.
+                This parameter represents the current instance of the class '_LazyLoadAllMappings'.
+                It is required to access the internal data and perform necessary operations.
+
+        Returns:
+            None:
+                This method does not return any specific value but retrieves and returns the values of the internal data dictionary.
+
+        Raises:
+            No specific exceptions:
+                No specific exceptions are raised by this method under normal circumstances,
+                However, if there are any issues during the initialization process, unexpected behavior may occur.
+        """
         self._initialize()
         return self._data.values()
 
     def items(self):
+        """
+        Method 'items' in the class '_LazyLoadAllMappings' retrieves the keys of the data after initialization.
+
+        Args:
+            self (object): The instance of the class.
+                This parameter is required to access the instance attributes and methods.
+                It must be an instance of the class '_LazyLoadAllMappings'.
+
+        Returns:
+            None:
+                This method returns the keys of the data stored in the '_data' attribute after initialization.
+
+        Raises:
+            No exceptions are explicitly raised within this method.
+        """
         self._initialize()
         return self._data.keys()
 
     def __iter__(self):
+        """
+        __iter__
+
+        This method returns an iterator object for the _LazyLoadAllMappings instance.
+
+        Args:
+            self (_LazyLoadAllMappings): The instance of the _LazyLoadAllMappings class.
+
+        Returns:
+            iter: An iterator object for the _data attribute of the _LazyLoadAllMappings instance.
+
+        Raises:
+            None
+        """
         self._initialize()
         return iter(self._data)
 
     def __contains__(self, item):
+        """
+        This method '__contains__' in the class '_LazyLoadAllMappings' determines if the specified item is contained within the data structure.
+
+        Args:
+            self (_LazyLoadAllMappings): The instance of the _LazyLoadAllMappings class.
+                This parameter represents the current object instance.
+            item: The item to check for existence within the data structure.
+                Type: Any
+                Purpose: To specify the item to be checked.
+                Restrictions: None
+
+        Returns:
+            None: This method returns None if the specified item is found within the data structure, otherwise it returns False.
+
+        Raises:
+            None.
+        """
         self._initialize()
         return item in self._data
 
 
-ALL_PRETRAINED_CONFIG_ARCHIVE_MAP = _LazyLoadAllMappings(CONFIG_ARCHIVE_MAP_MAPPING_NAMES)
+ALL_PRETRAINED_CONFIG_ARCHIVE_MAP = _LazyLoadAllMappings(
+    CONFIG_ARCHIVE_MAP_MAPPING_NAMES
+)
 
 
 def _get_class_name(model_class: Union[str, List[str]]):
+    """
+    This function returns a formatted string representing the class name or names provided as the 'model_class' parameter.
+
+    Args:
+        model_class (Union[str, List[str]]): The class name or names to be formatted. It can be a string or a list of strings.
+            If 'model_class' is a list, the function will join the class names using ' or '. Empty strings or None values
+            in the list will be ignored.
+
+    Returns:
+        str: A formatted string representing the class name or names provided. The class name(s) will be enclosed in
+            backticks for clarity.
+
+    Raises:
+        None: This function does not raise any exceptions.
+
+    Note:
+        The function can be called with either a single class name or a list of class names. If the 'model_class' parameter
+        is a list, the resulting string will represent the joined class names using ' or ' as the separator. Empty strings
+        or None values will be ignored.
+    """
     if isinstance(model_class, (list, tuple)):
         return " or ".join([f"[`{c}`]" for c in model_class if c is not None])
     return f"[`{model_class}`]"
 
 
 def _list_model_options(indent, config_to_class=None, use_model_types=True):
+    """
+    Args:
+        indent (str): The string used for indentation in the output.
+        config_to_class (dict): A dictionary mapping model configurations to their corresponding classes.
+            Defaults to None.
+        use_model_types (bool): A flag indicating whether to use model types or configurations.
+            Defaults to True.
+
+    Returns:
+        str: A formatted string containing the model options.
+
+    Raises:
+        ValueError: If `use_model_types` is set to False and `config_to_class` is not provided.
+    """
     if config_to_class is None and not use_model_types:
-        raise ValueError("Using `use_model_types=False` requires a `config_to_class` dictionary.")
+        raise ValueError(
+            "Using `use_model_types=False` requires a `config_to_class` dictionary."
+        )
     if use_model_types:
         if config_to_class is None:
-            model_type_to_name = {model_type: f"[`{config}`]" for model_type, config in CONFIG_MAPPING_NAMES.items()}
+            model_type_to_name = {
+                model_type: f"[`{config}`]"
+                for model_type, config in CONFIG_MAPPING_NAMES.items()
+            }
         else:
             model_type_to_name = {
                 model_type: _get_class_name(model_class)
@@ -721,7 +1207,8 @@ def _list_model_options(indent, config_to_class=None, use_model_types=True):
             if config in CONFIG_MAPPING_NAMES
         }
         config_to_model_name = {
-            config: MODEL_NAMES_MAPPING[model_type] for model_type, config in CONFIG_MAPPING_NAMES.items()
+            config: MODEL_NAMES_MAPPING[model_type]
+            for model_type, config in CONFIG_MAPPING_NAMES.items()
         }
         lines = [
             f"{indent}- [`{config_name}`] configuration class:"
@@ -732,6 +1219,20 @@ def _list_model_options(indent, config_to_class=None, use_model_types=True):
 
 
 def replace_list_option_in_docstrings(config_to_class=None, use_model_types=True):
+    """
+    This function decorates another function's docstring to include a section for listing options related to model types.
+
+    Args:
+        config_to_class (optional): A dictionary representing the configuration to class mapping. Defaults to None.
+        use_model_types (optional): A boolean indicating whether model types should be used. Defaults to True.
+
+    Returns:
+        None.
+
+    Raises:
+        ValueError: If the input function's docstring does not contain an empty 'List options' section as a placeholder.
+    """
+
     def docstring_decorator(fn):
         docstrings = fn.__doc__
         lines = docstrings.split("\n")
@@ -742,7 +1243,9 @@ def replace_list_option_in_docstrings(config_to_class=None, use_model_types=True
             indent = re.search(r"^(\s*)List options\s*$", lines[i]).groups()[0]
             if use_model_types:
                 indent = f"{indent}    "
-            lines[i] = _list_model_options(indent, config_to_class=config_to_class, use_model_types=use_model_types)
+            lines[i] = _list_model_options(
+                indent, config_to_class=config_to_class, use_model_types=use_model_types
+            )
             docstrings = "\n".join(lines)
         else:
             raise ValueError(
@@ -764,6 +1267,26 @@ class AutoConfig:
     """
 
     def __init__(self):
+        """
+        Initialize AutoConfig.
+
+        Args:
+            self: The instance of the AutoConfig class.
+                It is automatically passed when the method is called.
+
+                - Purpose: Represents the instance of the AutoConfig class.
+                - Restrictions: None.
+
+        Returns:
+            None.
+
+        Raises:
+            EnvironmentError:
+                If the AutoConfig is instantiated directly using the `__init__` method,
+                it raises an EnvironmentError with the message
+                'AutoConfig is designed to be instantiated using the `
+                AutoConfig.from_pretrained(pretrained_model_name_or_path)` method.'.
+        """
         raise EnvironmentError(
             "AutoConfig is designed to be instantiated "
             "using the `AutoConfig.from_pretrained(pretrained_model_name_or_path)` method."
@@ -771,6 +1294,24 @@ class AutoConfig:
 
     @classmethod
     def for_model(cls, model_type: str, *args, **kwargs):
+        """
+                This class method 'for_model' in the 'AutoConfig' class is used to instantiate a configuration class based on the provided model type.
+
+        Args:
+            cls (class): The class itself, automatically passed as the first parameter.
+            model_type (str): A string representing the type of the model for which the configuration class needs to be instantiated.
+                It must be a key within the CONFIG_MAPPING dictionary.
+
+        Returns:
+            None: This method does not return any value directly.
+                It instantiates and returns an instance of the appropriate configuration class based on the model type.
+
+        Raises:
+            ValueError:
+                Raised when the provided 'model_type' is not recognized or is not found as a key in the CONFIG_MAPPING dictionary.
+                The exception message indicates the unrecognized model identifier and lists all valid model identifiers
+                available in the CONFIG_MAPPING dictionary.
+        """
         if model_type in CONFIG_MAPPING:
             config_class = CONFIG_MAPPING[model_type]
             return config_class(*args, **kwargs)
@@ -793,14 +1334,14 @@ class AutoConfig:
             pretrained_model_name_or_path (`str` or `os.PathLike`):
                 Can be either:
 
-                    - A string, the *model id* of a pretrained model configuration hosted inside a model repo on
-                      huggingface.co. Valid model ids can be located at the root-level, like `bert-base-uncased`, or
-                      namespaced under a user or organization name, like `dbmdz/bert-base-german-cased`.
-                    - A path to a *directory* containing a configuration file saved using the
-                      [`~PretrainedConfig.save_pretrained`] method, or the [`~PreTrainedModel.save_pretrained`] method,
-                      e.g., `./my_model_directory/`.
-                    - A path or url to a saved configuration JSON *file*, e.g.,
-                      `./my_model_directory/configuration.json`.
+                - A string, the *model id* of a pretrained model configuration hosted inside a model repo on
+                hf-mirror.com. Valid model ids can be located at the root-level, like `bert-base-uncased`, or
+                namespaced under a user or organization name, like `dbmdz/bert-base-german-cased`.
+                - A path to a *directory* containing a configuration file saved using the
+                [`~PretrainedConfig.save_pretrained`] method, or the [`~PreTrainedModel.save_pretrained`] method,
+                e.g., `./my_model_directory/`.
+                - A path or url to a saved configuration JSON *file*, e.g.,
+                `./my_model_directory/configuration.json`.
             cache_dir (`str` or `os.PathLike`, *optional*):
                 Path to a directory in which a downloaded pretrained model configuration should be cached if the
                 standard cache should not be used.
@@ -815,11 +1356,10 @@ class AutoConfig:
                 'http://hostname': 'foo.bar:4012'}`. The proxies are used on each request.
             revision (`str`, *optional*, defaults to `"main"`):
                 The specific model version to use. It can be a branch name, a tag name, or a commit id, since we use a
-                git-based system for storing models and other artifacts on huggingface.co, so `revision` can be any
+                git-based system for storing models and other artifacts on hf-mirror.com, so `revision` can be any
                 identifier allowed by git.
             return_unused_kwargs (`bool`, *optional*, defaults to `False`):
                 If `False`, then this function returns just the final configuration object.
-
                 If `True`, then this functions returns a `Tuple(config, unused_kwargs)` where *unused_kwargs* is a
                 dictionary consisting of the key/value pairs whose keys are not configuration attributes: i.e., the
                 part of `kwargs` which has not been used to update `config` and is otherwise ignored.
@@ -832,40 +1372,43 @@ class AutoConfig:
                 values. Behavior concerning key/value pairs whose keys are *not* configuration attributes is controlled
                 by the `return_unused_kwargs` keyword parameter.
 
-        Examples:
-
-        ```python
-        >>> from transformers import AutoConfig
-
-        >>> # Download configuration from huggingface.co and cache.
-        >>> config = AutoConfig.from_pretrained("bert-base-uncased")
-
-        >>> # Download configuration from huggingface.co (user-uploaded) and cache.
-        >>> config = AutoConfig.from_pretrained("dbmdz/bert-base-german-cased")
-
-        >>> # If configuration file is in a directory (e.g., was saved using *save_pretrained('./test/saved_model/')*).
-        >>> config = AutoConfig.from_pretrained("./test/bert_saved_model/")
-
-        >>> # Load a specific configuration file.
-        >>> config = AutoConfig.from_pretrained("./test/bert_saved_model/my_configuration.json")
-
-        >>> # Change some config attributes when loading a pretrained config.
-        >>> config = AutoConfig.from_pretrained("bert-base-uncased", output_attentions=True, foo=False)
-        >>> config.output_attentions
-        True
-
-        >>> config, unused_kwargs = AutoConfig.from_pretrained(
-        ...     "bert-base-uncased", output_attentions=True, foo=False, return_unused_kwargs=True
-        ... )
-        >>> config.output_attentions
-        True
-
-        >>> unused_kwargs
-        {'foo': False}
-        ```"""
+        Example:
+            ```python
+            >>> from transformers import AutoConfig
+            ...
+            >>> # Download configuration from hf-mirror.com and cache.
+            >>> config = AutoConfig.from_pretrained("bert-base-uncased")
+            ...
+            >>> # Download configuration from hf-mirror.com (user-uploaded) and cache.
+            >>> config = AutoConfig.from_pretrained("dbmdz/bert-base-german-cased")
+            ...
+            >>> # If configuration file is in a directory (e.g., was saved using *save_pretrained('./test/saved_model/')*).
+            >>> config = AutoConfig.from_pretrained("./test/bert_saved_model/")
+            ...
+            >>> # Load a specific configuration file.
+            >>> config = AutoConfig.from_pretrained("./test/bert_saved_model/my_configuration.json")
+            ...
+            >>> # Change some config attributes when loading a pretrained config.
+            >>> config = AutoConfig.from_pretrained("bert-base-uncased", output_attentions=True, foo=False)
+            >>> config.output_attentions
+            True
+            >>> config, unused_kwargs = AutoConfig.from_pretrained(
+            ...     "bert-base-uncased", output_attentions=True, foo=False, return_unused_kwargs=True
+            ... )
+            >>> config.output_attentions
+            True
+            >>> unused_kwargs
+            {'foo': False}
+            ```
+        """
         kwargs["name_or_path"] = pretrained_model_name_or_path
 
-        config_dict, unused_kwargs = PretrainedConfig.get_config_dict(pretrained_model_name_or_path, **kwargs)
+        config_dict, unused_kwargs = PretrainedConfig.get_config_dict(
+            pretrained_model_name_or_path, **kwargs
+        )
+
+        fix_chatglm_name(config_dict)
+
         if "model_type" in config_dict:
             config_class = CONFIG_MAPPING[config_dict["model_type"]]
             return config_class.from_dict(config_dict, **unused_kwargs)
@@ -897,3 +1440,25 @@ class AutoConfig:
                 "match!"
             )
         CONFIG_MAPPING.register(model_type, config, exist_ok=exist_ok)
+
+
+def fix_chatglm_name(config):
+    model_type = config.get('model_type', None)
+    if model_type is None or model_type != 'chatglm':
+        return
+    if 'glm-4' in config['_name_or_path']:
+        config['model_type'] = 'chatglm4'
+        new_model_name = 'ChatGLM4'
+    elif 'chatglm3' in config['_name_or_path']:
+        config['model_type'] = 'chatglm3'
+        new_model_name = 'ChatGLM3'
+    elif 'chatglm2' in config['_name_or_path']:
+        config['model_type'] = 'chatglm2'
+        new_model_name = 'ChatGLM2'
+    else:
+        new_model_name = 'ChatGLM'
+
+    for arch in config['architectures']:
+        arch.replace('ChatGLM', new_model_name)
+    for k, v in config['auto_map'].items():
+        config['auto_map'][k] = v.replace('ChatGLM', new_model_name)

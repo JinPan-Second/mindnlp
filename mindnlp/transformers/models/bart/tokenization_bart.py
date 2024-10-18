@@ -13,9 +13,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ============================================================================
-# pylint: disable=missing-function-docstring
-# pylint: disable=invalid-name
-# pylint: disable=inconsistent-return-statements
 """tokenization bart"""
 import json
 import os
@@ -33,23 +30,23 @@ logger = logging.get_logger(__name__)
 
 VOCAB_FILES_NAMES = {"vocab_file": "vocab.json", "merges_file": "merges.txt"}
 
-# See all BART models at https://huggingface.co/models?filter=bart
+# See all BART models at https://hf-mirror.com/models?filter=bart
 PRETRAINED_VOCAB_FILES_MAP = {
     "vocab_file": {
-        "facebook/bart-base": "https://huggingface.co/facebook/bart-base/resolve/main/vocab.json",
-        "facebook/bart-large": "https://huggingface.co/facebook/bart-large/resolve/main/vocab.json",
-        "facebook/bart-large-mnli": "https://huggingface.co/facebook/bart-large-mnli/resolve/main/vocab.json",
-        "facebook/bart-large-cnn": "https://huggingface.co/facebook/bart-large-cnn/resolve/main/vocab.json",
-        "facebook/bart-large-xsum": "https://huggingface.co/facebook/bart-large-xsum/resolve/main/vocab.json",
-        "yjernite/bart_eli5": "https://huggingface.co/yjernite/bart_eli5/resolve/main/vocab.json",
+        "facebook/bart-base": "https://hf-mirror.com/facebook/bart-base/resolve/main/vocab.json",
+        "facebook/bart-large": "https://hf-mirror.com/facebook/bart-large/resolve/main/vocab.json",
+        "facebook/bart-large-mnli": "https://hf-mirror.com/facebook/bart-large-mnli/resolve/main/vocab.json",
+        "facebook/bart-large-cnn": "https://hf-mirror.com/facebook/bart-large-cnn/resolve/main/vocab.json",
+        "facebook/bart-large-xsum": "https://hf-mirror.com/facebook/bart-large-xsum/resolve/main/vocab.json",
+        "yjernite/bart_eli5": "https://hf-mirror.com/yjernite/bart_eli5/resolve/main/vocab.json",
     },
     "merges_file": {
-        "facebook/bart-base": "https://huggingface.co/facebook/bart-base/resolve/main/merges.txt",
-        "facebook/bart-large": "https://huggingface.co/facebook/bart-large/resolve/main/merges.txt",
-        "facebook/bart-large-mnli": "https://huggingface.co/facebook/bart-large-mnli/resolve/main/merges.txt",
-        "facebook/bart-large-cnn": "https://huggingface.co/facebook/bart-large-cnn/resolve/main/merges.txt",
-        "facebook/bart-large-xsum": "https://huggingface.co/facebook/bart-large-xsum/resolve/main/merges.txt",
-        "yjernite/bart_eli5": "https://huggingface.co/yjernite/bart_eli5/resolve/main/merges.txt",
+        "facebook/bart-base": "https://hf-mirror.com/facebook/bart-base/resolve/main/merges.txt",
+        "facebook/bart-large": "https://hf-mirror.com/facebook/bart-large/resolve/main/merges.txt",
+        "facebook/bart-large-mnli": "https://hf-mirror.com/facebook/bart-large-mnli/resolve/main/merges.txt",
+        "facebook/bart-large-cnn": "https://hf-mirror.com/facebook/bart-large-cnn/resolve/main/merges.txt",
+        "facebook/bart-large-xsum": "https://hf-mirror.com/facebook/bart-large-xsum/resolve/main/merges.txt",
+        "yjernite/bart_eli5": "https://hf-mirror.com/yjernite/bart_eli5/resolve/main/merges.txt",
     },
 }
 
@@ -109,16 +106,16 @@ class BartTokenizer(PreTrainedTokenizer):
     This tokenizer has been trained to treat spaces like parts of the tokens (a bit like sentencepiece) so a word will
     be encoded differently whether it is at the beginning of the sentence (without space) or not:
 
-    ```python
-    >>> from transformers import BartTokenizer
-
-    >>> tokenizer = BartTokenizer.from_pretrained("facebook/bart-base")
-    >>> tokenizer("Hello world")["input_ids"]
-    [0, 31414, 232, 2]
-
-    >>> tokenizer(" Hello world")["input_ids"]
-    [0, 20920, 232, 2]
-    ```
+    Example:
+        ```python
+        >>> from transformers import BartTokenizer
+        ...
+        >>> tokenizer = BartTokenizer.from_pretrained("facebook/bart-base")
+        >>> tokenizer("Hello world")["input_ids"]
+        [0, 31414, 232, 2]
+        >>> tokenizer(" Hello world")["input_ids"]
+        [0, 20920, 232, 2]
+        ```
 
     You can get around that behavior by passing `add_prefix_space=True` when instantiating this tokenizer or when you
     call it on some text, but since the model was not pretrained this way, it might yield a decrease in performance.
@@ -179,7 +176,6 @@ class BartTokenizer(PreTrainedTokenizer):
             Whether or not to add an initial space to the input. This allows to treat the leading word just as any
             other word. (BART tokenizer detect beginning of words by the preceding space).
     """
-
     vocab_files_names = VOCAB_FILES_NAMES
     pretrained_vocab_files_map = PRETRAINED_VOCAB_FILES_MAP
     max_model_input_sizes = PRETRAINED_POSITIONAL_EMBEDDINGS_SIZES
@@ -200,6 +196,31 @@ class BartTokenizer(PreTrainedTokenizer):
         add_prefix_space=False,
         **kwargs,
     ):
+        """
+        This method initializes an instance of the BartTokenizer class.
+
+        Args:
+            self: The instance of the class.
+            vocab_file (str): The path to the vocabulary file containing token mappings.
+            merges_file (str): The path to the merges file for byte pair encoding.
+            errors (str): Controls error handling during tokenization (default is 'replace').
+            bos_token (str): Beginning of sentence token (default is '<s>').
+            eos_token (str): End of sentence token (default is '</s>').
+            sep_token (str): Separation token (default is '</s>').
+            cls_token (str): Classification token (default is '<s>').
+            unk_token (str): Token for unknown tokens (default is '<unk>').
+            pad_token (str): Token for padding sequences (default is '<pad>').
+            mask_token (str): Token for masking sequences (default is '<mask>').
+            add_prefix_space (bool): Whether to add space to the beginning of the token (default is False).
+
+        Returns:
+            None.
+
+        Raises:
+            FileNotFoundError: If the vocab_file or merges_file is not found.
+            UnicodeDecodeError: If an error occurs during decoding the files.
+            ValueError: If an error occurs during tokenization.
+        """
         bos_token = AddedToken(bos_token, lstrip=False, rstrip=False) if isinstance(bos_token, str) else bos_token
         eos_token = AddedToken(eos_token, lstrip=False, rstrip=False) if isinstance(eos_token, str) else eos_token
         sep_token = AddedToken(sep_token, lstrip=False, rstrip=False) if isinstance(sep_token, str) else sep_token
@@ -241,12 +262,67 @@ class BartTokenizer(PreTrainedTokenizer):
 
     @property
     def vocab_size(self):
+        """
+        Method to retrieve the vocabulary size of the BartTokenizer instance.
+
+        Args:
+            self (BartTokenizer): The BartTokenizer instance itself.
+                This parameter is required as the method operates on the current instance.
+
+        Returns:
+            None:
+                This method returns the vocabulary size, which is the length of the encoder in the BartTokenizer instance.
+
+        Raises:
+            None.
+        """
         return len(self.encoder)
 
     def get_vocab(self):
+        """Return the vocabulary of the BartTokenizer.
+
+        Args:
+            self (BartTokenizer): An instance of the BartTokenizer class.
+
+        Returns:
+            dict: A dictionary representing the vocabulary of the tokenizer. The keys are the tokens in the vocabulary,
+                and the values are their corresponding integer encodings.
+
+        Raises:
+            None.
+
+        """
         return dict(self.encoder, **self.added_tokens_encoder)
 
     def bpe(self, token):
+        """
+        This method 'bpe' is defined within the class 'BartTokenizer' and performs Byte Pair Encoding (BPE) on a given token.
+
+        Args:
+            self:
+                Represents the instance of the class 'BartTokenizer'.
+
+                - Type: BartTokenizer
+                - Purpose: Allows access to class attributes and methods.
+                - Restrictions: None
+
+            token:
+                The input token to be processed using Byte Pair Encoding.
+
+                - Type: str
+                - Purpose: Represents the token to be encoded.
+                - Restrictions: Must be a valid string input.
+
+        Returns:
+            token:
+                The method returns the processed token after applying Byte Pair Encoding.
+
+                - Type: str
+                - Purpose: Represents the token after encoding.
+
+        Raises:
+            None
+        """
         if token in self.cache:
             return self.cache[token]
         word = tuple(token)
@@ -312,6 +388,22 @@ class BartTokenizer(PreTrainedTokenizer):
         return text
 
     def save_vocabulary(self, save_directory: str, filename_prefix: Optional[str] = None) -> Tuple[str]:
+        """
+        Save the vocabulary files for the BartTokenizer.
+
+        Args:
+            self (BartTokenizer): The instance of the BartTokenizer class.
+            save_directory (str): The directory where the vocabulary files will be saved.
+            filename_prefix (Optional[str]): An optional prefix to be added to the filenames. Default is None.
+
+        Returns:
+            Tuple[str]: A tuple containing the paths of the saved vocabulary files.
+
+        Raises:
+            FileNotFoundError: If the specified save_directory does not exist.
+            IOError: If there is an issue writing the vocabulary files.
+            ValueError: If the provided filename_prefix is not a string.
+        """
         if not os.path.isdir(save_directory):
             logger.error(f"Vocabulary path ({save_directory}) should be a directory")
             return
@@ -416,6 +508,44 @@ class BartTokenizer(PreTrainedTokenizer):
         return len(cls + token_ids_0 + sep + sep + token_ids_1 + sep) * [0]
 
     def prepare_for_tokenization(self, text, is_split_into_words=False, **kwargs):
+        """
+        Prepares the input text for tokenization in the BartTokenizer class.
+
+        Args:
+            self: The instance of the BartTokenizer class.
+            text (str): The input text to be prepared for tokenization.
+            is_split_into_words (bool):
+                Flag indicating whether the text is already split into words. Default is False.
+
+                - If True, the text is assumed to be split into words and no further processing is done.
+                - If False, the text is assumed to be a continuous string and additional processing may be applied.
+            **kwargs:
+                Additional keyword arguments.
+
+                add_prefix_space (bool):
+
+                Flag indicating whether a space should be added to the beginning of the text.
+
+                - If True, and if the text is not empty and does not start with a space,
+                a space is added before the text.
+                - If False, no space is added. Default is the value of self.add_prefix_space.
+
+        Returns:
+            str: The prepared text for tokenization.
+
+        Raises:
+            None.
+
+        Note:
+            The 'is_split_into_words' and 'add_prefix_space' parameters are mutually exclusive.
+            If 'is_split_into_words' is set to True, the 'add_prefix_space' parameter is ignored.
+
+        Example:
+            ```python
+            >>> tokenizer = BartTokenizer()
+            >>> prepared_text = tokenizer.prepare_for_tokenization("Hello, world!")
+            ```
+        """
         add_prefix_space = kwargs.pop("add_prefix_space", self.add_prefix_space)
         if (is_split_into_words or add_prefix_space) and (len(text) > 0 and not text[0].isspace()):
             text = " " + text

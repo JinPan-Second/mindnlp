@@ -33,7 +33,7 @@ class EncodecFeatureExtractor(SequenceFeatureExtractor):
     most of the main methods. Users should refer to this superclass for more information regarding those methods.
 
     Instantiating a feature extractor with the defaults will yield a similar configuration to that of the
-    [facebook/encodec_24khz](https://huggingface.co/facebook/encodec_24khz) architecture.
+    [facebook/encodec_24khz](https://hf-mirror.com/facebook/encodec_24khz) architecture.
 
     Args:
         feature_size (`int`, *optional*, defaults to 1):
@@ -48,7 +48,6 @@ class EncodecFeatureExtractor(SequenceFeatureExtractor):
             Defines the overlap between each chunk. It is used to compute the `chunk_stride` using the following
             formulae : `int((1.0 - self.overlap) * self.chunk_length)`.
     """
-
     model_input_names = ["input_values", "padding_mask"]
 
     def __init__(
@@ -60,10 +59,27 @@ class EncodecFeatureExtractor(SequenceFeatureExtractor):
         overlap: float = None,
         **kwargs,
     ):
+        """
+        Initialize the EncodecFeatureExtractor class with the given parameters.
+        
+        Args:
+            self: The instance of the class.
+            feature_size (int): The size of the feature. Default is 1.
+            sampling_rate (int): The sampling rate in Hz. Default is 24000.
+            padding_value (float): The value used for padding. Default is 0.0.
+            chunk_length_s (float): The length of each chunk in seconds. Default is None.
+            overlap (float): The overlap between chunks in seconds. Default is None.
+            **kwargs: Additional keyword arguments.
+        
+        Returns:
+            None.
+        
+        Raises:
+            None.
+        """
         super().__init__(feature_size=feature_size, sampling_rate=sampling_rate, padding_value=padding_value, **kwargs)
         self.chunk_length_s = chunk_length_s
         self.overlap = overlap
-
 
     @property
     def chunk_length(self) -> Optional[int]:
@@ -73,7 +89,6 @@ class EncodecFeatureExtractor(SequenceFeatureExtractor):
         if self.chunk_length_s is None:
             return None
         return int(self.chunk_length_s * self.sampling_rate)
-
 
     @property
     def chunk_stride(self) -> Optional[int]:
@@ -107,11 +122,11 @@ class EncodecFeatureExtractor(SequenceFeatureExtractor):
                 index) among:
 
                 - `True` or `'longest'`: Pad to the longest sequence in the batch (or no padding if only a single
-                  sequence if provided).
+                sequence if provided).
                 - `'max_length'`: Pad to a maximum length specified with the argument `max_length` or to the maximum
-                  acceptable input length for the model if that argument is not provided.
+                acceptable input length for the model if that argument is not provided.
                 - `False` or `'do_not_pad'` (default): No padding (i.e., can output a batch with sequences of different
-                  lengths).
+                lengths).
             truncation (`bool`, *optional*, defaults to `False`):
                 Activates truncation to cut input sequences longer than `max_length` to `max_length`.
             max_length (`int`, *optional*):
@@ -207,3 +222,5 @@ class EncodecFeatureExtractor(SequenceFeatureExtractor):
             padded_inputs = padded_inputs.convert_to_tensors(return_tensors)
 
         return padded_inputs
+
+__all__ = ['EncodecFeatureExtractor']

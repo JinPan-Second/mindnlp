@@ -12,8 +12,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-# pylint: disable=too-many-locals
-# pylint: disable=dangerous-default-value
 """ SeamlessM4Tv2 model configuration"""
 
 from mindnlp.utils import logging
@@ -23,7 +21,7 @@ from ...configuration_utils import PretrainedConfig
 logger = logging.get_logger(__name__)
 
 SEAMLESS_M4T_V2_PRETRAINED_CONFIG_ARCHIVE_MAP = {
-    "": "https://huggingface.co//resolve/main/config.json",
+    "": "https://hf-mirror.com//resolve/main/config.json",
 }
 
 
@@ -32,7 +30,7 @@ class SeamlessM4Tv2Config(PretrainedConfig):
     This is the configuration class to store the configuration of a [`~SeamlessM4Tv2Model`]. It is used to instantiate
     an SeamlessM4Tv2 model according to the specified arguments, defining the model architecture. Instantiating a
     configuration with the defaults will yield a similar configuration to that of the SeamlessM4Tv2
-    [""](https://huggingface.co/"") architecture.
+    [""](https://hf-mirror.com/"") architecture.
 
     Configuration objects inherit from [`PretrainedConfig`] and can be used to control the model outputs. Read the
     documentation from [`PretrainedConfig`] for more information.
@@ -52,7 +50,7 @@ class SeamlessM4Tv2Config(PretrainedConfig):
             can be represented by the `char_inputs_ids` passed when calling the Text-To-Units sub-model of
             [`~SeamlessM4Tv2Model`], [`~SeamlessM4Tv2ForSpeechToSpeech`] or [`~SeamlessM4Tv2ForTextToSpeech`].
 
-        > Parameters shared across sub-models
+        Parameters shared across sub-models: param below are Parameters shared across sub-models
 
         hidden_size (`int`, *optional*, defaults to 1024):
             Dimensionality of the "intermediate" layers in the architecture.
@@ -85,7 +83,7 @@ class SeamlessM4Tv2Config(PretrainedConfig):
         scale_embedding (`bool`, *optional*, defaults to `True`):
             Scale embeddings by diving by sqrt(d_model).
 
-        > Text encoder and text decoder specific parameters
+        Text encoder and text decoder specific parameters: param below are Text encoder and text decoder specific parameters
 
         encoder_layers (`int`, *optional*, defaults to 24):
             Number of hidden layers in the Transformer text encoder.
@@ -111,7 +109,7 @@ class SeamlessM4Tv2Config(PretrainedConfig):
         eos_token_id (`int`, *optional*, defaults to 3):
             The id of the _end-of-stream_ text token. Only applied to the text-decoder model.
 
-        > Speech encoder specific parameters
+        Speech encoder specific parameters: param below are Speech encoder specific parameters
 
         speech_encoder_layers (`int`, *optional*, defaults to 24):
             Number of hidden layers in the Transformer speech encoder.
@@ -155,7 +153,7 @@ class SeamlessM4Tv2Config(PretrainedConfig):
         speech_encoder_left_chunk_num (`int`, *optional*, defaults to 128):
             Number of chunks on the left up to which lookahead is allowed.
 
-        > Text-To-Unit (t2u) model specific parameters
+        Text-To-Unit (t2u) model specific parameters:  param below are Text-To-Unit (t2u) model specific parameters
 
         t2u_bos_token_id (`int`, *optional*, defaults to 0):
             The id of the _beginning-of-stream_ unit token. Only applied to the text-to-unit seq2seq model.
@@ -187,7 +185,7 @@ class SeamlessM4Tv2Config(PretrainedConfig):
         t2u_variance_pred_dropout (`float`, *optional*, defaults to 0.5):
             The dropout probabilitiy of the text-to-unit's duration predictor.
 
-         > Hifi-Gan Vocoder specific parameters
+         Hifi-Gan Vocoder specific parameters: param below are Hifi-Gan Vocoder specific parameters
 
         sampling_rate (`int`, *optional*, defaults to 16000):
             The sampling rate at which the output audio will be generated, expressed in hertz (Hz).
@@ -231,19 +229,20 @@ class SeamlessM4Tv2Config(PretrainedConfig):
         vocoder_offset (`int`, *optional*, defaults to 4):
             Offset the unit token ids by this number to account for symbol tokens. Applies to the vocoder only.
 
-    ```python
-    >>> from transformers import SeamlessM4Tv2Model, SeamlessM4Tv2Config
-
-    >>> # Initializing a SeamlessM4Tv2 "" style configuration
-    >>> configuration = SeamlessM4Tv2Config()
-
-    >>> # Initializing a model from the "" style configuration
-    >>> model = SeamlessM4Tv2Model(configuration)
-
-    >>> # Accessing the model configuration
-    >>> configuration = model.config
-    ```"""
-
+    Example:
+        ```python
+        >>> from transformers import SeamlessM4Tv2Model, SeamlessM4Tv2Config
+        ...
+        >>> # Initializing a SeamlessM4Tv2 "" style configuration
+        >>> configuration = SeamlessM4Tv2Config()
+        ...
+        >>> # Initializing a model from the "" style configuration
+        >>> model = SeamlessM4Tv2Model(configuration)
+        ...
+        >>> # Accessing the model configuration
+        >>> configuration = model.config
+        ```
+    """
     model_type = "seamless_m4t_v2"
 
     def __init__(
@@ -331,6 +330,93 @@ class SeamlessM4Tv2Config(PretrainedConfig):
         vocoder_offset=4,
         **kwargs,
     ):
+        '''
+        Initializes a new instance of the SeamlessM4Tv2Config class.
+        
+        Args:
+            self: The instance of the class.
+            vocab_size (int, optional): The size of the vocabulary. Defaults to 256102.
+            t2u_vocab_size (int, optional): The size of the text-to-unit vocabulary. Defaults to 10082.
+            char_vocab_size (int, optional): The size of the character vocabulary. Defaults to 10943.
+            hidden_size (int, optional): The size of the hidden layers. Defaults to 1024.
+            initializer_range (float, optional): The range for weight initialization. Defaults to 0.02.
+            layer_norm_eps (float, optional): The epsilon value for layer normalization. Defaults to 1e-05.
+            use_cache (bool, optional): Whether to use cache. Defaults to True.
+            max_position_embeddings (int, optional): The maximum number of position embeddings. Defaults to 4096.
+            is_encoder_decoder (bool, optional): Whether it is an encoder-decoder model. Defaults to True.
+            encoder_layerdrop (float, optional): The layerdrop probability for the encoder. Defaults to 0.05.
+            decoder_layerdrop (float, optional): The layerdrop probability for the decoder. Defaults to 0.05.
+            activation_function (str, optional): The activation function to use. Defaults to 'relu'.
+            dropout (float, optional): The dropout probability. Defaults to 0.1.
+            attention_dropout (float, optional): The dropout probability for attention layers. Defaults to 0.1.
+            activation_dropout (float, optional): The dropout probability for activation layers. Defaults to 0.0.
+            scale_embedding (bool, optional): Whether to scale the embeddings. Defaults to True.
+            encoder_layers (int, optional): The number of encoder layers. Defaults to 24.
+            encoder_ffn_dim (int, optional): The dimension of the encoder feed-forward network. Defaults to 8192.
+            encoder_attention_heads (int, optional): The number of attention heads in the encoder. Defaults to 16.
+            decoder_layers (int, optional): The number of decoder layers. Defaults to 24.
+            decoder_ffn_dim (int, optional): The dimension of the decoder feed-forward network. Defaults to 8192.
+            decoder_attention_heads (int, optional): The number of attention heads in the decoder. Defaults to 16.
+            decoder_start_token_id (int, optional): The token ID for the start of decoding. Defaults to 3.
+            max_new_tokens (int, optional): The maximum number of new tokens. Defaults to 256.
+            pad_token_id (int, optional): The token ID for padding. Defaults to 0.
+            bos_token_id (int, optional): The token ID for the beginning of sequence. Defaults to 2.
+            eos_token_id (int, optional): The token ID for the end of sequence. Defaults to 3.
+            speech_encoder_layers (int, optional): The number of speech encoder layers. Defaults to 24.
+            speech_encoder_attention_heads (int, optional): The number of attention heads in the speech encoder. Defaults to 16.
+            speech_encoder_intermediate_size (int, optional): The intermediate size of the speech encoder. Defaults to 4096.
+            speech_encoder_hidden_act (str, optional): The activation function for the speech encoder. Defaults to 'swish'.
+            speech_encoder_dropout (float, optional): The dropout probability for the speech encoder. Defaults to 0.0.
+            add_adapter (bool, optional): Whether to add an adapter. Defaults to True.
+            speech_encoder_layerdrop (float, optional): The layerdrop probability for the speech encoder. Defaults to 0.1.
+            feature_projection_input_dim (int, optional): The input dimension for feature projection. Defaults to 160.
+            adaptor_kernel_size (int, optional): The kernel size for the adaptor. Defaults to 8.
+            adaptor_stride (int, optional): The stride for the adaptor. Defaults to 8.
+            adaptor_dropout (float, optional): The dropout probability for the adaptor. Defaults to 0.1.
+            num_adapter_layers (int, optional): The number of adapter layers. Defaults to 1.
+            position_embeddings_type (str, optional): The type of position embeddings. Defaults to 'relative_key'.
+            conv_depthwise_kernel_size (int, optional): The kernel size for depthwise convolution. Defaults to 31.
+            left_max_position_embeddings (int, optional): The maximum number of left position embeddings. Defaults to 64.
+            right_max_position_embeddings (int, optional): The maximum number of right position embeddings. Defaults to 8.
+            speech_encoder_chunk_size (int, optional): The chunk size for the speech encoder. Defaults to 20000.
+            speech_encoder_left_chunk_num (int, optional): The number of left chunks for the speech encoder. Defaults to 128.
+            t2u_bos_token_id (int, optional): The token ID for the beginning of text-to-unit conversion. Defaults to 0.
+            t2u_pad_token_id (int, optional): The token ID for padding in text-to-unit conversion. Defaults to 1.
+            t2u_eos_token_id (int, optional): The token ID for the end of text-to-unit conversion. Defaults to 2.
+            t2u_encoder_layers (int, optional): The number of text-to-unit encoder layers. Defaults to 6.
+            t2u_encoder_ffn_dim (int, optional): The dimension of the text-to-unit encoder feed-forward network. Defaults to 8192.
+            t2u_encoder_attention_heads (int, optional): The number of attention heads in the text-to-unit encoder. Defaults to 16.
+            t2u_decoder_layers (int, optional): The number of text-to-unit decoder layers. Defaults to 6.
+            t2u_decoder_ffn_dim (int, optional): The dimension of the text-to-unit decoder feed-forward network. Defaults to 8192.
+            t2u_decoder_attention_heads (int, optional): The number of attention heads in the text-to-unit decoder. Defaults to 16.
+            t2u_max_position_embeddings (int, optional): The maximum number of position embeddings for text-to-unit conversion. Defaults to 4096.
+            t2u_variance_predictor_embed_dim (int, optional): The embedding dimension for the variance predictor in text-to-unit conversion. Defaults to 1024.
+            t2u_variance_predictor_hidden_dim (int, optional): The hidden dimension for the variance predictor in text-to-unit conversion. Defaults to 256.
+            t2u_variance_predictor_kernel_size (int, optional): The kernel size for the variance predictor in text-to-unit conversion. Defaults to 3.
+            t2u_variance_pred_dropout (float, optional): The dropout probability for the variance predictor in text-to-unit conversion. Defaults to 0.5.
+            sampling_rate (int, optional): The sampling rate of audio data. Defaults to 16000.
+            upsample_initial_channel (int, optional): The initial number of channels for upsampling. Defaults to 512.
+            upsample_rates (List[int], optional): The rates for upsampling. Defaults to [5, 4, 4, 2, 2].
+            upsample_kernel_sizes (List[int], optional): The kernel sizes for upsampling. Defaults to [11, 8, 8, 4, 4].
+            resblock_kernel_sizes (List[int], optional): The kernel sizes for residual blocks. Defaults to [3, 7, 11].
+            resblock_dilation_sizes (List[List[int]], optional): The dilation sizes for residual blocks. Defaults to [[1, 3, 5], [1, 3, 5], [1, 3, 5]].
+            leaky_relu_slope (float, optional): The slope for LeakyReLU activation. Defaults to 0.1.
+            unit_hifi_gan_vocab_size (int, optional): The vocabulary size for the unit HiFi-GAN. Defaults to 10000.
+            unit_embed_dim (int, optional): The embedding dimension for the unit HiFi-GAN. Defaults to 1280.
+            lang_embed_dim (int, optional): The embedding dimension for language. Defaults to 256.
+            spkr_embed_dim (int, optional): The embedding dimension for speaker. Defaults to 256.
+            vocoder_num_langs (int, optional): The number of languages for the vocoder. Defaults to 36.
+            vocoder_num_spkrs (int, optional): The number of speakers for the vocoder. Defaults to 200.
+            variance_predictor_kernel_size (int, optional): The kernel size for the variance predictor. Defaults to 3.
+            var_pred_dropout (float, optional): The dropout probability for the variance predictor. Defaults to 0.5.
+            vocoder_offset (int, optional): The offset for the vocoder. Defaults to 4.
+        
+        Returns:
+            None
+        
+        Raises:
+            None
+        '''
         # overall_config
         self.vocab_size = vocab_size
         self.t2u_vocab_size = t2u_vocab_size

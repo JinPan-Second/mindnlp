@@ -12,12 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ============================================================================
-# pylint: disable=missing-function-docstring
-# pylint: disable=attribute-defined-outside-init
 """
 Beam constraints
 """
-
 from abc import ABC, abstractmethod
 from typing import List, Optional
 
@@ -52,18 +49,18 @@ class Constraint(ABC):
                 self.reset()
             advance = self.advance()
             if not self.does_advance(advance):
-                raise RuntimeError(
+                raise Exception(
                     "Custom Constraint is not defined correctly. self.does_advance(self.advance()) must be true."
                 )
 
-            _, completed, _ = self.update(advance)
+            stepped, completed, reset = self.update(advance)
             counter += 1
 
             if counter > 10000:
-                raise RuntimeError("update() does not fulfill the constraint.")
+                raise Exception("update() does not fulfill the constraint.")
 
         if self.remaining() != 0:
-            raise RuntimeError("Custom Constraint is not defined correctly.")
+            raise Exception("Custom Constraint is not defined correctly.")
 
     @abstractmethod
     def advance(self):
@@ -176,7 +173,7 @@ class PhrasalConstraint(Constraint):
 
     def does_advance(self, token_id: int):
         if not isinstance(token_id, int):
-            raise ValueError(f"`token_id` has to be an `int`, but is {token_id} of type {type(token_id)}")
+            raise TypeError(f"`token_id` has to be an `int`, but is {token_id} of type {type(token_id)}")
 
         if self.completed:
             return False
@@ -185,7 +182,7 @@ class PhrasalConstraint(Constraint):
 
     def update(self, token_id: int):
         if not isinstance(token_id, int):
-            raise ValueError(f"`token_id` has to be an `int`, but is {token_id} of type {type(token_id)}")
+            raise TypeError(f"`token_id` has to be an `int`, but is {token_id} of type {type(token_id)}")
 
         stepped = False
         completed = False
@@ -222,7 +219,6 @@ class PhrasalConstraint(Constraint):
 
 
 class DisjunctiveTrie:
-    """DisjunctiveTrie"""
     def __init__(self, nested_token_ids: List[List[int]], no_subsets=True):
         r"""
         A helper class that builds a trie with the words represented in `nested_token_ids`.
@@ -232,7 +228,7 @@ class DisjunctiveTrie:
         root = {}
         for token_ids in nested_token_ids:
             level = root
-            for _, token_id in enumerate(token_ids):
+            for tidx, token_id in enumerate(token_ids):
                 if token_id not in level:
                     level[token_id] = {}
 
@@ -268,7 +264,8 @@ class DisjunctiveTrie:
         next_nodes = list(root.values())
         if len(next_nodes) == 0:
             return 1
-        return sum(self.count_leaves(nn) for nn in next_nodes)
+        else:
+            return sum(self.count_leaves(nn) for nn in next_nodes)
 
     def has_subsets(self, trie, nested_token_ids):
         """
@@ -315,11 +312,12 @@ class DisjunctiveConstraint(Constraint):
 
         if len(token_list) == 0:
             return None
-        return token_list
+        else:
+            return token_list
 
     def does_advance(self, token_id: int):
         if not isinstance(token_id, int):
-            raise ValueError(f"`token_id` is supposed to be type `int`, but is {token_id} of type {type(token_id)}")
+            raise TypeError(f"`token_id` is supposed to be type `int`, but is {token_id} of type {type(token_id)}")
 
         next_tokens = self.trie.next_tokens(self.current_seq)
 
@@ -327,7 +325,7 @@ class DisjunctiveConstraint(Constraint):
 
     def update(self, token_id: int):
         if not isinstance(token_id, int):
-            raise ValueError(f"`token_id` is supposed to be type `int`, but is {token_id} of type {type(token_id)}")
+            raise TypeError(f"`token_id` is supposed to be type `int`, but is {token_id} of type {type(token_id)}")
 
         stepped = False
         completed = False
@@ -353,7 +351,8 @@ class DisjunctiveConstraint(Constraint):
         if self.completed:
             # since this can be completed without reaching max height
             return 0
-        return self.seqlen - len(self.current_seq)
+        else:
+            return self.seqlen - len(self.current_seq)
 
     def copy(self, stateful=False):
         new_constraint = DisjunctiveConstraint(self.token_ids)
@@ -430,7 +429,8 @@ class ConstraintListState:
 
         if len(token_list) == 0:
             return None
-        return token_list
+        else:
+            return token_list
 
     def reset(self, token_ids: Optional[List[int]]):
         """
@@ -441,7 +441,7 @@ class ConstraintListState:
         if token_ids is not None:
             for token in token_ids:
                 # completes or steps **one** constraint
-                _, _ = self.add(token)
+                complete, stepped = self.add(token)
 
                 # the entire list of constraints are fulfilled
                 if self.completed:
@@ -449,7 +449,7 @@ class ConstraintListState:
 
     def add(self, token_id: int):
         if not isinstance(token_id, int):
-            raise ValueError(f"`token_id` should be an `int`, but is `{token_id}`.")
+            raise TypeError(f"`token_id` should be an `int`, but is `{token_id}`.")
 
         complete, stepped = False, False
 
@@ -494,7 +494,7 @@ class ConstraintListState:
                     stepped, complete, reset = pending_constraint.update(token_id)
 
                     if not stepped:
-                        raise RuntimeError(
+                        raise Exception(
                             "`constraint.update(token_id)` is not yielding incremental progress, "
                             "even though `constraint.does_advance(token_id)` is true."
                         )

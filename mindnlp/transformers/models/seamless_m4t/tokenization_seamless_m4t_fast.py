@@ -12,10 +12,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-# pylint: disable=invalid-name
-# pylint: disable=missing-function-docstring
-# pylint: disable=inconsistent-return-statements
-# pylint: disable=signature-differs
 """Fast Tokenization class for SeamlessM4T."""
 import os
 from shutil import copyfile
@@ -43,10 +39,10 @@ VOCAB_FILES_NAMES = {"vocab_file": "sentencepiece.bpe.model", "tokenizer_file": 
 
 PRETRAINED_VOCAB_FILES_MAP = {
     "vocab_file": {
-        "facebook/hf-seamless-m4t-medium": "https://huggingface.co/facebook/hf-seamless-m4t-medium/resolve/main/vocab.txt",
+        "facebook/hf-seamless-m4t-medium": "https://hf-mirror.com/facebook/hf-seamless-m4t-medium/resolve/main/vocab.txt",
     },
     "tokenizer_file": {
-        "facebook/hf-seamless-m4t-medium": "https://huggingface.co/facebook/hf-seamless-m4t-medium/resolve/main/tokenizer.json",
+        "facebook/hf-seamless-m4t-medium": "https://hf-mirror.com/facebook/hf-seamless-m4t-medium/resolve/main/tokenizer.json",
     },
 }
 
@@ -58,7 +54,7 @@ PRETRAINED_POSITIONAL_EMBEDDINGS_SIZES = {
 class SeamlessM4TTokenizerFast(PreTrainedTokenizerFast):
     """
     Construct a "fast" SeamlessM4T tokenizer (backed by HuggingFace's *tokenizers* library). Based on
-    [BPE](https://huggingface.co/docs/tokenizers/python/latest/components.html?highlight=BPE#models).
+    [BPE](https://hf-mirror.com/docs/tokenizers/python/latest/components.html?highlight=BPE#models).
 
     This tokenizer inherits from [`PreTrainedTokenizerFast`] which contains most of the main methods. Users should
     refer to this superclass for more information regarding those methods.
@@ -66,18 +62,17 @@ class SeamlessM4TTokenizerFast(PreTrainedTokenizerFast):
     The tokenization method is `<language code> <tokens> <eos>` for source language documents, and `<eos> <language
     code> <tokens> <eos>` for target language documents.
 
-    Examples:
-
-    ```python
-    >>> from transformers import SeamlessM4TTokenizerFast
-
-    >>> tokenizer = SeamlessM4TTokenizerFast.from_pretrained(
-    ...     "facebook/hf-seamless-m4t-medium", src_lang="eng", tgt_lang="fra"
-    ... )
-    >>> example_english_phrase = " UN Chief Says There Is No Military Solution in Syria"
-    >>> expected_translation_french = "Le chef de l'ONU affirme qu'il n'y a pas de solution militaire en Syrie."
-    >>> inputs = tokenizer(example_english_phrase, text_target=expected_translation_french, return_tensors="pt")
-    ```
+    Example:
+        ```python
+        >>> from transformers import SeamlessM4TTokenizerFast
+        ...
+        >>> tokenizer = SeamlessM4TTokenizerFast.from_pretrained(
+        ...     "facebook/hf-seamless-m4t-medium", src_lang="eng", tgt_lang="fra"
+        ... )
+        >>> example_english_phrase = " UN Chief Says There Is No Military Solution in Syria"
+        >>> expected_translation_french = "Le chef de l'ONU affirme qu'il n'y a pas de solution militaire en Syrie."
+        >>> inputs = tokenizer(example_english_phrase, text_target=expected_translation_french, return_tensors="ms")
+        ```
 
     Args:
         vocab_file (`str`, *optional*):
@@ -123,7 +118,6 @@ class SeamlessM4TTokenizerFast(PreTrainedTokenizerFast):
         additional_special_tokens (tuple or list of `str` or `tokenizers.AddedToken`, *optional*):
             A tuple or a list of additional special tokens.
     """
-
     vocab_files_names = VOCAB_FILES_NAMES
     pretrained_vocab_files_map = PRETRAINED_VOCAB_FILES_MAP
     max_model_input_sizes = PRETRAINED_POSITIONAL_EMBEDDINGS_SIZES
@@ -148,6 +142,29 @@ class SeamlessM4TTokenizerFast(PreTrainedTokenizerFast):
         additional_special_tokens=None,
         **kwargs,
     ):
+        """
+        Initializes the SeamlessM4TTokenizerFast class.
+
+        Args:
+            self: An instance of the SeamlessM4TTokenizerFast class.
+            vocab_file (str): Path to the vocabulary file.
+            tokenizer_file (str): Path to the tokenizer file.
+            bos_token (str): The beginning of sequence token. Defaults to '<s>'.
+            eos_token (str): The end of sequence token. Defaults to '</s>'.
+            sep_token (str): The separator token. Defaults to '</s>'.
+            cls_token (str): The classification token. Defaults to '<s>'.
+            unk_token (str): The unknown token. Defaults to '<unk>'.
+            pad_token (str): The padding token. Defaults to '<pad>'.
+            src_lang (str): The source language. Defaults to 'eng'.
+            tgt_lang (str): The target language. Defaults to 'fra'.
+            additional_special_tokens (List[str]): A list of additional special tokens. Defaults to None.
+
+        Returns:
+            None.
+
+        Raises:
+            None.
+        """
         super().__init__(
             vocab_file=vocab_file,
             tokenizer_file=tokenizer_file,
@@ -171,15 +188,54 @@ class SeamlessM4TTokenizerFast(PreTrainedTokenizerFast):
 
     @property
     def can_save_slow_tokenizer(self) -> bool:
+        """
+        This method checks if the slow tokenizer can be saved.
+
+        Args:
+            self (SeamlessM4TTokenizerFast): The instance of the SeamlessM4TTokenizerFast class.
+
+        Returns:
+            bool: Returns True if the vocab_file exists, False otherwise.
+
+        Raises:
+            None
+        """
         return os.path.isfile(self.vocab_file) if self.vocab_file else False
 
     @property
     # Copied from transformers.models.nllb.tokenization_nllb.NllbTokenizer.src_lang
     def src_lang(self) -> str:
+        """
+        This method returns the source language used for tokenization.
+
+        Args:
+            self: An instance of the SeamlessM4TTokenizerFast class.
+
+        Returns:
+            str: The source language used for tokenization.
+
+        Raises:
+            None.
+        """
         return self._src_lang
 
     @src_lang.setter
     def src_lang(self, new_src_lang: str) -> None:
+        """
+        src_lang(self, new_src_lang: str) -> None
+
+        This method sets the source language for the SeamlessM4TTokenizerFast object.
+
+        Args:
+            self: The instance of the SeamlessM4TTokenizerFast class.
+            new_src_lang (str): The new source language to be set. It should be a string representing the language code.
+
+        Returns:
+            None.
+
+        Raises:
+            None.
+        """
         if "__" not in new_src_lang:
             self._src_lang = f"__{new_src_lang}__"
         else:
@@ -188,10 +244,35 @@ class SeamlessM4TTokenizerFast(PreTrainedTokenizerFast):
 
     @property
     def tgt_lang(self) -> str:
+        """
+        tgt_lang method in the SeamlessM4TTokenizerFast class.
+
+        Args:
+            self: A reference to the current instance of the class.
+
+        Returns:
+            str: The language code representing the target language for tokenization.
+
+        Raises:
+            None.
+        """
         return self._tgt_lang
 
     @tgt_lang.setter
     def tgt_lang(self, new_tgt_lang: str) -> None:
+        """
+        Sets the target language for the SeamlessM4TTokenizerFast object.
+
+        Args:
+            self (SeamlessM4TTokenizerFast): The instance of the SeamlessM4TTokenizerFast class.
+            new_tgt_lang (str): The new target language to be set. It should be a string representing the language code.
+
+        Returns:
+            None.
+
+        Raises:
+            None.
+        """
         if "__" not in new_tgt_lang:
             self._tgt_lang = f"__{new_tgt_lang}__"
         else:
@@ -245,7 +326,6 @@ class SeamlessM4TTokenizerFast(PreTrainedTokenizerFast):
             `List[int]`: List of zeros.
 
         """
-
         sep = [self.sep_token_id]
         cls = [self.cls_token_id]
 
@@ -276,16 +356,93 @@ class SeamlessM4TTokenizerFast(PreTrainedTokenizerFast):
         tgt_lang: str = "fra",
         **kwargs,
     ) -> BatchEncoding:
+        """
+        Prepares a batch for sequence-to-sequence tokenization using the SeamlessM4TTokenizerFast class.
+
+        Args:
+            self (SeamlessM4TTokenizerFast): An instance of the SeamlessM4TTokenizerFast class.
+            src_texts (List[str]): A list of source texts to be tokenized.
+            src_lang (str, optional): The language of the source texts. Defaults to 'eng'.
+            tgt_texts (List[str], optional): A list of target texts to be tokenized. Defaults to None.
+            tgt_lang (str, optional): The language of the target texts. Defaults to 'fra'.
+            **kwargs: Additional keyword arguments that can be passed to the underlying tokenizer.
+
+        Returns:
+            BatchEncoding: A batch encoding containing the tokenized sequences.
+
+        Raises:
+            None
+
+        This method prepares a batch of source texts and, optionally, target texts for tokenization using the
+        SeamlessM4TTokenizerFast class. It takes the source texts, source language, target texts, and target language
+        as input parameters. The method returns a BatchEncoding object, which contains the tokenized sequences.
+
+        The 'self' parameter refers to the instance of the SeamlessM4TTokenizerFast class on which the method is called.
+
+        The 'src_texts' parameter is a list of source texts that need to be tokenized.
+
+        The 'src_lang' parameter specifies the language of the source texts. The default value is 'eng'.
+
+        The 'tgt_texts' parameter is an optional list of target texts that need to be tokenized. If not provided,
+        it defaults to None.
+
+        The 'tgt_lang' parameter specifies the language of the target texts. The default value is 'fra'.
+
+        Additional keyword arguments can be passed using the '**kwargs' parameter. These arguments will be forwarded
+        to the underlying tokenizer.
+
+        Example:
+            ```python
+            >>> tokenizer = SeamlessM4TTokenizerFast()
+            >>> src_texts = ["Hello, world!", "How are you?"]
+            >>> tgt_texts = ["Bonjour, le monde!", "Comment ça va?"]
+            >>> batch = tokenizer.prepare_seq2seq_batch(src_texts, src_lang='eng', tgt_texts=tgt_texts, tgt_lang='fra')
+            ```
+        """
         self.src_lang = src_lang
         self.tgt_lang = tgt_lang
         return super().prepare_seq2seq_batch(src_texts, tgt_texts, **kwargs)
 
     # Copied from transformers.models.nllb.tokenization_nllb_fast.NllbTokenizerFast._switch_to_input_mode
     def _switch_to_input_mode(self):
+        """
+        Method to switch the tokenizer to input mode by setting source language special tokens.
+
+        Args:
+            self (SeamlessM4TTokenizerFast): The instance of the SeamlessM4TTokenizerFast class.
+                Represents the tokenizer object.
+
+        Returns:
+            None.
+
+        Raises:
+            None.
+        """
         return self.set_src_lang_special_tokens(self.src_lang)
 
     # Copied from transformers.models.nllb.tokenization_nllb_fast.NllbTokenizerFast._switch_to_target_mode
     def _switch_to_target_mode(self):
+        """
+        Switches the tokenizer to target mode for SeamlessM4TTokenizerFast.
+
+        Args:
+            self:
+                The instance of SeamlessM4TTokenizerFast.
+
+                - Type: object
+                - Purpose: Represents the instance of the SeamlessM4TTokenizerFast class.
+                - Restrictions: None
+
+        Returns:
+            None:
+                Indicates that no value is returned from this method.
+
+                - Type: None
+                - Purpose: The method sets the target language special tokens and does not return any value.
+
+        Raises:
+            None
+        """
         return self.set_tgt_lang_special_tokens(self.tgt_lang)
 
     def set_src_lang_special_tokens(self, src_lang) -> None:
@@ -314,7 +471,8 @@ class SeamlessM4TTokenizerFast(PreTrainedTokenizerFast):
         )
 
     def set_tgt_lang_special_tokens(self, lang: str) -> None:
-        """Reset the special tokens to the target lang setting.
+        """
+        Reset the special tokens to the target lang setting.
         Prefix=[eos, tgt_lang_code] and suffix=[eos].
         """
         self.cur_lang_code = self.convert_tokens_to_ids(lang)
@@ -340,6 +498,36 @@ class SeamlessM4TTokenizerFast(PreTrainedTokenizerFast):
 
     # Copied from transformers.models.nllb.tokenization_nllb_fast.NllbTokenizerFast.save_vocabulary
     def save_vocabulary(self, save_directory: str, filename_prefix: Optional[str] = None) -> Tuple[str]:
+        """
+        Save the vocabulary for a slow tokenizer.
+
+        Args:
+            self (SeamlessM4TTokenizerFast): The instance of the class.
+            save_directory (str): The directory where the vocabulary will be saved.
+            filename_prefix (Optional[str], optional): The prefix to be added to the filename. Defaults to None.
+
+        Returns:
+            Tuple[str]: A tuple containing the path to the saved vocabulary file.
+
+        Raises:
+            ValueError: If the fast tokenizer does not have the necessary information to save the vocabulary
+                for a slow tokenizer.
+            FileNotFoundError: If the save_directory does not exist.
+            IsADirectoryError: If the save_directory is not a directory.
+
+        Note:
+            The method assumes that the fast tokenizer has the necessary information to save the vocabulary
+            for a slow tokenizer.
+
+        Example:
+            ```python
+            >>> tokenizer = SeamlessM4TTokenizerFast()
+            >>> save_directory = '/path/to/save/directory'
+            >>> filename_prefix = 'vocab'
+            >>> vocab_file = tokenizer.save_vocabulary(save_directory, filename_prefix)
+            >>> # vocab_file is now ('/path/to/save/directory/vocab-file', )
+            ```
+        """
         if not self.can_save_slow_tokenizer:
             raise ValueError(
                 "Your fast tokenizer does not have the necessary information to save the vocabulary for a slow "
@@ -372,6 +560,21 @@ class SeamlessM4TTokenizerFast(PreTrainedTokenizerFast):
         _is_local=False,
         **kwargs,
     ):
+        """
+        Method _from_pretrained in the class SeamlessM4TTokenizerFast.
+
+        Args:
+            cls (class): The class itself.
+            resolved_vocab_files (dict): A dictionary containing resolved vocabulary files.
+            pretrained_model_name_or_path (str): The name or path of the pretrained model.
+            init_configuration (dict): Initial configuration settings for the tokenizer.
+
+        Returns:
+            None.
+
+        Raises:
+            None.
+        """
         tokenizer = super()._from_pretrained(
             resolved_vocab_files,
             pretrained_model_name_or_path,
@@ -428,11 +631,11 @@ class SeamlessM4TTokenizerFast(PreTrainedTokenizerFast):
                  index) among:
 
                 - `True` or `'longest'`: Pad to the longest sequence in the batch (or no padding if only a single
-                  sequence if provided).
+                sequence if provided).
                 - `'max_length'`: Pad to a maximum length specified with the argument `max_length` or to the maximum
-                  acceptable input length for the model if that argument is not provided.
+                acceptable input length for the model if that argument is not provided.
                 - `False` or `'do_not_pad'` (default): No padding (i.e., can output a batch with sequences of different
-                  lengths).
+                lengths).
             pad_to_multiple_of (`int`, *optional*):
                 If set will pad the sequence to a multiple of the provided value.
 

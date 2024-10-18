@@ -12,14 +12,13 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-# ============================================================================
-# pylint: disable=missing-class-docstring
-""" BARK model generation configuration"""
+"""BARK model generation configuration"""
+
 import copy
 from typing import Dict
 
-from mindnlp.utils import logging
 from ...generation.configuration_utils import GenerationConfig
+from ....utils import logging
 
 
 logger = logging.get_logger(__name__)
@@ -241,6 +240,8 @@ class BarkFineGenerationConfig(GenerationConfig):
 class BarkGenerationConfig(GenerationConfig):
     model_type = "bark"
     is_composition = True
+
+    # TODO (joao): nested from_dict
 
     def __init__(
         self,

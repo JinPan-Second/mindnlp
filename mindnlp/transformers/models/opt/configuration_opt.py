@@ -21,12 +21,12 @@ from ...configuration_utils import PretrainedConfig
 logger = logging.get_logger(__name__)
 
 OPT_PRETRAINED_CONFIG_ARCHIVE_MAP = {
-    "facebook/opt-125m": "https://huggingface.co/facebook/opt-125m/blob/main/config.json",
-    "facebook/opt-350m": "https://huggingface.co/facebook/opt-350m/blob/main/config.json",
-    "facebook/opt-1.3b": "https://huggingface.co/facebook/opt-1.3b/blob/main/config.json",
-    "facebook/opt-2.7b": "https://huggingface.co/facebook/opt-2.7b/blob/main/config.json",
-    "facebook/opt-6.7b": "https://huggingface.co/facebook/opt-6.7b/blob/main/config.json",
-    "facebook/opt-13b": "https://huggingface.co/facebook/opt-13b/blob/main/config.json",
+    "facebook/opt-125m": "https://hf-mirror.com/facebook/opt-125m/blob/main/config.json",
+    "facebook/opt-350m": "https://hf-mirror.com/facebook/opt-350m/blob/main/config.json",
+    "facebook/opt-1.3b": "https://hf-mirror.com/facebook/opt-1.3b/blob/main/config.json",
+    "facebook/opt-2.7b": "https://hf-mirror.com/facebook/opt-2.7b/blob/main/config.json",
+    "facebook/opt-6.7b": "https://hf-mirror.com/facebook/opt-6.7b/blob/main/config.json",
+    "facebook/opt-13b": "https://hf-mirror.com/facebook/opt-13b/blob/main/config.json",
 }
 
 
@@ -35,7 +35,7 @@ class OPTConfig(PretrainedConfig):
     This is the configuration class to store the configuration of a [`OPTModel`]. It is used to instantiate a OPT model
     according to the specified arguments, defining the model architecture. Instantiating a configuration with the
     defaults will yield a similar configuration to that of the OPT
-    [facebook/opt-350m](https://huggingface.co/facebook/opt-350m) architecture.
+    [facebook/opt-350m](https://hf-mirror.com/facebook/opt-350m) architecture.
 
     Configuration objects inherit from [`PretrainedConfig`] and can be used to control the model outputs. Read the
     documentation from [`PretrainedConfig`] for more information.
@@ -81,19 +81,19 @@ class OPTConfig(PretrainedConfig):
             Whether or not if the layer norms should have learnable parameters.
 
     Example:
-
-    ```python
-    >>> from transformers import OPTConfig, OPTModel
-
-    >>> # Initializing a OPT facebook/opt-large style configuration
-    >>> configuration = OPTConfig()
-
-    >>> # Initializing a model (with random weights) from the facebook/opt-large style configuration
-    >>> model = OPTModel(configuration)
-
-    >>> # Accessing the model configuration
-    >>> configuration = model.config
-    ```"""
+        ```python
+        >>> from transformers import OPTConfig, OPTModel
+        ...
+        >>> # Initializing a OPT facebook/opt-large style configuration
+        >>> configuration = OPTConfig()
+        ...
+        >>> # Initializing a model (with random weights) from the facebook/opt-large style configuration
+        >>> model = OPTModel(configuration)
+        ...
+        >>> # Accessing the model configuration
+        >>> configuration = model.config
+        ```
+    """
     model_type = "opt"
     keys_to_ignore_at_inference = ["past_key_values"]
 
@@ -121,6 +121,39 @@ class OPTConfig(PretrainedConfig):
         layer_norm_elementwise_affine=True,
         **kwargs,
     ):
+        ''' 
+        Initializes an instance of the OPTConfig class.
+        
+        Args:
+            vocab_size (int, optional): The size of the vocabulary. Defaults to 50272.
+            hidden_size (int, optional): The size of the hidden layers. Defaults to 768.
+            num_hidden_layers (int, optional): The number of hidden layers. Defaults to 12.
+            ffn_dim (int, optional): The size of the feed-forward network. Defaults to 3072.
+            max_position_embeddings (int, optional): The maximum position embeddings. Defaults to 2048.
+            do_layer_norm_before (bool, optional): Whether to apply layer normalization before the attention layer.
+                Defaults to True.
+            _remove_final_layer_norm (bool, optional): Whether to remove the final layer normalization. Defaults to False.
+            word_embed_proj_dim (int, optional): The dimension of word embedding projection. Defaults to None.
+            dropout (float, optional): The dropout rate. Defaults to 0.1.
+            attention_dropout (float, optional): The attention dropout rate. Defaults to 0.0.
+            num_attention_heads (int, optional): The number of attention heads. Defaults to 12.
+            activation_function (str, optional): The activation function. Defaults to 'relu'.
+            layerdrop (float, optional): The layer drop rate. Defaults to 0.0.
+            init_std (float, optional): The standard deviation for weight initialization. Defaults to 0.02.
+            use_cache (bool, optional): Whether to use cache. Defaults to True.
+            pad_token_id (int, optional): The ID for padding token. Defaults to 1.
+            bos_token_id (int, optional): The ID for beginning of sequence token. Defaults to 2.
+            eos_token_id (int, optional): The ID for end of sequence token. Defaults to 2.
+            enable_bias (bool, optional): Whether to enable bias. Defaults to True.
+            layer_norm_elementwise_affine (bool, optional): Whether to apply element-wise affine transformation for
+                layer normalization. Defaults to True.
+        
+        Returns:
+            None. 
+        
+        Raises:
+            None.
+        '''
         super().__init__(
             pad_token_id=pad_token_id,
             bos_token_id=bos_token_id,

@@ -18,31 +18,32 @@
     </a>
 </p>
 
-[Installation](#installation) |
-[Introduction](#introduction) |
-[Quick Links](#quick-links) |
 
 ### News 📢
 
 * 🔥 **Latest Features**
 
-  * 🤗 Hugging *huggingface* ecosystem, we use **datasets** lib as default dataset loader to support
-  mounts of useful datasets.
-  * 📝 MindNLP supports NLP tasks such as *language model*, *machine translation*, *question answering*, *sentiment analysis*, *sequence labeling*, *summarization*, etc. You can access them through [examples](./examples/).
-  * 🚀 MindNLP currently supports industry-leading Large Language Models (LLMs), including **Llama**, **GLM**, **RWKV**, etc. For support related to large language models, including ***pre-training***, ***fine-tuning***, and **inference** demo examples, you can find them in the ["llm" directory](./llm/).
-  * 🤗 Pretrained models support ***huggingface transformers-like apis***, including **60+** models like **[BERT](./mindnlp/transformers/models/bert)**, **[Roberta](./mindnlp/transformers/models/roberta)**, **[GPT2](./mindnlp/transformers/models/gpt2)**, **[T5](./mindnlp/transformers/models/t5)**, etc.
+  * 🤗 **250+** Pretrained models support ***huggingface transformers-like apis***.
     You can use them easily by following code snippet:
     ```python
     from mindnlp.transformers import AutoModel
 
     model = AutoModel.from_pretrained('bert-base-cased')
     ```
+  * **Full Platform Support**: Comprehensive support for `Ascend 910 series`, `Ascend 310B (Orange Pi)`, `GPU`, and `CPU`. (Note: Currently the only AI development kit available on Orange Pi.)
+  * **Distributed Parallel Inference**: Multi-device, multi-process parallel inference support for models exceeding 10B parameters.
+  * **Quantization Algorithm Support**: SmoothQuant available for Orange Pi; bitsandbytes-like int8 quantization supported on GPU.
+  * **Sentence Transformer Support**: Enables efficient RAG (Retrieval-Augmented Generation) development.
+  * **Dynamic Graph Performance Optimization**: Achieves PyTorch+GPU-level inference speeds for dynamic graphs on Ascend hardware (tested Llama performance at **85ms/token**).
+  * **True Static and Dynamic Graph Unification**: One-line switching to graph mode with `mindspore.jit`, fully compatible with ***Hugging Face code style*** for both ease of use and rapid performance improvement. Tested Llama performance on Ascend hardware reaches 2x dynamic graph speed (**45ms/token**), consistent with other MindSpore static graph-based suites.
+  * **Extensive LLM Application Updates**: Includes `Text information extraction`, `Chatbots`, `Speech recognition`, `ChatPDF`, `Music generation`, `Code generation`, `Voice clone`, etc. With increased model support, even more exciting applications await development!
+
 
 ### Installation
 
 #### Install from Pypi
 
-You can install the official version of MindNLP which uploaded to pypi.
+You can install the official version of MindNLP which is uploaded to pypi.
 
 ```bash
 pip install mindnlp
@@ -71,6 +72,8 @@ bash scripts/build_and_reinstall.sh
 | master          | daily build       | >=3.7.5, <=3.9           |
 | 0.1.1           | >=1.8.1, <=2.0.0  | >=3.7.5, <=3.9           |
 | 0.2.x           | >=2.1.0           | >=3.8, <=3.9             |
+| 0.3.x           | >=2.1.0, <=2.3.1  | >=3.8, <=3.9             |
+| 0.4.x           | >=2.2.x           | >=3.9, <=3.11            |
 
 ### Introduction
 
@@ -82,89 +85,12 @@ The master branch works with **MindSpore master**.
 
 - **Comprehensive data processing**: Several classical NLP datasets are packaged into friendly module for easy use, such as Multi30k, SQuAD, CoNLL, etc.
 - **Friendly NLP model toolset**: MindNLP provides various configurable components. It is friendly to customize models using MindNLP.
-- **Easy-to-use engine**: MindNLP simplified complicated training process in MindSpore. It supports Trainer and Evaluator interfaces to train and evaluate models easily.
-
-### Quick Links
-
-- [Documentation](https://mindnlp.cqu.ai/en/latest/)
-- [Tutorials](./tutorials/)
-- [Examples](./examples)
-- [LLMs](./llm)
-- ...
+- **Easy-to-use engine**: MindNLP simplified the complicated training process in MindSpore. It supports Trainer and Evaluator interfaces to train and evaluate models easily.
 
 
 ### Supported models
 
-The table below represents the current support in the library for each of those models, whether they have support in Pynative mode or Graph mode.
-
-| Model                         | Pynative support    | Graph Support |
-|-------------------------------|---------------------|---------------|
-| ALBERT                        | ✅                | ✅             |
-| Autoformer                    | ✅ (Inference only)| ❌             |
-| BaiChuan                      | ✅                | ❌             |
-| Bark                          | ✅                | ❌             |
-| BART                          | ✅                | ❌             |
-| BERT                          | ✅                | ✅             |
-| BLIP                          | TODO              | ✅             |
-| BLIP2                         | TODO              | ✅             |
-| BLOOM                         | ✅                | ❌             |
-| ChatGLM                       | ✅                | ❌             |
-| ChatGLM2                      | ✅                | ❌             |
-| ChatGLM3                      | ✅                | ❌             |
-| CLIP                          | ✅                | ❌             |
-| CodeGen                       | ✅                | ❌             |
-| ConvBERT                      | TODO              | ❌             |
-| CPM                           | ✅                | ❌             |
-| CPM-Ant                       | ✅                | ❌             |
-| CPM-Bee                       | ✅                | ❌             |
-| MiniCPM                       | ✅                | ❌             |
-| Electra                       | TODO               | ❌             |
-| EnCodec                       | ✅               | ❌             |
-| ERNIE                         | ✅                | ✅             |
-| ERNIEM                        | ✅                | ✅             |
-| ESM                           | ✅                | ✅             |
-| Falcon                        | ✅                | ❌             |
-| OpenAI GPT                    | ✅                | ❌             |
-| OpenAI GPT-2                  | ✅                | ✅             |
-| Gemma                         | ✅                | ❌             |
-| GPT Neo                       | ✅                | ❌             |
-| GPT NeoX                      | TODO              | ❌             |
-| GPT Pangu                     | ✅                | ❌             |
-| GPTBigCode                    | ✅                | ❌             |
-| Graphormer                    | ✅                | ❌             |
-| Hubert                        | ✅                | ❌             |
-| Llama                         | ✅                | ❌             |
-| Llama2                        | ✅                | ❌             |
-| CodeLlama                     | ✅                | ❌             |
-| Longformer                    | ✅                | ❌             |
-| LongT5                        | ✅                | ❌             |
-| LUKE                          | ✅                | ❌             |
-| MaskFormer                    | ✅                | ❌             |
-| mBART-50                      | ✅                | ❌             |
-| Megatron-BERT                 | ✅                | ❌             |
-| Megatron-GPT2                 | ✅                | ❌             |
-| Mistral                       | ✅                | ❌             |
-| MobileBERT                    | ✅                | ❌             |
-| Moss                          | ✅                | ❌             |
-| Nezha                         | ✅                | ❌             |
-| OPT                           | ✅                | ❌             |
-| Phi2                          | ✅                | ❌             |
-| Pop2piano                     | ✅                | ❌             |
-| Qwen2                         | ✅                | ❌             |
-| RegNet                        | Todo               | ❌             |
-| RoBERTa                       | ✅                | ✅             |
-| RWKV                          | ✅                | ❌             |
-| SeamlessM4T                   | ✅                | ❌             |
-| SeamlessM4Tv2                 | ✅                | ❌             |
-| StarCoder                     | ✅                | ❌             |
-| T5                            | ✅                | ❌             |
-| Timesformer                   | TODO              | ❌             |
-| Tinybert                      | ✅                | ❌             |
-| wav2vec                       | ✅                | ❌             |
-| Whisper                       | ✅                | ❌             |
-| XLM                           | ✅                | ❌             |
-| XLM-RoBERTa                   | ✅                | ❌             |
-
+Since there are too many supported models, please check [here](https://mindnlp.cqu.ai/supported_models)
 
 <!-- ## Tutorials
 
@@ -182,9 +108,9 @@ The dynamic version is still under development, if you find any issue or have an
 
 ### Acknowledgement
 
-MindSpore is an open source project that welcome any contribution and feedback.  
+MindSpore is an open source project that welcomes any contribution and feedback.  
 We wish that the toolbox and benchmark could serve the growing research  
-community by providing a flexible as well as standardized toolkit to reimplement existing methods  
+community by providing a flexible as well as standardized toolkit to re-implement existing methods  
 and develop their own new semantic segmentation methods.
 
 ### Citation
@@ -193,7 +119,7 @@ If you find this project useful in your research, please consider citing:
 
 ```latex
 @misc{mindnlp2022,
-    title={{MindNLP}: a MindSpore NLP library},
+    title={{MindNLP}: Easy-to-use and high-performance NLP and LLM framework based on MindSpore},
     author={MindNLP Contributors},
     howpublished = {\url{https://github.com/mindlab-ai/mindnlp}},
     year={2022}

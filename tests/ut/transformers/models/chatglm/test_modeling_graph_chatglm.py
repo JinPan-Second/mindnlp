@@ -9,7 +9,6 @@ from mindnlp.utils.testing_utils import require_mindspore, slow
 
 from mindspore._c_expression import _framework_profiler_step_start
 from mindspore._c_expression import _framework_profiler_step_end
-# mindspore.set_context(pynative_synchronize=True)
 # mindspore.set_context(mode=mindspore.GRAPH_MODE, jit_syntax_level=mindspore.LAX, save_graphs=True, save_graphs_path="./graph")
 
 def set_random_seed(seed):
@@ -43,13 +42,18 @@ def ids_tensor(shape, vocab_size):
 
 
 def get_model_and_tokenizer():
-    model = MSChatGLMForConditionalGeneration.from_pretrained("THUDM/chatglm-6b").half()
+    model = MSChatGLMForConditionalGeneration.from_pretrained("ZhipuAI/ChatGLM-6B", mirror='modelscope').half()
     model.set_train(False)
-    tokenizer = AutoTokenizer.from_pretrained("THUDM/chatglm-6b")
+    tokenizer = AutoTokenizer.from_pretrained("ZhipuAI/ChatGLM-6B", mirror='modelscope')
     return model, tokenizer
 
 @require_mindspore
 class ChatGLMGenerationTest(unittest.TestCase):
+    def setUp(self):
+        mindspore.set_context(mode=mindspore.GRAPH_MODE,
+                              jit_syntax_level=mindspore.LAX)#, save_graphs=True, save_graphs_path="./graph")
+
+    
     def get_generation_kwargs(self):
         pass
 

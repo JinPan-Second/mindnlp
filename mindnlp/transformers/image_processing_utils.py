@@ -13,10 +13,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ============================================================================
-# pylint: disable=no-else-return
-# pylint: disable=missing-class-docstring
-# pylint: disable=missing-function-docstring
-# pylint: disable=invalid-name
 """image processing utils"""
 import copy
 import json
@@ -64,15 +60,12 @@ class BatchFeature(BaseBatchFeature):
             You can give a tensor_type here to convert the lists of integers in PyTorch/TensorFlow/Numpy Tensors at
             initialization.
     """
-
-
 # TODO: (Amy) - factor out the common parts of this and the feature extractor
 class ImageProcessingMixin:
     """
     This is an image processor mixin used to provide saving/loading functionality for sequential and image feature
     extractors.
     """
-
     _auto_class = None
 
     def __init__(self, **kwargs):
@@ -113,7 +106,7 @@ class ImageProcessingMixin:
                 This can be either:
 
                 - a string, the *model id* of a pretrained image_processor hosted inside a model repo on
-                  huggingface.co.
+                  hf-mirror.com.
                 - a path to a *directory* containing a image processor file saved using the
                   [`~image_processing_utils.ImageProcessingMixin.save_pretrained`] method, e.g.,
                   `./my_model_directory/`.
@@ -136,9 +129,8 @@ class ImageProcessingMixin:
                 the token generated when running `huggingface-cli login` (stored in `~/.huggingface`).
             revision (`str`, *optional*, defaults to `"main"`):
                 The specific model version to use. It can be a branch name, a tag name, or a commit id, since we use a
-                git-based system for storing models and other artifacts on huggingface.co, so `revision` can be any
+                git-based system for storing models and other artifacts on hf-mirror.com, so `revision` can be any
                 identifier allowed by git.
-
 
                 <Tip>
 
@@ -152,7 +144,7 @@ class ImageProcessingMixin:
                 consisting of the key/value pairs whose keys are not image processor attributes: i.e., the part of
                 `kwargs` which has not been used to update `image_processor` and is otherwise ignored.
             subfolder (`str`, *optional*, defaults to `""`):
-                In case the relevant files are located inside a subfolder of the model repo on huggingface.co, you can
+                In case the relevant files are located inside a subfolder of the model repo on hf-mirror.com, you can
                 specify the folder name here.
             kwargs (`Dict[str, Any]`, *optional*):
                 The values in kwargs of any keys which are image processor attributes will be used to override the
@@ -162,28 +154,28 @@ class ImageProcessingMixin:
         Returns:
             A image processor of type [`~image_processing_utils.ImageProcessingMixin`].
 
-        Examples:
-
-        ```python
-        # We can't instantiate directly the base class *ImageProcessingMixin* so let's show the examples on a
-        # derived class: *CLIPImageProcessor*
-        image_processor = CLIPImageProcessor.from_pretrained(
-            "openai/clip-vit-base-patch32"
-        )  # Download image_processing_config from huggingface.co and cache.
-        image_processor = CLIPImageProcessor.from_pretrained(
-            "./test/saved_model/"
-        )  # E.g. image processor (or model) was saved using *save_pretrained('./test/saved_model/')*
-        image_processor = CLIPImageProcessor.from_pretrained("./test/saved_model/preprocessor_config.json")
-        image_processor = CLIPImageProcessor.from_pretrained(
-            "openai/clip-vit-base-patch32", do_normalize=False, foo=False
-        )
-        assert image_processor.do_normalize is False
-        image_processor, unused_kwargs = CLIPImageProcessor.from_pretrained(
-            "openai/clip-vit-base-patch32", do_normalize=False, foo=False, return_unused_kwargs=True
-        )
-        assert image_processor.do_normalize is False
-        assert unused_kwargs == {"foo": False}
-        ```"""
+        Example:
+            ```python
+            >>> # We can't instantiate directly the base class *ImageProcessingMixin* so let's show the examples on a
+            >>> # derived class: *CLIPImageProcessor*
+            >>> image_processor = CLIPImageProcessor.from_pretrained(
+            >>>     "openai/clip-vit-base-patch32"
+            >>> )  # Download image_processing_config from hf-mirror.com and cache.
+            >>> image_processor = CLIPImageProcessor.from_pretrained(
+            >>>     "./test/saved_model/"
+            >>> )  # E.g. image processor (or model) was saved using *save_pretrained('./test/saved_model/')*
+            >>> image_processor = CLIPImageProcessor.from_pretrained("./test/saved_model/preprocessor_config.json")
+            >>> image_processor = CLIPImageProcessor.from_pretrained(
+            >>>     "openai/clip-vit-base-patch32", do_normalize=False, foo=False
+            >>> )
+            >>> assert image_processor.do_normalize is False
+            >>> image_processor, unused_kwargs = CLIPImageProcessor.from_pretrained(
+            >>>     "openai/clip-vit-base-patch32", do_normalize=False, foo=False, return_unused_kwargs=True
+            >>> )
+            >>> assert image_processor.do_normalize is False
+            >>> assert unused_kwargs == {"foo": False}
+            ```
+        """
         kwargs["cache_dir"] = cache_dir
         kwargs["force_download"] = force_download
         kwargs["local_files_only"] = local_files_only
@@ -192,7 +184,7 @@ class ImageProcessingMixin:
         use_auth_token = kwargs.pop("use_auth_token", None)
         if use_auth_token is not None:
             warnings.warn(
-                "The `use_auth_token` argument is deprecated and will be removed in v5 of Transformers. Please use `token` instead.",
+                "The `use_auth_token` argument is deprecated. Please use `token` instead.",
                 FutureWarning,
             )
             if token is not None:
@@ -227,7 +219,7 @@ class ImageProcessingMixin:
 
         if use_auth_token is not None:
             warnings.warn(
-                "The `use_auth_token` argument is deprecated and will be removed in v5 of Transformers. Please use `token` instead.",
+                "The `use_auth_token` argument is deprecated. Please use `token` instead.",
                 FutureWarning,
             )
             if kwargs.get("token", None) is not None:
@@ -276,7 +268,7 @@ class ImageProcessingMixin:
             pretrained_model_name_or_path (`str` or `os.PathLike`):
                 The identifier of the pre-trained checkpoint from which we want the dictionary of parameters.
             subfolder (`str`, *optional*, defaults to `""`):
-                In case the relevant files are located inside a subfolder of the model repo on huggingface.co, you can
+                In case the relevant files are located inside a subfolder of the model repo on hf-mirror.com, you can
                 specify the folder name here.
 
         Returns:
@@ -334,7 +326,7 @@ class ImageProcessingMixin:
                 # For any other exception, we throw a generic error.
                 raise EnvironmentError(
                     f"Can't load image processor for '{pretrained_model_name_or_path}'. If you were trying to load"
-                    " it from 'https://huggingface.co/models', make sure you don't have a local directory with the"
+                    " it from 'https://hf-mirror.com/models', make sure you don't have a local directory with the"
                     f" same name. Otherwise, make sure '{pretrained_model_name_or_path}' is the correct path to a"
                     f" directory containing a {IMAGE_PROCESSOR_NAME} file"
                 ) from e
@@ -374,7 +366,7 @@ class ImageProcessingMixin:
 
         Returns:
             [`~image_processing_utils.ImageProcessingMixin`]: The image processor object instantiated from those
-            parameters.
+                parameters.
         """
         image_processor_dict = image_processor_dict.copy()
         return_unused_kwargs = kwargs.pop("return_unused_kwargs", False)
@@ -428,7 +420,7 @@ class ImageProcessingMixin:
 
         Returns:
             A image processor of type [`~image_processing_utils.ImageProcessingMixin`]: The image_processor object
-            instantiated from that JSON file.
+                instantiated from that JSON file.
         """
         with open(json_file, "r", encoding="utf-8") as reader:
             text = reader.read()
@@ -468,6 +460,21 @@ class ImageProcessingMixin:
             writer.write(self.to_json_string())
 
     def __repr__(self):
+        """
+        __repr__
+
+        This method returns a string representation of the ImageProcessingMixin object.
+
+        Args:
+            self (ImageProcessingMixin): The instance of the ImageProcessingMixin class.
+                This parameter is used to reference the current instance of the ImageProcessingMixin class.
+
+        Returns:
+            None: This method does not return any value explicitly, as it returns a string representation of the object.
+
+        Raises:
+            None.
+        """
         return f"{self.__class__.__name__} {self.to_json_string()}"
 
     @classmethod
@@ -489,8 +496,7 @@ class ImageProcessingMixin:
         if not isinstance(auto_class, str):
             auto_class = auto_class.__name__
 
-        import mindnlp.transformers.models.auto as auto_module # pylint: disable=import-outside-toplevel
-
+        import mindnlp.transformers.models.auto as auto_module
         if not hasattr(auto_module, auto_class):
             raise ValueError(f"{auto_class} is not a valid auto class.")
 
@@ -520,11 +526,43 @@ class ImageProcessingMixin:
 
 
 class BaseImageProcessor(ImageProcessingMixin):
+
+    """
+    Represents a base image processor that provides methods for image preprocessing operations such as rescaling,
+    normalization, and center cropping.
+
+    This class inherits from ImageProcessingMixin and serves as a template for concrete image processor implementations.
+    Concrete image processors must implement their own preprocess method.
+
+    Attributes:
+        Inherits all attributes from ImageProcessingMixin.
+
+    Methods:
+        __call__(self, images, **kwargs) -> BatchFeature: Preprocess an image or a batch of images.
+        preprocess(self, images, **kwargs) -> BatchFeature: Abstract method to be implemented by concrete image processors.
+        rescale(self, image, scale, data_format=None, input_data_format=None, **kwargs) -> np.ndarray: Rescale an image by a scale factor.
+        normalize(self, image, mean, std, data_format=None, input_data_format=None, **kwargs) -> np.ndarray: Normalize an image using mean and standard deviation.
+        center_crop(self, image, size, data_format=None, input_data_format=None, **kwargs) -> np.ndarray: Center crop an image to a specified size.
+    """
     def __call__(self, images, **kwargs) -> BatchFeature:
         """Preprocess an image or a batch of images."""
         return self.preprocess(images, **kwargs)
 
     def preprocess(self, images, **kwargs) -> BatchFeature:
+        """
+        Preprocess the given images using the implemented image processor.
+
+        Args:
+            self (BaseImageProcessor): An instance of the BaseImageProcessor class.
+            images (list): A list of images to be preprocessed.
+
+        Returns:
+            BatchFeature: The preprocessed images as a BatchFeature object.
+
+        Raises:
+            NotImplementedError: If the preprocess method is not implemented in the specific image processor.
+
+        """
         raise NotImplementedError("Each image processor must implement its own preprocess method")
 
     def rescale(
@@ -546,11 +584,13 @@ class BaseImageProcessor(ImageProcessingMixin):
             data_format (`str` or `ChannelDimension`, *optional*):
                 The channel dimension format for the output image. If unset, the channel dimension format of the input
                 image is used. Can be one of:
+
                 - `"channels_first"` or `ChannelDimension.FIRST`: image in (num_channels, height, width) format.
                 - `"channels_last"` or `ChannelDimension.LAST`: image in (height, width, num_channels) format.
             input_data_format (`ChannelDimension` or `str`, *optional*):
                 The channel dimension format for the input image. If unset, the channel dimension format is inferred
                 from the input image. Can be one of:
+
                 - `"channels_first"` or `ChannelDimension.FIRST`: image in (num_channels, height, width) format.
                 - `"channels_last"` or `ChannelDimension.LAST`: image in (height, width, num_channels) format.
 
@@ -581,11 +621,13 @@ class BaseImageProcessor(ImageProcessingMixin):
             data_format (`str` or `ChannelDimension`, *optional*):
                 The channel dimension format for the output image. If unset, the channel dimension format of the input
                 image is used. Can be one of:
+
                 - `"channels_first"` or `ChannelDimension.FIRST`: image in (num_channels, height, width) format.
                 - `"channels_last"` or `ChannelDimension.LAST`: image in (height, width, num_channels) format.
             input_data_format (`ChannelDimension` or `str`, *optional*):
                 The channel dimension format for the input image. If unset, the channel dimension format is inferred
                 from the input image. Can be one of:
+
                 - `"channels_first"` or `ChannelDimension.FIRST`: image in (num_channels, height, width) format.
                 - `"channels_last"` or `ChannelDimension.LAST`: image in (height, width, num_channels) format.
 
@@ -616,11 +658,13 @@ class BaseImageProcessor(ImageProcessingMixin):
             data_format (`str` or `ChannelDimension`, *optional*):
                 The channel dimension format for the output image. If unset, the channel dimension format of the input
                 image is used. Can be one of:
+
                 - `"channels_first"` or `ChannelDimension.FIRST`: image in (num_channels, height, width) format.
                 - `"channels_last"` or `ChannelDimension.LAST`: image in (height, width, num_channels) format.
             input_data_format (`ChannelDimension` or `str`, *optional*):
                 The channel dimension format for the input image. If unset, the channel dimension format is inferred
                 from the input image. Can be one of:
+
                 - `"channels_first"` or `ChannelDimension.FIRST`: image in (num_channels, height, width) format.
                 - `"channels_last"` or `ChannelDimension.LAST`: image in (height, width, num_channels) format.
         """
@@ -636,10 +680,21 @@ class BaseImageProcessor(ImageProcessingMixin):
         )
 
 
-VALID_SIZE_DICT_KEYS = ({"height", "width"}, {"shortest_edge"}, {"shortest_edge", "longest_edge"}, {"longest_edge"})
+VALID_SIZE_DICT_KEYS = ({"height", "width"}, {"shortest_edge"}, {"shortest_edge", "longest_edge"}, {"longest_edge"}, {"max_height", "max_width"},)
 
 
 def is_valid_size_dict(size_dict):
+    """
+    Args:
+        size_dict (dict): A dictionary containing size information.
+            The keys in the dictionary should match a predefined set of valid keys.
+
+    Returns:
+        None: Returns None if the size_dict is not a valid size dictionary.
+
+    Raises:
+        None
+    """
     if not isinstance(size_dict, dict):
         return False
 
@@ -653,6 +708,63 @@ def is_valid_size_dict(size_dict):
 def convert_to_size_dict(
     size, max_size: Optional[int] = None, default_to_square: bool = True, height_width_order: bool = True
 ):
+    """
+    Converts a size input into a dictionary representation.
+
+    Args:
+        size (int or tuple/list): The size input to be converted.
+
+            - If an integer is provided and `default_to_square` is True,
+            it creates a square size dictionary with both height and width values set to the given size.
+            - If an integer is provided and `default_to_square` is False,
+            it creates a size dictionary with the shortest edge set to the given size.
+            Optionally, the longest edge can be specified using the `max_size` parameter.
+            - If a tuple or list is provided and `height_width_order` is True,
+            it creates a size dictionary with the first element representing the height and the second element
+            representing the width.
+            - If a tuple or list is provided and `height_width_order` is False,
+            it creates a size dictionary with the first element representing the width and the second element
+            representing the height.
+            - If `size` is None and `max_size` is not None,
+            it creates a size dictionary with the longest edge set to the `max_size`. Note that `default_to_square`
+            must be False in this case.
+
+        max_size (int, optional):
+            The maximum size for the longest edge. Defaults to None.
+
+            - This parameter is only used when `size` is an integer and `default_to_square` is False.
+
+        default_to_square (bool):
+            A flag indicating whether the size dictionary should default to a square shape when `size` is an integer.
+            Defaults to True.
+
+            - If True, the size dictionary will have both height and width values set to the provided size.
+            - If False, the size dictionary will have the shortest edge set to the provided size. Optionally, the longest
+            edge can be specified using the `max_size` parameter.
+
+        height_width_order (bool):
+            A flag indicating whether the height and width order should follow the order of elements in the `size` tuple/list.
+            Defaults to True.
+
+            - If True, the first element of the `size` tuple/list will be considered as the height and the second element
+            as the width.
+            - If False, the first element of the `size` tuple/list will be considered as the width and the second element
+            as the height.
+
+    Returns:
+        dict or None: A dictionary representation of the converted size input.
+            The dictionary will have the following keys:
+
+            - 'height' and 'width' (int): Representing the height and width of the size, respectively.
+            - 'shortest_edge' (int): Representing the size of the shortest edge,
+            when `size` is an integer and `default_to_square` is False.
+            - 'longest_edge' (int): Representing the size of the longest edge,
+            when `size` is an integer and `default_to_square` is False and `max_size` is provided.
+
+    Raises:
+        ValueError: If the input combination is invalid and cannot be converted to a size dictionary.
+
+    """
     # By default, if size is an int we assume it represents a tuple of (size, size).
     if isinstance(size, int) and default_to_square:
         if max_size is not None:
@@ -720,3 +832,40 @@ def get_size_dict(
             f"{param_name} must have one of the following set of keys: {VALID_SIZE_DICT_KEYS}, got {size_dict.keys()}"
         )
     return size_dict
+
+def select_best_resolution(original_size: tuple, possible_resolutions: list) -> tuple:
+    """
+    Selects the best resolution from a list of possible resolutions based on the original size.
+
+    This is done by calculating the effective and wasted resolution for each possible resolution.
+
+    The best fit resolution is the one that maximizes the effective resolution and minimizes the wasted resolution.
+
+    Args:
+        original_size (tuple):
+            The original size of the image in the format (height, width).
+        possible_resolutions (list):
+            A list of possible resolutions in the format [(height1, width1), (height2, width2), ...].
+
+    Returns:
+        tuple: The best fit resolution in the format (height, width).
+    """
+    original_height, original_width = original_size
+    best_fit = None
+    max_effective_resolution = 0
+    min_wasted_resolution = float("inf")
+
+    for height, width in possible_resolutions:
+        scale = min(width / original_width, height / original_height)
+        downscaled_width, downscaled_height = int(original_width * scale), int(original_height * scale)
+        effective_resolution = min(downscaled_width * downscaled_height, original_width * original_height)
+        wasted_resolution = (width * height) - effective_resolution
+
+        if effective_resolution > max_effective_resolution or (
+            effective_resolution == max_effective_resolution and wasted_resolution < min_wasted_resolution
+        ):
+            max_effective_resolution = effective_resolution
+            min_wasted_resolution = wasted_resolution
+            best_fit = (height, width)
+
+    return best_fit

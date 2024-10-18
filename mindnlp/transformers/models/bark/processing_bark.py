@@ -13,9 +13,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ============================================================================
-# pylint: disable=invalid-name
-# pylint: disable=too-many-function-args
-# pylint: disable=cyclic-import
 """
 Processor class for Bark
 """
@@ -49,7 +46,6 @@ class BarkProcessor(ProcessorMixin):
             a list of `voice_preset_names`.
 
     """
-
     tokenizer_class = "AutoTokenizer"
     attributes = ["tokenizer"]
 
@@ -60,6 +56,20 @@ class BarkProcessor(ProcessorMixin):
     }
 
     def __init__(self, tokenizer, speaker_embeddings=None):
+        """Initialize the BarkProcessor class.
+        
+        Args:
+            self (object): The instance of the class.
+            tokenizer (object): The tokenizer object used for processing text data.
+            speaker_embeddings (object or None, optional): The speaker embeddings associated with the text data. 
+                Defaults to None.
+        
+        Returns:
+            None.
+        
+        Raises:
+            None.
+        """
         super().__init__(tokenizer)
 
         self.speaker_embeddings = speaker_embeddings
@@ -76,17 +86,16 @@ class BarkProcessor(ProcessorMixin):
                 This can be either:
 
                 - a string, the *model id* of a pretrained [`BarkProcessor`] hosted inside a model repo on
-                  huggingface.co.
+                  hf-mirror.com.
                 - a path to a *directory* containing a processor saved using the [`~BarkProcessor.save_pretrained`]
                   method, e.g., `./my_model_directory/`.
             speaker_embeddings_dict_path (`str`, *optional*, defaults to `"speaker_embeddings_path.json"`):
                 The name of the `.json` file containing the speaker_embeddings dictionnary located in
                 `pretrained_model_name_or_path`. If `None`, no speaker_embeddings is loaded.
-            **kwargs
+            **kwargs:
                 Additional keyword arguments passed along to both
                 [`~tokenization_utils_base.PreTrainedTokenizer.from_pretrained`].
         """
-
         if speaker_embeddings_dict_path is not None:
             speaker_embeddings_path = cached_file(
                 pretrained_processor_name_or_path,
@@ -121,7 +130,6 @@ class BarkProcessor(ProcessorMixin):
         save_directory,
         speaker_embeddings_dict_path="speaker_embeddings_path.json",
         speaker_embeddings_directory="speaker_embeddings",
-        push_to_hub: bool = False,
         **kwargs,
     ):
         """
@@ -137,10 +145,6 @@ class BarkProcessor(ProcessorMixin):
                 exists, and that will be located in `pretrained_model_name_or_path/speaker_embeddings_directory`.
             speaker_embeddings_directory (`str`, *optional*, defaults to `"speaker_embeddings/"`):
                 The name of the folder in which the speaker_embeddings arrays will be saved.
-            push_to_hub (`bool`, *optional*, defaults to `False`):
-                Whether or not to push your model to the Hugging Face model hub after saving it. You can specify the
-                repository you want to push to with `repo_id` (will default to the name of `save_directory` in your
-                namespace).
             kwargs:
                 Additional key word arguments passed along to the [`~utils.PushToHubMixin.push_to_hub`] method.
         """
@@ -171,9 +175,27 @@ class BarkProcessor(ProcessorMixin):
             with open(os.path.join(save_directory, speaker_embeddings_dict_path), "w", encoding='utf-8') as fp:
                 json.dump(embeddings_dict, fp)
 
-        super().save_pretrained(save_directory, push_to_hub, **kwargs)
+        super().save_pretrained(save_directory, **kwargs)
 
     def _load_voice_preset(self, voice_preset: str = None, **kwargs):
+        """
+        This method '_load_voice_preset' is a member of the class 'BarkProcessor' and is responsible for loading voice presets.
+
+        Args:
+            self (object): The instance of the 'BarkProcessor' class.
+            voice_preset (str): The name of the voice preset to be loaded. It is an optional parameter and defaults to None.
+                It specifies the voice preset to be loaded from the speaker embeddings.
+
+        Returns:
+            dict: A dictionary containing the loaded voice preset data. The dictionary keys are 'semantic_prompt', 'coarse_prompt',
+            and 'fine_prompt', and the corresponding values are NumPy arrays representing the voice preset data.
+
+        Raises:
+            ValueError: This exception is raised if the voice preset is unrecognized or if any key ('semantic_prompt', 'coarse_prompt',
+            or 'fine_prompt') is missing in the speaker embeddings for the specified voice preset.
+            ValueError: This exception is raised if the specified voice preset file does not exist, or if the path to the voice preset
+            embeddings is incorrect.
+        """
         voice_preset_paths = self.speaker_embeddings[voice_preset]
 
         voice_preset_dict = {}
@@ -206,6 +228,43 @@ class BarkProcessor(ProcessorMixin):
         return voice_preset_dict
 
     def _validate_voice_preset_dict(self, voice_preset: Optional[dict] = None):
+        """
+        Validates the voice preset dictionary provided as input.
+
+        Args:
+            self (BarkProcessor): An instance of the BarkProcessor class.
+            voice_preset (Optional[dict]):
+                A dictionary representing the voice preset. This dictionary should contain the following keys:
+
+                - 'semantic_prompt' (numpy.ndarray): A 2D ndarray representing the semantic prompt.
+                - 'coarse_prompt' (numpy.ndarray): A 2D ndarray representing the coarse prompt.
+                - 'fine_prompt' (numpy.ndarray): A 2D ndarray representing the fine prompt.
+
+        Returns:
+            None.
+
+        Raises:
+            ValueError:
+                If any of the following conditions are not met:
+
+                - The 'semantic_prompt', 'coarse_prompt', and 'fine_prompt' keys are missing in the voice_preset dictionary.
+                - The 'semantic_prompt', 'coarse_prompt', or 'fine_prompt' values are not of type numpy.ndarray.
+                - The shape of 'semantic_prompt', 'coarse_prompt', or 'fine_prompt' is not equal to the expected preset shape.
+
+        Note:
+            - The expected preset shape is determined by the preset_shape attribute of the BarkProcessor class.
+
+        Example:
+            ```python
+            >>> bp = BarkProcessor()
+            >>> voice_preset = {
+            >>>     'semantic_prompt': np.array([[0.1, 0.2, 0.3], [0.4, 0.5, 0.6]]),
+            >>>     'coarse_prompt': np.array([[0.7, 0.8, 0.9], [1.0, 1.1, 1.2]]),
+            >>>     'fine_prompt': np.array([[1.3, 1.4, 1.5], [1.6, 1.7, 1.8]])
+            >>> }
+            >>> bp._validate_voice_preset_dict(voice_preset)
+            ```
+        """
         for key in ["semantic_prompt", "coarse_prompt", "fine_prompt"]:
             if key not in voice_preset:
                 raise ValueError(f"Voice preset unrecognized, missing {key} as a key.")

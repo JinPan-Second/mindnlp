@@ -13,8 +13,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ============================================================================
-# pylint: disable=invalid-name
-# pylint: disable=missing-function-docstring
 """Fast Tokenization classes for CodeGen."""
 
 
@@ -39,14 +37,14 @@ VOCAB_FILES_NAMES = {"vocab_file": "vocab.json", "merges_file": "merges.txt", "t
 
 PRETRAINED_VOCAB_FILES_MAP = {
     "vocab_file": {
-        "Salesforce/codegen-350M-mono": "https://huggingface.co/Salesforce/codegen-350M-mono/resolve/main/vocab.json",
+        "Salesforce/codegen-350M-mono": "https://hf-mirror.com/Salesforce/codegen-350M-mono/resolve/main/vocab.json",
     },
     "merges_file": {
-        "Salesforce/codegen-350M-mono": "https://huggingface.co/Salesforce/codegen-350M-mono/resolve/main/merges.txt",
+        "Salesforce/codegen-350M-mono": "https://hf-mirror.com/Salesforce/codegen-350M-mono/resolve/main/merges.txt",
     },
     "tokenizer_file": {
         "Salesforce/codegen-350M-mono": (
-            "https://huggingface.co/Salesforce/codegen-350M-mono/resolve/main/tokenizer.json"
+            "https://hf-mirror.com/Salesforce/codegen-350M-mono/resolve/main/tokenizer.json"
         ),
     },
 }
@@ -64,16 +62,16 @@ class CodeGenTokenizerFast(PreTrainedTokenizerFast):
     This tokenizer has been trained to treat spaces like parts of the tokens (a bit like sentencepiece) so a word will
     be encoded differently whether it is at the beginning of the sentence (without space) or not:
 
-    ```python
-    >>> from transformers import CodeGenTokenizerFast
-
-    >>> tokenizer = CodeGenTokenizerFast.from_pretrained("Salesforce/codegen-350M-mono")
-    >>> tokenizer("Hello world")["input_ids"]
-    [15496, 995]
-
-    >>> tokenizer(" Hello world")["input_ids"]
-    [18435, 995]
-    ```
+    Example:
+        ```python
+        >>> from transformers import CodeGenTokenizerFast
+        ...
+        >>> tokenizer = CodeGenTokenizerFast.from_pretrained("Salesforce/codegen-350M-mono")
+        >>> tokenizer("Hello world")["input_ids"]
+        [15496, 995]
+        >>> tokenizer(" Hello world")["input_ids"]
+        [18435, 995]
+        ```
 
     You can get around that behavior by passing `add_prefix_space=True` when instantiating this tokenizer, but since
     the model was not pretrained this way, it might yield a decrease in performance.
@@ -106,7 +104,6 @@ class CodeGenTokenizerFast(PreTrainedTokenizerFast):
             Whether or not to add an initial space to the input. This allows to treat the leading word just as any
             other word. (CodeGen tokenizer detect beginning of words by the preceding space).
     """
-
     vocab_files_names = VOCAB_FILES_NAMES
     pretrained_vocab_files_map = PRETRAINED_VOCAB_FILES_MAP
     max_model_input_sizes = PRETRAINED_POSITIONAL_EMBEDDINGS_SIZES
@@ -124,6 +121,27 @@ class CodeGenTokenizerFast(PreTrainedTokenizerFast):
         add_prefix_space=False,
         **kwargs,
     ):
+        """
+        Initializes an instance of the CodeGenTokenizerFast class.
+
+        Args:
+            vocab_file (str): The path to the vocabulary file. Default is None.
+            merges_file (str): The path to the merges file. Default is None.
+            tokenizer_file (str): The path to the tokenizer file. Default is None.
+            unk_token (str): The unknown token to be used. Default is 'endoftext'.
+            bos_token (str): The beginning of sequence token. Default is 'endoftext'.
+            eos_token (str): The end of sequence token. Default is 'endoftext'.
+            add_prefix_space (bool): Whether to add prefix space. Default is False.
+            **kwargs: Additional keyword arguments.
+
+        Returns:
+            None
+
+        Raises:
+            ValueError: If attempting to add a BOS token using the fast tokenizer. Suggests using the slow tokenizer instead.
+            JSONDecodeError: If the pre_tokenizer state cannot be decoded from JSON.
+            AttributeError: If the pre_tokenizer class cannot be found.
+        """
         super().__init__(
             vocab_file,
             merges_file,
@@ -155,6 +173,25 @@ class CodeGenTokenizerFast(PreTrainedTokenizerFast):
         self.add_prefix_space = add_prefix_space
 
     def _batch_encode_plus(self, *args, **kwargs) -> BatchEncoding:
+        """
+        This method '_batch_encode_plus' in the class 'CodeGenTokenizerFast' encodes a batch of inputs into tokenized and encoded representations.
+
+        Args:
+            *args: Variable length positional arguments.
+            **kwargs:
+                Variable length keyword arguments.
+
+                - is_split_into_words (bool, optional):
+                Specifies if the input is already split into words. Defaults to False.
+
+        Returns:
+            BatchEncoding: A dictionary-like object containing the tokenized and encoded representations of the input batch.
+
+        Raises:
+            AssertionError: If the 'add_prefix_space' attribute is not set to True and the 'is_split_into_words' argument is True.
+                In such cases, the method requires the instantiation of 'CodeGenTokenizerFast'
+                with 'add_prefix_space=True' for using it with pretokenized inputs.
+        """
         is_split_into_words = kwargs.get("is_split_into_words", False)
         assert self.add_prefix_space or not is_split_into_words, (
             f"You need to instantiate {self.__class__.__name__} with add_prefix_space=True "
@@ -164,6 +201,20 @@ class CodeGenTokenizerFast(PreTrainedTokenizerFast):
         return super()._batch_encode_plus(*args, **kwargs)
 
     def _encode_plus(self, *args, **kwargs) -> BatchEncoding:
+        """
+        Encodes the input data into a batch encoding using the CodeGenTokenizerFast.
+
+        Args:
+            self: An instance of the CodeGenTokenizerFast class.
+
+        Returns:
+            A BatchEncoding object containing the encoded input data.
+
+        Raises:
+            AssertionError: If the 'is_split_into_words' keyword argument is set to True and the CodeGenTokenizerFast instance
+                            was not instantiated with 'add_prefix_space=True'. This is necessary to use pretokenized inputs.
+
+        """
         is_split_into_words = kwargs.get("is_split_into_words", False)
 
         assert self.add_prefix_space or not is_split_into_words, (
@@ -174,6 +225,23 @@ class CodeGenTokenizerFast(PreTrainedTokenizerFast):
         return super()._encode_plus(*args, **kwargs)
 
     def save_vocabulary(self, save_directory: str, filename_prefix: Optional[str] = None) -> Tuple[str]:
+        """
+        Save the vocabulary files generated by the tokenizer model.
+
+        Args:
+            self (CodeGenTokenizerFast): The instance of the CodeGenTokenizerFast class.
+            save_directory (str): The directory path where the vocabulary files will be saved.
+            filename_prefix (Optional[str]): An optional prefix to be added to the filename of the saved vocabulary files.
+                Defaults to None if not provided.
+
+        Returns:
+            Tuple[str]: A tuple containing the filenames of the saved vocabulary files.
+
+        Raises:
+            SpecificException: Describes when a specific exception might be raised during the save operation.
+            AnotherException: Describes when another type of exception might be raised during the save operation.
+            AnyOtherException: Describes any other exception that the function may raise.
+        """
         files = self._tokenizer.model.save(save_directory, name=filename_prefix)
         return tuple(files)
 
@@ -186,9 +254,8 @@ class CodeGenTokenizerFast(PreTrainedTokenizerFast):
         **kwargs,
     ) -> str:
         """
-        Converts a sequence of ids in a string, using the tokenizer and vocabulary with options to remove special
-        tokens and clean up tokenization spaces.
-
+        Converts a sequence of ids in a string, using the tokenizer and vocabulary with options to remove special tokens
+        and clean up tokenization spaces.
         Similar to doing `self.convert_tokens_to_string(self.convert_ids_to_tokens(token_ids))`.
 
         Args:
@@ -202,14 +269,13 @@ class CodeGenTokenizerFast(PreTrainedTokenizerFast):
             truncate_before_pattern (`List[str]`, *optional*, defaults to `None`):
                 A list of regular expression strings that will be used to truncate the returned string. This can be
                 used to remove extra pieces of code (e.g. truncate if observing a comment symbol "#" at the beginning
-                of a new line). An example pattern could be `["^#", re.escape("<|endoftext|>"), "^'''", "\n\n\n"]`.
+                of a new line).
             kwargs (additional keyword arguments, *optional*):
                 Will be passed to the underlying model specific decode method.
 
         Returns:
             `str`: The decoded sentence.
         """
-
         decoded_text = super().decode(
             token_ids=token_ids,
             skip_special_tokens=skip_special_tokens,
@@ -223,6 +289,21 @@ class CodeGenTokenizerFast(PreTrainedTokenizerFast):
         return decoded_text
 
     def truncate(self, completion, truncate_before_pattern):
+        """
+        Truncate the completion string before a given pattern using a list of truncate_before_patterns.
+        
+        Args:
+            self (CodeGenTokenizerFast): An instance of the CodeGenTokenizerFast class.
+            completion (str): The completion string to be truncated.
+            truncate_before_pattern (list): A list of patterns to truncate the completion string before.
+                Each pattern is compiled using the re.compile() method with the re.MULTILINE flag.
+        
+        Returns:
+            None.
+        
+        Raises:
+            None.
+        """
         def find_re(string, pattern, start_pos):
             m = pattern.search(string, start_pos)
             return m.start() if m else -1

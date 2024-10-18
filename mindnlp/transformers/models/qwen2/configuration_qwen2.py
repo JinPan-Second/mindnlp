@@ -21,7 +21,7 @@ from ...configuration_utils import PretrainedConfig
 logger = logging.get_logger(__name__)
 
 QWEN2_PRETRAINED_CONFIG_ARCHIVE_MAP = {
-    "Qwen/Qwen2-7B-beta": "https://huggingface.co/Qwen/Qwen2-7B-beta/resolve/main/config.json",
+    "Qwen/Qwen2-7B-beta": "https://hf-mirror.com/Qwen/Qwen2-7B-beta/resolve/main/config.json",
 }
 
 
@@ -30,7 +30,7 @@ class Qwen2Config(PretrainedConfig):
     This is the configuration class to store the configuration of a [`Qwen2Model`]. It is used to instantiate a
     Qwen2 model according to the specified arguments, defining the model architecture. Instantiating a configuration
     with the defaults will yield a similar configuration to that of
-    Qwen2-7B-beta [Qwen/Qwen2-7B-beta](https://huggingface.co/Qwen/Qwen2-7B-beta).
+    Qwen2-7B-beta [Qwen/Qwen2-7B-beta](https://hf-mirror.com/Qwen/Qwen2-7B-beta).
 
     Configuration objects inherit from [`PretrainedConfig`] and can be used to control the model outputs. Read the
     documentation from [`PretrainedConfig`] for more information.
@@ -51,8 +51,8 @@ class Qwen2Config(PretrainedConfig):
         num_key_value_heads (`int`, *optional*, defaults to 32):
             This is the number of key_value heads that should be used to implement Grouped Query Attention. If
             `num_key_value_heads=num_attention_heads`, the model will use Multi Head Attention (MHA), if
-            `num_key_value_heads=1 the model will use Multi Query Attention (MQA) otherwise GQA is used. When
-            converting a multi-head checkpoint to a GQA checkpoint, each group key and value head should be constructed
+            `num_key_value_heads=1` the model will use Multi Query Attention (MQA) otherwise GQA is used. When
+            converting a multi-head checkpoint to a GQA checkpoint, each group key and value head should be forwarded
             by meanpooling all the original heads within that group. For more details checkout [this
             paper](https://arxiv.org/pdf/2305.13245.pdf). If it is not specified, will default to `32`.
         hidden_act (`str` or `function`, *optional*, defaults to `"silu"`):
@@ -75,23 +75,25 @@ class Qwen2Config(PretrainedConfig):
         sliding_window (`int`, *optional*, defaults to 4096):
             Sliding window attention (SWA) window size. If not specified, will default to `4096`.
         max_window_layers (`int`, *optional*, defaults to 28):
-            The number of layers that use SWA (Sliding Window Attention). The bottom layers use SWA while the top use full attention.
+            The number of layers that use SWA (Sliding Window Attention). The bottom layers use SWA while the top
+            use full attention.
         attention_dropout (`float`, *optional*, defaults to 0.0):
             The dropout ratio for the attention probabilities.
 
-    ```python
-    >>> from transformers import Qwen2Model, Qwen2Config
-
-    >>> # Initializing a Qwen2 style configuration
-    >>> configuration = Qwen2Config()
-
-    >>> # Initializing a model from the Qwen2-7B style configuration
-    >>> model = Qwen2Model(configuration)
-
-    >>> # Accessing the model configuration
-    >>> configuration = model.config
-    ```"""
-
+    Example:
+        ```python
+        >>> from transformers import Qwen2Model, Qwen2Config
+        ...
+        >>> # Initializing a Qwen2 style configuration
+        >>> configuration = Qwen2Config()
+        ...
+        >>> # Initializing a model from the Qwen2-7B style configuration
+        >>> model = Qwen2Model(configuration)
+        ...
+        >>> # Accessing the model configuration
+        >>> configuration = model.config
+        ```
+    """
     model_type = "qwen2"
     keys_to_ignore_at_inference = ["past_key_values"]
 
@@ -116,6 +118,37 @@ class Qwen2Config(PretrainedConfig):
         attention_dropout=0.0,
         **kwargs,
     ):
+        """
+        __init__
+        
+        Initializes a Qwen2Config object.
+        
+        Args:
+            self: The instance of the class.
+            vocab_size (int): The size of the vocabulary. Default is 151936.
+            hidden_size (int): The size of the hidden layers. Default is 4096.
+            intermediate_size (int): The size of the intermediate layer. Default is 22016.
+            num_hidden_layers (int): The number of hidden layers. Default is 32.
+            num_attention_heads (int): The number of attention heads. Default is 32.
+            num_key_value_heads (int): The number of key-value attention heads. Default is 32.
+            hidden_act (str): The activation function for the hidden layers. Default is 'silu'.
+            max_position_embeddings (int): The maximum position embeddings. Default is 32768.
+            initializer_range (float): The range for random weight initialization. Default is 0.02.
+            rms_norm_eps (float): The epsilon value for RMS normalization. Default is 1e-06.
+            use_cache (bool): Indicates whether to use caching. Default is True.
+            tie_word_embeddings (bool): Indicates whether to tie word embeddings. Default is False.
+            rope_theta (float): The theta value for rope. Default is 10000.0.
+            use_sliding_window (bool): Indicates whether to use sliding window. Default is False.
+            sliding_window (int): The size of the sliding window. Default is 4096.
+            max_window_layers (int): The maximum number of window layers. Default is 28.
+            attention_dropout (float): The dropout rate for attention. Default is 0.0.
+        
+        Returns:
+            None.
+        
+        Raises:
+            None.
+        """
         self.vocab_size = vocab_size
         self.max_position_embeddings = max_position_embeddings
         self.hidden_size = hidden_size

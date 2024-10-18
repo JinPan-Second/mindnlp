@@ -25,8 +25,8 @@ from ...configuration_utils import PretrainedConfig
 
 
 ERNIE_M_PRETRAINED_CONFIG_ARCHIVE_MAP = {
-    "susnato/ernie-m-base_pytorch": "https://huggingface.co/susnato/ernie-m-base_pytorch/blob/main/config.json",
-    "susnato/ernie-m-large_pytorch": "https://huggingface.co/susnato/ernie-m-large_pytorch/blob/main/config.json",
+    "susnato/ernie-m-base_pytorch": "https://hf-mirror.com/susnato/ernie-m-base_pytorch/blob/main/config.json",
+    "susnato/ernie-m-large_pytorch": "https://hf-mirror.com/susnato/ernie-m-large_pytorch/blob/main/config.json",
 }
 
 
@@ -35,8 +35,7 @@ class ErnieMConfig(PretrainedConfig):
     This is the configuration class to store the configuration of a [`ErnieMModel`]. It is used to instantiate a
     Ernie-M model according to the specified arguments, defining the model architecture. Instantiating a configuration
     with the defaults will yield a similar configuration to that of the `Ernie-M`
-    [susnato/ernie-m-base_pytorch](https://huggingface.co/susnato/ernie-m-base_pytorch) architecture.
-
+    [susnato/ernie-m-base_pytorch](https://hf-mirror.com/susnato/ernie-m-base_pytorch) architecture.
 
     Configuration objects inherit from [`PretrainedConfig`] and can be used to control the model outputs. Read the
     documentation from [`PretrainedConfig`] for more information.
@@ -80,7 +79,6 @@ class ErnieMConfig(PretrainedConfig):
     A normal_initializer initializes weight matrices as normal distributions. See
     `ErnieMPretrainedModel._init_weights()` for how weights are initialized in `ErnieMModel`.
     """
-
     model_type = "ernie_m"
     attribute_map: Dict[str, str] = {"dropout": "classifier_dropout", "num_classes": "num_labels"}
 
@@ -103,6 +101,33 @@ class ErnieMConfig(PretrainedConfig):
         act_dropout=0.0,
         **kwargs,
     ):
+        """
+        This method initializes an instance of the ErnieMConfig class.
+        
+        Args:
+            self: The instance of the class.
+            vocab_size (int): The size of the vocabulary. Default is 250002.
+            hidden_size (int): The size of the hidden layers. Default is 768.
+            num_hidden_layers (int): The number of hidden layers. Default is 12.
+            num_attention_heads (int): The number of attention heads. Default is 12.
+            intermediate_size (int): The size of the intermediate layer in the transformer. Default is 3072.
+            hidden_act (str): The activation function for the hidden layers. Default is 'gelu'.
+            hidden_dropout_prob (float): The dropout probability for the hidden layers. Default is 0.1.
+            attention_probs_dropout_prob (float): The dropout probability for the attention probabilities. Default is 0.1.
+            max_position_embeddings (int): The maximum position for the embeddings. Default is 514.
+            initializer_range (float): The range for the weight initializers. Default is 0.02.
+            pad_token_id (int): The ID for padding tokens. Default is 1.
+            layer_norm_eps (float): The epsilon value for layer normalization. Default is 1e-05.
+            classifier_dropout (None): The dropout rate for the classifier layer. Default is None.
+            is_decoder (bool): Whether the model is a decoder. Default is False.
+            act_dropout (float): The dropout rate for the activation function. Default is 0.0.
+        
+        Returns:
+            None.
+        
+        Raises:
+            None
+        """
         super().__init__(pad_token_id=pad_token_id, **kwargs)
         self.vocab_size = vocab_size
         self.hidden_size = hidden_size

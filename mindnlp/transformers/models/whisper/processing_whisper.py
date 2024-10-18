@@ -1,3 +1,4 @@
+# coding=utf-8
 # Copyright 2022 The HuggingFace Inc. team.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -11,11 +12,10 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-# pylint: disable=missing-function-docstring
-# pylint: disable=cyclic-import
 """
 Speech processor class for Whisper
 """
+
 from ...processing_utils import ProcessorMixin
 
 
@@ -33,6 +33,7 @@ class WhisperProcessor(ProcessorMixin):
         tokenizer (`WhisperTokenizer`):
             An instance of [`WhisperTokenizer`]. The tokenizer is a required input.
     """
+
     feature_extractor_class = "WhisperFeatureExtractor"
     tokenizer_class = "WhisperTokenizer"
 
@@ -72,11 +73,11 @@ class WhisperProcessor(ProcessorMixin):
         if text is None:
             return inputs
 
-        if audio is None:
+        elif audio is None:
             return encodings
-
-        inputs["labels"] = encodings["input_ids"]
-        return inputs
+        else:
+            inputs["labels"] = encodings["input_ids"]
+            return inputs
 
     def batch_decode(self, *args, **kwargs):
         """

@@ -31,10 +31,10 @@ VOCAB_FILES_NAMES = {
 }
 
 PRETRAINED_VOCAB_FILES_MAP = {
-    "vocab_file": {"qwen/qwen-tokenizer": "https://huggingface.co/qwen/qwen-tokenizer/resolve/main/vocab.json"},
-    "merges_file": {"qwen/qwen-tokenizer": "https://huggingface.co/qwen/qwen-tokenizer/resolve/main/merges.txt"},
+    "vocab_file": {"qwen/qwen-tokenizer": "https://hf-mirror.com/qwen/qwen-tokenizer/resolve/main/vocab.json"},
+    "merges_file": {"qwen/qwen-tokenizer": "https://hf-mirror.com/qwen/qwen-tokenizer/resolve/main/merges.txt"},
     "tokenizer_file": {
-        "qwen/qwen-tokenizer": "https://huggingface.co/qwen/qwen-tokenizer/resolve/main/tokenizer.json"
+        "qwen/qwen-tokenizer": "https://hf-mirror.com/qwen/qwen-tokenizer/resolve/main/tokenizer.json"
     },
 }
 
@@ -49,16 +49,16 @@ class Qwen2TokenizerFast(PreTrainedTokenizerFast):
     Same with GPT2Tokenizer, this tokenizer has been trained to treat spaces like parts of the tokens so a word will
     be encoded differently whether it is at the beginning of the sentence (without space) or not:
 
-    ```python
-    >>> from transformers import Qwen2TokenizerFast
-
-    >>> tokenizer = Qwen2TokenizerFast.from_pretrained("Qwen/Qwen-tokenizer")
-    >>> tokenizer("Hello world")["input_ids"]
-    [9707, 1879]
-
-    >>> tokenizer(" Hello world")["input_ids"]
-    [21927, 1879]
-    ```
+    Example:
+        ```python
+        >>> from transformers import Qwen2TokenizerFast
+        ...
+        >>> tokenizer = Qwen2TokenizerFast.from_pretrained("Qwen/Qwen-tokenizer")
+        >>> tokenizer("Hello world")["input_ids"]
+        [9707, 1879]
+        >>> tokenizer(" Hello world")["input_ids"]
+        [21927, 1879]
+        ```
     This is expected.
 
     This tokenizer inherits from [`PreTrainedTokenizerFast`] which contains most of the main methods. Users should
@@ -82,7 +82,6 @@ class Qwen2TokenizerFast(PreTrainedTokenizerFast):
         pad_token (`str`, *optional*, defaults to `"<|endoftext|>"`):
             The token used for padding, for example when batching sequences of different lengths.
     """
-
     vocab_files_names = VOCAB_FILES_NAMES
     pretrained_vocab_files_map = PRETRAINED_VOCAB_FILES_MAP
     max_model_input_sizes = MAX_MODEL_INPUT_SIZES
@@ -100,6 +99,36 @@ class Qwen2TokenizerFast(PreTrainedTokenizerFast):
         pad_token="<|endoftext|>",
         **kwargs,
     ):
+        """
+        Initializes a new instance of the Qwen2TokenizerFast class.
+        
+        Args:
+            self: The instance of the class.
+            vocab_file (str, optional): The path to the vocabulary file. Default is None.
+            merges_file (str, optional): The path to the merges file. Default is None.
+            tokenizer_file (str, optional): The path to the tokenizer file. Default is None.
+            unk_token (str, optional): The unknown token. Default is 'endoftext'.
+            bos_token (str or AddedToken, optional): The beginning of sequence token. Default is None.
+            eos_token (str or AddedToken, optional): The end of sequence token. Default is 'endoftext'.
+            pad_token (str or AddedToken, optional): The padding token. Default is 'endoftext'.
+            
+        Returns:
+            None.
+        
+        Raises:
+            None.
+        
+        Note:
+            - The bos_token, eos_token, unk_token, and pad_token parameters can be either a string or an instance of
+            the AddedToken class.
+            - If any of the bos_token, eos_token, unk_token, or pad_token parameters are provided as strings,
+            they will be converted to AddedToken instances with default properties.
+            - The vocab_file, merges_file, and tokenizer_file parameters are used to load the respective files
+            for the tokenizer.
+            - The unk_token, bos_token, eos_token, and pad_token parameters are used to set the respective tokens
+            in the tokenizer.
+            - Additional keyword arguments can be provided and will be passed to the base class forwardor.
+        """
         # We need to at least pass vocab_file and merges_file to base class
         # in case a slow tokenizer needs to be initialized; other can be
         # configured through files.
@@ -139,6 +168,20 @@ class Qwen2TokenizerFast(PreTrainedTokenizerFast):
 
     # Copied from transformers.models.gpt2.tokenization_gpt2_fast.GPT2TokenizerFast.save_vocabulary
     def save_vocabulary(self, save_directory: str, filename_prefix: Optional[str] = None) -> Tuple[str]:
+        """
+        Save the vocabulary of the Qwen2TokenizerFast model to the specified directory.
+        
+        Args:
+            self: The instance of the Qwen2TokenizerFast class.
+            save_directory (str): The directory where the vocabulary files will be saved.
+            filename_prefix (Optional[str]): An optional prefix to be added to the vocabulary filenames. Default is None.
+        
+        Returns:
+            Tuple[str]: A tuple containing the filenames of the saved vocabulary files.
+        
+        Raises:
+            This method does not explicitly raise any exceptions.
+        """
         files = self._tokenizer.model.save(save_directory, name=filename_prefix)
         return tuple(files)
 

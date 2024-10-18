@@ -22,11 +22,11 @@ from ...configuration_utils import PretrainedConfig
 logger = logging.get_logger(__name__)
 
 CPMBEE_PRETRAINED_CONFIG_ARCHIVE_MAP = {
-    "openbmb/cpm-bee-10b": "https://huggingface.co/openbmb/cpm-bee-10b/resolve/main/config.json",
-    "openbmb/cpm-bee-5b": "https://huggingface.co/openbmb/cpm-bee-5b/resolve/main/config.json",
-    "openbmb/cpm-bee-2b": "https://huggingface.co/openbmb/cpm-bee-2b/resolve/main/config.json",
-    "openbmb/cpm-bee-1b": "https://huggingface.co/openbmb/cpm-bee-1b/resolve/main/config.json",
-    # See all CpmBee models at https://huggingface.co/models?filter=cpmbee
+    "openbmb/cpm-bee-10b": "https://hf-mirror.com/openbmb/cpm-bee-10b/resolve/main/config.json",
+    "openbmb/cpm-bee-5b": "https://hf-mirror.com/openbmb/cpm-bee-5b/resolve/main/config.json",
+    "openbmb/cpm-bee-2b": "https://hf-mirror.com/openbmb/cpm-bee-2b/resolve/main/config.json",
+    "openbmb/cpm-bee-1b": "https://hf-mirror.com/openbmb/cpm-bee-1b/resolve/main/config.json",
+    # See all CpmBee models at https://hf-mirror.com/models?filter=cpmbee
 }
 
 
@@ -35,7 +35,7 @@ class CpmBeeConfig(PretrainedConfig):
     This is the configuration class to store the configuration of a [`CpmBeeModel`]. It is used to instbeeiate an
     CPMBee model according to the specified arguments, defining the model architecture. Instantiating a configuration
     with the defaults will yield a similar configuration to that of the CPMBee
-    [openbmb/cpm-bee-10b](https://huggingface.co/openbmb/cpm-bee-10b) architecture.
+    [openbmb/cpm-bee-10b](https://hf-mirror.com/openbmb/cpm-bee-10b) architecture.
 
     Configuration objects inherit from [`PretrainedConfig`] and can be used to control the model outputs. Read the
     documentation from [`PretrainedConfig`] for more information.
@@ -77,19 +77,19 @@ class CpmBeeConfig(PretrainedConfig):
             Decides the model parameters are half-precision or not.
 
     Example:
-
-    ```python
-    >>> from transformers import CpmBeeModel, CpmBeeConfig
-
-    >>> # Initializing a CPMBee cpm-bee-10b style configuration
-    >>> configuration = CpmBeeConfig()
-
-    >>> # Initializing a model from the cpm-bee-10b style configuration
-    >>> model = CpmBeeModel(configuration)
-
-    >>> # Accessing the model configuration
-    >>> configuration = model.config
-    ```"""
+        ```python
+        >>> from transformers import CpmBeeModel, CpmBeeConfig
+        ...
+        >>> # Initializing a CPMBee cpm-bee-10b style configuration
+        >>> configuration = CpmBeeConfig()
+        ...
+        >>> # Initializing a model from the cpm-bee-10b style configuration
+        >>> model = CpmBeeModel(configuration)
+        ...
+        >>> # Accessing the model configuration
+        >>> configuration = model.config
+        ```
+    """
     model_type = "cpmbee"
 
     def __init__(
@@ -112,6 +112,35 @@ class CpmBeeConfig(PretrainedConfig):
         half: bool = False,
         **kwargs,
     ):
+        """
+        __init__
+        
+        Initializes a CpmBeeConfig instance.
+        
+        Args:
+            vocab_size (int): The size of the vocabulary. Defaults to 30720.
+            hidden_size (int): The size of the hidden layers. Defaults to 4096.
+            num_attention_heads (int): The number of attention heads. Defaults to 64.
+            dim_head (int): The dimension of each attention head. Defaults to 64.
+            dim_ff (int): The dimension of the feed forward network. Defaults to 10240.
+            num_hidden_layers (int): The number of hidden layers. Defaults to 32.
+            dropout_p (int): The dropout probability. Defaults to 0.0.
+            position_bias_num_buckets (int): The number of buckets for position bias. Defaults to 256.
+            position_bias_num_segment_buckets (int): The number of segment buckets for position bias. Defaults to 32.
+            position_bias_max_distance (int): The maximum distance for position bias. Defaults to 2048.
+            eps (int): A small value to avoid division by zero. Defaults to 1e-06.
+            init_std (float): The standard deviation for weight initialization. Defaults to 1.0.
+            use_cache (bool): Flag to indicate whether to use cache. Defaults to True.
+            distance_scale (Union[int, float]): The scale factor for distance. Defaults to 16.
+            mask_modules (Optional[Union[List, Tuple]]): List or Tuple of modules to be masked. Defaults to None.
+            half (bool): Flag to indicate whether to use half precision. Defaults to False.
+        
+        Returns:
+            None.
+        
+        Raises:
+            None.
+        """
         super().__init__(**kwargs)
         self.position_bias_num_segment_buckets = position_bias_num_segment_buckets
         self.hidden_size = hidden_size

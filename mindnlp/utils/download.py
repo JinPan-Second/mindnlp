@@ -12,12 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ============================================================================
-# pylint: disable=invalid-name
-# pylint: disable=unused-argument
-# pylint: disable=simplifiable-if-expression
-# pylint: disable=missing-function-docstring
-# pylint: disable=too-many-return-statements
-# pylint: disable=unspecified-encoding
 """
 Download functions
 """
@@ -30,6 +24,7 @@ import json
 import types
 import functools
 import tempfile
+import time
 from typing import Union, Optional, Dict, Any
 from pathlib import Path
 from urllib.parse import urlparse, parse_qs
@@ -38,27 +33,47 @@ import requests
 from requests.exceptions import ProxyError, SSLError, HTTPError
 
 from mindnlp.configs import DEFAULT_ROOT, ENV_VARS_TRUE_VALUES, MINDNLP_CACHE, REPO_TYPES, HF_URL_BASE, \
-    HF_TOKEN
+    HF_TOKEN, MS_URL_BASE
 from .errors import (
     EntryNotFoundError,
     LocalEntryNotFoundError,
     RepositoryNotFoundError,
     ModelNotFoundError,
-    GatedRepoError
+    GatedRepoError,
+    OfflineModeIsEnabled,
+    RevisionNotFoundError,
+    raise_for_status
 )
 from . import logging
 
-logger = logging.get_logger(__name__)  # pylint: disable=invalid-name
+logger = logging.get_logger(__name__)
 
 _CACHED_NO_EXIST = object()
 _CACHED_NO_EXIST_T = Any
 
-_is_offline_mode = True if os.environ.get("TRANSFORMERS_OFFLINE", "0").upper() in ENV_VARS_TRUE_VALUES else False
+_is_offline_mode = os.environ.get("MINDNLP_OFFLINE", "0").upper() in ENV_VARS_TRUE_VALUES
 
 def is_offline_mode():
+    """
+    This function checks if the application is running in offline mode.
+    
+    Returns:
+        None
+    
+    """
     return _is_offline_mode
 
 def is_remote_url(url_or_filename):
+    """
+    Args:
+        url_or_filename (str): The URL or filename to be checked for being a remote URL.
+        
+    Returns:
+        None: Returns None if the given URL is a remote URL (starts with 'http://' or 'https://').
+    
+    Raises:
+        N/A
+    """
     parsed = urlparse(url_or_filename)
     return parsed.scheme in ("http", "https")
 
@@ -157,7 +172,9 @@ def http_get(url, path=None, md5sum=None, download_file_name=None, proxies=None,
         os.makedirs(path)
 
     retry_cnt = 0
-    retry_limit = 3
+    retry_limit = 5
+    chunk_size = 1024
+    total_size = 0
 
     if download_file_name is None:
         name = extract_filename_from_url(url)
@@ -171,35 +188,55 @@ def http_get(url, path=None, md5sum=None, download_file_name=None, proxies=None,
         os.makedirs(file_path[:file_path.rfind('/')])
 
     while not (os.path.exists(file_path) and check_md5(file_path, md5sum)):
-        if retry_cnt < retry_limit:
-            retry_cnt += 1
+        # get downloaded size
+        tmp_file_path = file_path + "_tmp"
+        if os.path.exists(tmp_file_path) and retry_cnt != 0:
+            file_size = os.path.getsize(tmp_file_path)
+            headers['Range'] = f'bytes={file_size}-'
         else:
-            raise HTTPError(
-                f"Download from {url} failed. " "Retry limit reached")
+            file_size = 0
         req = requests.get(url, stream=True, timeout=10, proxies=proxies, headers=headers)
 
         status = req.status_code
-        if status == 404:
+
+        if status in (404, 500):
             raise EntryNotFoundError(f"Can not found url: {url}")
         if status == 401:
             raise GatedRepoError('You should have authorization to access the model.')
         if status == 429:
             raise HTTPError('Too many requests.')
-        tmp_file_path = file_path + "_tmp"
-        total_size = req.headers.get("content-length")
-        with open(tmp_file_path, "wb") as file:
-            if total_size:
-                with tqdm(
-                    total=int(total_size), unit="B", unit_scale=True, unit_divisor=1024
-                ) as pbar:
-                    for chunk in req.iter_content(chunk_size=1024):
-                        file.write(chunk)
-                        pbar.update(len(chunk))
+        try:
+            if file_size == 0:
+                total_size = int(req.headers.get('content-length', 0))
             else:
-                for chunk in req.iter_content(chunk_size=1024):
-                    if chunk:
-                        file.write(chunk)
-        shutil.move(tmp_file_path, file_path)
+                if int(req.headers.get('content-length', 0)) == total_size:
+                    total_size = int(req.headers.get('content-length', 0))
+                    file_size = 0
+                else:
+                    total_size = int(req.headers.get('content-length', 0)) + file_size
+
+            with open(tmp_file_path, "ab" if file_size != 0 else "wb") as file:
+                with tqdm(
+                    total=int(total_size), unit="B", initial=file_size, unit_scale=True, unit_divisor=1024
+                ) as pbar:
+                    for chunk in req.iter_content(chunk_size=chunk_size):
+                        if chunk:
+                            file.write(chunk)
+                            pbar.update(len(chunk))
+
+            shutil.move(tmp_file_path, file_path)
+        except requests.exceptions.RequestException as e:
+            if retry_cnt > retry_limit:
+                raise
+            print(f"Failed to download: {e}")
+            print(f"Retrying... (attempt {retry_cnt}/{retry_limit})")
+            time.sleep(1)  # Add a small delay before retrying
+
+        if retry_cnt < retry_limit:
+            retry_cnt += 1
+        else:
+            raise HTTPError(
+                f"Download from {url} failed. " "Retry limit reached")
 
     return file_path
 
@@ -270,6 +307,88 @@ def get_filepath(path: str):
         return path
     raise FileNotFoundError(f"{path} is not a valid file or directory.")
 
+def get_file_from_repo(
+    path_or_repo: Union[str, os.PathLike],
+    filename: str,
+    cache_dir: Optional[Union[str, os.PathLike]] = None,
+    force_download: bool = False,
+    resume_download: bool = False,
+    proxies: Optional[Dict[str, str]] = None,
+    token: Optional[Union[bool, str]] = None,
+    revision: Optional[str] = None,
+    local_files_only: bool = False,
+    subfolder: str = "",
+):
+    """
+    Tries to locate a file in a local folder and repo, downloads and cache it if necessary.
+
+    Args:
+        path_or_repo (`str` or `os.PathLike`):
+            This can be either:
+
+            - a string, the *model id* of a model repo on hf-mirror.com.
+            - a path to a *directory* potentially containing the file.
+        filename (`str`):
+            The name of the file to locate in `path_or_repo`.
+        cache_dir (`str` or `os.PathLike`, *optional*):
+            Path to a directory in which a downloaded pretrained model configuration should be cached if the standard
+            cache should not be used.
+        force_download (`bool`, *optional*, defaults to `False`):
+            Whether or not to force to (re-)download the configuration files and override the cached versions if they
+            exist.
+        resume_download (`bool`, *optional*, defaults to `False`):
+            Whether or not to delete incompletely received file. Attempts to resume the download if such a file exists.
+        proxies (`Dict[str, str]`, *optional*):
+            A dictionary of proxy servers to use by protocol or endpoint, e.g., `{'http': 'foo.bar:3128',
+            'http://hostname': 'foo.bar:4012'}.` The proxies are used on each request.
+        token (`str` or *bool*, *optional*):
+            The token to use as HTTP bearer authorization for remote files. If `True`, will use the token generated
+            when running `huggingface-cli login` (stored in `~/.huggingface`).
+        revision (`str`, *optional*, defaults to `"main"`):
+            The specific model version to use. It can be a branch name, a tag name, or a commit id, since we use a
+            git-based system for storing models and other artifacts on hf-mirror.com, so `revision` can be any
+            identifier allowed by git.
+        local_files_only (`bool`, *optional*, defaults to `False`):
+            If `True`, will only try to load the tokenizer configuration from local files.
+        subfolder (`str`, *optional*, defaults to `""`):
+            In case the relevant files are located inside a subfolder of the model repo on hf-mirror.com, you can
+            specify the folder name here.
+
+    <Tip>
+
+    Passing `token=True` is required when you want to use a private model.
+
+    </Tip>
+
+    Returns:
+        `Optional[str]`: Returns the resolved file (to the cache folder if downloaded from a repo) or `None` if the
+        file does not exist.
+
+    Examples:
+
+    ```python
+    # Download a tokenizer configuration from hf-mirror.com and cache.
+    tokenizer_config = get_file_from_repo("google-bert/bert-base-uncased", "tokenizer_config.json")
+    # This model does not have a tokenizer config so the result will be None.
+    tokenizer_config = get_file_from_repo("FacebookAI/xlm-roberta-base", "tokenizer_config.json")
+    ```
+    """
+    return cached_file(
+        path_or_repo_id=path_or_repo,
+        filename=filename,
+        cache_dir=cache_dir,
+        force_download=force_download,
+        resume_download=resume_download,
+        proxies=proxies,
+        token=token,
+        revision=revision,
+        local_files_only=local_files_only,
+        subfolder=subfolder,
+        _raise_exceptions_for_gated_repo=False,
+        _raise_exceptions_for_missing_entries=False,
+        _raise_exceptions_for_connection_errors=False,
+    )
+
 
 def cached_file(
     path_or_repo_id: Union[str, os.PathLike],
@@ -282,11 +401,13 @@ def cached_file(
     revision = 'main',
     token = None,
     subfolder: str = "",
+    mirror: str = 'huggingface',
     repo_type: Optional[str] = None,
     user_agent: Optional[Union[str, Dict[str, str]]] = None,
     _raise_exceptions_for_gated_repo: bool = True,
     _raise_exceptions_for_missing_entries: bool = True,
     _raise_exceptions_for_connection_errors: bool = True,
+    _commit_hash: str = None,
 ):
     """
     Tries to locate a file in a local folder and repo, downloads and cache it if necessary.
@@ -295,7 +416,7 @@ def cached_file(
         path_or_repo_id (`str` or `os.PathLike`):
             This can be either:
 
-            - a string, the *model id* of a model repo on huggingface.co.
+            - a string, the *model id* of a model repo on hf-mirror.com.
             - a path to a *directory* potentially containing the file.
         filename (`str`):
             The name of the file to locate in `path_or_repo`.
@@ -316,7 +437,7 @@ def cached_file(
         local_files_only (`bool`, *optional*, defaults to `False`):
             If `True`, will only try to load the tokenizer configuration from local files.
         subfolder (`str`, *optional*, defaults to `""`):
-            In case the relevant files are located inside a subfolder of the model repo on huggingface.co, you can
+            In case the relevant files are located inside a subfolder of the model repo on hf-mirror.com, you can
             specify the folder name here.
         repo_type (`str`, *optional*):
             Specify the repo type (useful when downloading from a space for instance).
@@ -391,7 +512,8 @@ def cached_file(
             resume_download=resume_download,
             local_files_only=local_files_only,
             revision=revision,
-            token=token
+            token=token,
+            mirror=mirror
         )
     except GatedRepoError as e:
         if not _raise_exceptions_for_missing_entries:
@@ -399,8 +521,7 @@ def cached_file(
         if resolved_file is not None or not _raise_exceptions_for_gated_repo:
             return resolved_file
         raise EnvironmentError(
-            "You are trying to access a gated repo.\nMake sure to have access to it at "
-            f"https://huggingface.co/{path_or_repo_id}.\n{str(e)}"
+            "You are trying to access a gated repo.\nMake sure to have access to it."
         ) from e
     except RepositoryNotFoundError as e:
         raise EnvironmentError(
@@ -453,6 +574,7 @@ def download(
     local_files_only: bool = False,
     revision: str = 'main',
     token: str = None,
+    mirror: str = 'huggingface'
 ) -> str:
     """Download a given file if it's not already present in the local cache.
     """
@@ -491,33 +613,22 @@ def download(
     if os.path.exists(pointer_path) and not force_download:
         return pointer_path
 
-    url = build_download_url(repo_id, filename, revision, repo_type=repo_type)
-    # check model whether exist
-    model_url = url[: url.rfind(repo_id) + len(repo_id)]
-
+    url = build_download_url(repo_id, filename, revision, repo_type=repo_type, mirror=mirror)
     token = HF_TOKEN if not token else token
 
     headers = None
     if token:
         headers = {
-            'authorization': f"Bearer {token}"
+            'authorization': f"Bearer {token}",
         }
-
+    else:
+        headers = {}
     try:
-        req = requests.head(model_url, timeout=3, proxies=proxies, headers=headers)
-        if req.status_code >= 400:
-            raise RepositoryNotFoundError(f"Can not found model: {repo_id}")
         pointer_path = http_get(url, storage_folder, download_file_name=relative_filename, proxies=proxies, headers=headers)
-    except (requests.exceptions.SSLError, requests.exceptions.ProxyError):
-        # Actually raise for those subclasses of ConnectionError
-        raise
-    except (
-        requests.exceptions.ConnectionError,
-        requests.exceptions.Timeout,
-    ):
+    except Exception:
         # Otherwise, our Internet connection is down.
         # etag is None
-        return None
+        raise
 
     return pointer_path
 
@@ -631,7 +742,7 @@ def try_to_load_from_cache(
         cache_dir (`str` or `os.PathLike`):
             The folder where the cached files lie.
         repo_id (`str`):
-            The ID of the repo on huggingface.co.
+            The ID of the repo on hf-mirror.com.
         filename (`str`):
             The filename to look for inside `repo_id`.
         revision (`str`, *optional*):
@@ -695,6 +806,7 @@ def get_checkpoint_shard_files(
     token=None,
     user_agent=None,
     subfolder="",
+    mirror='huggingface'
 ):
     """
     For a given model:
@@ -706,7 +818,6 @@ def get_checkpoint_shard_files(
     For the description of each arg, see [`PreTrainedModel.from_pretrained`]. `index_filename` is the full path to the
     index (downloaded and cached if `pretrained_model_name_or_path` is a model ID on the Hub).
     """
-
     if not os.path.isfile(index_filename):
         raise ValueError(f"Can't find a checkpoint index ({index_filename}) in {pretrained_model_name_or_path}.")
 
@@ -745,7 +856,8 @@ def get_checkpoint_shard_files(
                 user_agent=user_agent,
                 subfolder=subfolder,
                 revision=revision,
-                token=token
+                token=token,
+                mirror=mirror
             )
         # We have already dealt with RepositoryNotFoundError and RevisionNotFoundError when getting the index, so
         # we don't have to catch them here.
@@ -764,6 +876,13 @@ def get_checkpoint_shard_files(
 
     return cached_filenames, sharded_metadata
 
+MIRROR_MAP = {
+    'huggingface': HF_URL_BASE,
+    'modelscope': MS_URL_BASE,
+    'wisemodel': "https://awsdownload.wisemodel.cn/file-proxy/{}/-/raw/{}/{}",
+    'gitee': "https://ai.gitee.com/huggingface/{}/resolve/{}/{}",
+    'aifast': "https://aifasthub.com/models/{}/{}",
+}
 
 def build_download_url(
     repo_id: str,
@@ -772,7 +891,156 @@ def build_download_url(
     *,
     subfolder: Optional[str] = None,
     repo_type: Optional[str] = None,
+    mirror: str = 'huggingface'
 ) -> str:
     """Construct the URL of a file from the given information.
     """
-    return HF_URL_BASE.format(repo_id, revision, filename)
+    if revision is None:
+        revision = 'main'
+    if mirror not in MIRROR_MAP:
+        raise ValueError('The mirror name not support, please use one of the mirror website below: '
+                         '["huggingface", "modelscope", "wisemodel", "gitee", "aifast"]')
+    if mirror in ('huggingface', 'gitee', 'modelscope', 'wisemodel'):
+        if mirror == 'modelscope' and revision == 'main':
+            revision = 'master'
+        return MIRROR_MAP[mirror].format(repo_id, revision, filename)
+    if revision is not None and revision != 'main':
+        logger.warning(f'`revision` is not support when use "{mirror}" website. '
+                    f'If you want use specific revision, please use "modelscope", "huggingface" or "gitee".')
+    return MIRROR_MAP[mirror].format(repo_id, filename)
+
+
+REGEX_COMMIT_HASH = re.compile(r"^[0-9a-f]{40}$")
+
+def extract_commit_hash(resolved_file: Optional[str], commit_hash: Optional[str]) -> Optional[str]:
+    """
+    Extracts the commit hash from a resolved filename toward a cache file.
+    """
+    if resolved_file is None or commit_hash is not None:
+        return commit_hash
+    resolved_file = str(Path(resolved_file).as_posix())
+    search = re.search(r"snapshots/([^/]+)/", resolved_file)
+    if search is None:
+        return None
+    commit_hash = search.groups()[0]
+    return commit_hash if REGEX_COMMIT_HASH.match(commit_hash) else None
+
+def has_file(
+    path_or_repo: Union[str, os.PathLike],
+    filename: str,
+    revision: Optional[str] = None,
+    proxies: Optional[Dict[str, str]] = None,
+    token: Optional[Union[bool, str]] = None,
+    mirror: str = 'huggingface',
+    *,
+    local_files_only: bool = False,
+    cache_dir: Union[str, Path, None] = None,
+    repo_type: Optional[str] = None,
+    **deprecated_kwargs,
+):
+    """
+    Checks if a repo contains a given file without downloading it. Works for remote repos and local folders.
+
+    If offline mode is enabled, checks if the file exists in the cache.
+
+    <Tip warning={false}>
+
+    This function will raise an error if the repository `path_or_repo` is not valid or if `revision` does not exist for
+    this repo, but will return False for regular connection errors.
+
+    </Tip>
+    """
+
+    # If path to local directory, check if the file exists
+    if os.path.isdir(path_or_repo):
+        return os.path.isfile(os.path.join(path_or_repo, filename))
+
+    # Else it's a repo => let's check if the file exists in local cache or on the Hub
+
+    # Check if file exists in cache
+    # This information might be outdated so it's best to also make a HEAD call (if allowed).
+    cached_path = try_to_load_from_cache(
+        repo_id=path_or_repo,
+        filename=filename,
+        revision=revision,
+        repo_type=repo_type,
+        cache_dir=cache_dir,
+    )
+    has_file_in_cache = isinstance(cached_path, str)
+
+    # If local_files_only, don't try the HEAD call
+    if local_files_only:
+        return has_file_in_cache
+
+    # Check if the file exists
+    try:
+        url = build_download_url(path_or_repo, filename, revision, repo_type=repo_type, mirror=mirror)
+        if token:
+            headers = {
+                'authorization': f"Bearer {token}",
+            }
+        else:
+            headers = {}
+        response = requests.head(url, timeout=10, allow_redirects=False, proxies=proxies, headers=headers)
+
+    except OfflineModeIsEnabled:
+        return has_file_in_cache
+
+    try:
+        raise_for_status(response)
+        return True
+    except GatedRepoError as e:
+        logger.error(e)
+        raise EnvironmentError(
+            f"{path_or_repo} is a gated repository. Make sure to request access at "
+            f"https://huggingface.co/{path_or_repo} and pass a token having permission to this repo either by "
+            "logging in with `huggingface-cli login` or by passing `token=<your_token>`."
+        ) from e
+    except RepositoryNotFoundError as e:
+        logger.error(e)
+        raise EnvironmentError(
+            f"{path_or_repo} is not a local folder or a valid repository name on 'https://hf.co'."
+        ) from e
+    except RevisionNotFoundError as e:
+        logger.error(e)
+        raise EnvironmentError(
+            f"{revision} is not a valid git identifier (branch name, tag name or commit id) that exists for this "
+            f"model name. Check the model page at 'https://huggingface.co/{path_or_repo}' for available revisions."
+        ) from e
+    except EntryNotFoundError:
+        return False  # File does not exist
+    except requests.HTTPError:
+        # Any authentication/authorization error will be caught here => default to cache
+        return has_file_in_cache
+
+def convert_file_size_to_int(size: Union[int, str]):
+    """
+    Converts a size expressed as a string with digits an unit (like `"5MB"`) to an integer (in bytes).
+
+    Args:
+        size (`int` or `str`): The size to convert. Will be directly returned if an `int`.
+
+    Example:
+    ```py
+    >>> convert_file_size_to_int("1MiB")
+    1048576
+    ```
+    """
+    if isinstance(size, int):
+        return size
+    if size.upper().endswith("GIB"):
+        return int(size[:-3]) * (2**30)
+    if size.upper().endswith("MIB"):
+        return int(size[:-3]) * (2**20)
+    if size.upper().endswith("KIB"):
+        return int(size[:-3]) * (2**10)
+    if size.upper().endswith("GB"):
+        int_size = int(size[:-2]) * (10**9)
+        return int_size // 8 if size.endswith("b") else int_size
+    if size.upper().endswith("MB"):
+        int_size = int(size[:-2]) * (10**6)
+        return int_size // 8 if size.endswith("b") else int_size
+    if size.upper().endswith("KB"):
+        int_size = int(size[:-2]) * (10**3)
+        return int_size // 8 if size.endswith("b") else int_size
+    raise ValueError("`size` is not in a valid format. Use an integer followed by the unit, e.g., '5GB'.")

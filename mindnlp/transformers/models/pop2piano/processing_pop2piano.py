@@ -14,13 +14,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ============================================================================
-# pylint: disable=invalid-name
-# pylint: disable=arguments-renamed
-# pylint: disable=invalid-unary-operand-type
-# pylint: disable=missing-function-docstring
-# pylint: disable=missing-class-docstring
-# pylint: disable=cyclic-import
-# pylint: disable=no-value-for-parameter
 """ Processor class for Pop2Piano. """
 import os
 from typing import List, Optional, Union
@@ -46,13 +39,9 @@ class Pop2PianoProcessor(ProcessorMixin):
         tokenizer (`Pop2PianoTokenizer`):
             An instance of ['Pop2PianoTokenizer`]. The tokenizer is a required input.
     """
-
     attributes = ["feature_extractor", "tokenizer"]
     feature_extractor_class = "Pop2PianoFeatureExtractor"
     tokenizer_class = "Pop2PianoTokenizer"
-
-    def __init__(self, feature_extractor, tokenizer):
-        super().__init__(feature_extractor, tokenizer)
 
     def __call__(
         self,
@@ -74,7 +63,6 @@ class Pop2PianoProcessor(ProcessorMixin):
 
         Please refer to the docstring of the above two methods for more information.
         """
-
         # Since Feature Extractor needs both audio and sampling_rate and tokenizer needs both token_ids and
         # feature_extractor_output, we must check for both.
         if (audio is None and sampling_rate is None) and (notes is None):
@@ -109,7 +97,6 @@ class Pop2PianoProcessor(ProcessorMixin):
         if audio is None or sampling_rate is None:
             return encoded_token_ids
 
-
         inputs["token_ids"] = encoded_token_ids["token_ids"]
         return inputs
 
@@ -124,18 +111,43 @@ class Pop2PianoProcessor(ProcessorMixin):
 
         Please refer to the docstring of the above two methods for more information.
         """
-
         return self.tokenizer.batch_decode(
             token_ids=token_ids, feature_extractor_output=feature_extractor_output, return_midi=return_midi
         )
 
     @property
     def model_input_names(self):
+        """
+        Returns a list of model input names for the Pop2PianoProcessor.
+        
+        Args:
+            self: The instance of the Pop2PianoProcessor class.
+        
+        Returns:
+            None.
+        
+        Raises:
+            None.
+        """
         tokenizer_input_names = self.tokenizer.model_input_names
         feature_extractor_input_names = self.feature_extractor.model_input_names
         return list(dict.fromkeys(tokenizer_input_names + feature_extractor_input_names))
 
     def save_pretrained(self, save_directory, **kwargs):
+        """
+        Save the model and its configuration file to a directory. If the directory does not exist, it will be created.
+        
+        Args:
+            self (Pop2PianoProcessor): The instance of the Pop2PianoProcessor class.
+            save_directory (str): The directory path where the model and its configuration file will be saved.
+                It should be a directory and not a file.
+        
+        Returns:
+            None.
+        
+        Raises:
+            ValueError: If the provided save_directory already exists as a file instead of a directory.
+        """
         if os.path.isfile(save_directory):
             raise ValueError(f"Provided path ({save_directory}) should be a directory, not a file.")
         os.makedirs(save_directory, exist_ok=True)
@@ -143,6 +155,19 @@ class Pop2PianoProcessor(ProcessorMixin):
 
     @classmethod
     def from_pretrained(cls, pretrained_model_name_or_path, **kwargs):
+        """
+        This method creates an instance of the Pop2PianoProcessor class from a pretrained model.
+        
+        Args:
+            cls (class): The class object itself, automatically passed as the first argument.
+            pretrained_model_name_or_path (str): The name or path of the pretrained model to be used for initialization.
+        
+        Returns:
+            None.
+        
+        Raises:
+            Any exceptions raised by the _get_arguments_from_pretrained method.
+        """
         args = cls._get_arguments_from_pretrained(pretrained_model_name_or_path, **kwargs)
         return cls(*args)
 

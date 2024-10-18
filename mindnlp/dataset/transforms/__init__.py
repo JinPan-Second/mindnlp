@@ -12,25 +12,17 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ============================================================================
-# pylint: disable=C0413
-# pylint: disable=C0412
-# pylint: disable=C0411
-
 """
 dataset processing transforms
 """
 
-from mindnlp.utils import less_min_pynative_first
-
-if less_min_pynative_first:
-    from mindnlp._legacy.transforms import Truncate, AddToken
-else:
-    from mindspore.dataset.text import Truncate, AddToken
+from mindspore.dataset.text import Truncate, AddToken
 
 from .lookup import Lookup
 from .basic_tokenizer import BasicTokenizer
 from .pad_transform import PadTransform
+from .jieba_tokenizer import JiebaTokenizer
 
 __all__ = [
-    'Truncate', 'AddToken', 'Lookup', 'PadTransform', 'BasicTokenizer',
+    'Truncate', 'AddToken', 'Lookup', 'PadTransform', 'BasicTokenizer', 'JiebaTokenizer'
 ]

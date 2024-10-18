@@ -21,20 +21,20 @@ from ...configuration_utils import PretrainedConfig
 logger = logging.get_logger(__name__)
 
 DISTILBERT_PRETRAINED_CONFIG_ARCHIVE_MAP = {
-    "distilbert-base-uncased": "https://huggingface.co/distilbert-base-uncased/resolve/main/config.json",
+    "distilbert-base-uncased": "https://hf-mirror.com/distilbert-base-uncased/resolve/main/config.json",
     "distilbert-base-uncased-distilled-squad": (
-        "https://huggingface.co/distilbert-base-uncased-distilled-squad/resolve/main/config.json"
+        "https://hf-mirror.com/distilbert-base-uncased-distilled-squad/resolve/main/config.json"
     ),
-    "distilbert-base-cased": "https://huggingface.co/distilbert-base-cased/resolve/main/config.json",
+    "distilbert-base-cased": "https://hf-mirror.com/distilbert-base-cased/resolve/main/config.json",
     "distilbert-base-cased-distilled-squad": (
-        "https://huggingface.co/distilbert-base-cased-distilled-squad/resolve/main/config.json"
+        "https://hf-mirror.com/distilbert-base-cased-distilled-squad/resolve/main/config.json"
     ),
-    "distilbert-base-german-cased": "https://huggingface.co/distilbert-base-german-cased/resolve/main/config.json",
+    "distilbert-base-german-cased": "https://hf-mirror.com/distilbert-base-german-cased/resolve/main/config.json",
     "distilbert-base-multilingual-cased": (
-        "https://huggingface.co/distilbert-base-multilingual-cased/resolve/main/config.json"
+        "https://hf-mirror.com/distilbert-base-multilingual-cased/resolve/main/config.json"
     ),
     "distilbert-base-uncased-finetuned-sst-2-english": (
-        "https://huggingface.co/distilbert-base-uncased-finetuned-sst-2-english/resolve/main/config.json"
+        "https://hf-mirror.com/distilbert-base-uncased-finetuned-sst-2-english/resolve/main/config.json"
     ),
 }
 
@@ -44,7 +44,7 @@ class DistilBertConfig(PretrainedConfig):
     This is the configuration class to store the configuration of a [`DistilBertModel`] or a [`TFDistilBertModel`]. It
     is used to instantiate a DistilBERT model according to the specified arguments, defining the model architecture.
     Instantiating a configuration with the defaults will yield a similar configuration to that of the DistilBERT
-    [distilbert-base-uncased](https://huggingface.co/distilbert-base-uncased) architecture.
+    [distilbert-base-uncased](https://hf-mirror.com/distilbert-base-uncased) architecture.
 
     Configuration objects inherit from [`PretrainedConfig`] and can be used to control the model outputs. Read the
     documentation from [`PretrainedConfig`] for more information.
@@ -81,21 +81,20 @@ class DistilBertConfig(PretrainedConfig):
             The dropout probabilities used in the sequence classification and the multiple choice model
             [`DistilBertForSequenceClassification`].
 
-    Examples:
-
-    ```python
-    >>> from transformers import DistilBertConfig, DistilBertModel
-
-    >>> # Initializing a DistilBERT configuration
-    >>> configuration = DistilBertConfig()
-
-    >>> # Initializing a model (with random weights) from the configuration
-    >>> model = DistilBertModel(configuration)
-
-    >>> # Accessing the model configuration
-    >>> configuration = model.config
-    ```"""
-
+    Example:
+        ```python
+        >>> from transformers import DistilBertConfig, DistilBertModel
+        ...
+        >>> # Initializing a DistilBERT configuration
+        >>> configuration = DistilBertConfig()
+        ...
+        >>> # Initializing a model (with random weights) from the configuration
+        >>> model = DistilBertModel(configuration)
+        ...
+        >>> # Accessing the model configuration
+        >>> configuration = model.config
+        ```
+    """
     model_type = "distilbert"
     attribute_map = {
         "hidden_size": "dim",
@@ -121,6 +120,32 @@ class DistilBertConfig(PretrainedConfig):
         pad_token_id=0,
         **kwargs,
     ):
+        """
+        Initializes a new instance of the DistilBertConfig class.
+        
+        Args:
+            self (DistilBertConfig): The instance that the method is called on.
+            vocab_size (int, optional): The size of the vocabulary. Defaults to 30522.
+            max_position_embeddings (int, optional): The maximum number of tokens in a sequence. Defaults to 512.
+            sinusoidal_pos_embds (bool, optional): Whether to use sinusoidal positional embeddings. Defaults to False.
+            n_layers (int, optional): The number of layers in the transformer encoder. Defaults to 6.
+            n_heads (int, optional): The number of attention heads in each layer. Defaults to 12.
+            dim (int, optional): The dimensionality of the encoder layers. Defaults to 768.
+            hidden_dim (int, optional): The dimensionality of the hidden layers in the feed-forward network. Defaults to 4 * 768.
+            dropout (float, optional): The dropout probability for all fully connected layers. Defaults to 0.1.
+            attention_dropout (float, optional): The dropout probability for the attention layers. Defaults to 0.1.
+            activation (str, optional): The activation function used in the feed-forward network. Defaults to 'gelu'.
+            initializer_range (float, optional): The range of the initializer. Defaults to 0.02.
+            qa_dropout (float, optional): The dropout probability for the question answering head. Defaults to 0.1.
+            seq_classif_dropout (float, optional): The dropout probability for the sequence classification head. Defaults to 0.2.
+            pad_token_id (int, optional): The id of the padding token. Defaults to 0.
+        
+        Returns:
+            None
+        
+        Raises:
+            None
+        """
         self.vocab_size = vocab_size
         self.max_position_embeddings = max_position_embeddings
         self.sinusoidal_pos_embds = sinusoidal_pos_embds

@@ -11,8 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-# ============================================================================
-"""utils for peft"""
+"""peft utils"""
 import os
 from typing import Dict, Optional, Union
 
@@ -28,10 +27,14 @@ def find_adapter_config_file(
     model_id: str,
     cache_dir: Optional[Union[str, os.PathLike]] = None,
     force_download: bool = False,
-    resume_download: bool = False,
+    resume_download: Optional[bool] = None,
     proxies: Optional[Dict[str, str]] = None,
+    token: Optional[Union[bool, str]] = None,
+    revision: Optional[str] = None,
     local_files_only: bool = False,
     subfolder: str = "",
+    mirror: str = "huggingface",
+    _commit_hash: Optional[str] = None,
 ) -> Optional[str]:
     r"""
     Simply checks if the model stored on the Hub or locally is an adapter model or not, return the path of the adapter
@@ -46,8 +49,9 @@ def find_adapter_config_file(
         force_download (`bool`, *optional*, defaults to `False`):
             Whether or not to force to (re-)download the configuration files and override the cached versions if they
             exist.
-        resume_download (`bool`, *optional*, defaults to `False`):
-            Whether or not to delete incompletely received file. Attempts to resume the download if such a file exists.
+        resume_download:
+            Deprecated and ignored. All downloads are now resumed by default when possible.
+            Will be removed in v5 of Transformers.
         proxies (`Dict[str, str]`, *optional*):
             A dictionary of proxy servers to use by protocol or endpoint, e.g., `{'http': 'foo.bar:3128',
             'http://hostname': 'foo.bar:4012'}.` The proxies are used on each request.
@@ -74,7 +78,7 @@ def find_adapter_config_file(
     adapter_cached_filename = None
     if model_id is None:
         return None
-    if os.path.isdir(model_id):
+    elif os.path.isdir(model_id):
         list_remote_files = os.listdir(model_id)
         if ADAPTER_CONFIG_NAME in list_remote_files:
             adapter_cached_filename = os.path.join(model_id, ADAPTER_CONFIG_NAME)
@@ -86,10 +90,11 @@ def find_adapter_config_file(
             force_download=force_download,
             resume_download=resume_download,
             proxies=proxies,
-            # token=token,
-            # revision=revision,
+            token=token,
+            revision=revision,
             local_files_only=local_files_only,
             subfolder=subfolder,
+            mirror=mirror,
             # _commit_hash=_commit_hash,
             _raise_exceptions_for_gated_repo=False,
             _raise_exceptions_for_missing_entries=False,

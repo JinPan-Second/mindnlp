@@ -32,25 +32,25 @@ VOCAB_FILES_NAMES = {"vocab_file": "vocab.json", "merges_file": "merges.txt", "t
 
 PRETRAINED_VOCAB_FILES_MAP = {
     "vocab_file": {
-        "gpt2": "https://huggingface.co/gpt2/resolve/main/vocab.json",
-        "gpt2-medium": "https://huggingface.co/gpt2-medium/resolve/main/vocab.json",
-        "gpt2-large": "https://huggingface.co/gpt2-large/resolve/main/vocab.json",
-        "gpt2-xl": "https://huggingface.co/gpt2-xl/resolve/main/vocab.json",
-        "distilgpt2": "https://huggingface.co/distilgpt2/resolve/main/vocab.json",
+        "gpt2": "https://hf-mirror.com/gpt2/resolve/main/vocab.json",
+        "gpt2-medium": "https://hf-mirror.com/gpt2-medium/resolve/main/vocab.json",
+        "gpt2-large": "https://hf-mirror.com/gpt2-large/resolve/main/vocab.json",
+        "gpt2-xl": "https://hf-mirror.com/gpt2-xl/resolve/main/vocab.json",
+        "distilgpt2": "https://hf-mirror.com/distilgpt2/resolve/main/vocab.json",
     },
     "merges_file": {
-        "gpt2": "https://huggingface.co/gpt2/resolve/main/merges.txt",
-        "gpt2-medium": "https://huggingface.co/gpt2-medium/resolve/main/merges.txt",
-        "gpt2-large": "https://huggingface.co/gpt2-large/resolve/main/merges.txt",
-        "gpt2-xl": "https://huggingface.co/gpt2-xl/resolve/main/merges.txt",
-        "distilgpt2": "https://huggingface.co/distilgpt2/resolve/main/merges.txt",
+        "gpt2": "https://hf-mirror.com/gpt2/resolve/main/merges.txt",
+        "gpt2-medium": "https://hf-mirror.com/gpt2-medium/resolve/main/merges.txt",
+        "gpt2-large": "https://hf-mirror.com/gpt2-large/resolve/main/merges.txt",
+        "gpt2-xl": "https://hf-mirror.com/gpt2-xl/resolve/main/merges.txt",
+        "distilgpt2": "https://hf-mirror.com/distilgpt2/resolve/main/merges.txt",
     },
     "tokenizer_file": {
-        "gpt2": "https://huggingface.co/gpt2/resolve/main/tokenizer.json",
-        "gpt2-medium": "https://huggingface.co/gpt2-medium/resolve/main/tokenizer.json",
-        "gpt2-large": "https://huggingface.co/gpt2-large/resolve/main/tokenizer.json",
-        "gpt2-xl": "https://huggingface.co/gpt2-xl/resolve/main/tokenizer.json",
-        "distilgpt2": "https://huggingface.co/distilgpt2/resolve/main/tokenizer.json",
+        "gpt2": "https://hf-mirror.com/gpt2/resolve/main/tokenizer.json",
+        "gpt2-medium": "https://hf-mirror.com/gpt2-medium/resolve/main/tokenizer.json",
+        "gpt2-large": "https://hf-mirror.com/gpt2-large/resolve/main/tokenizer.json",
+        "gpt2-xl": "https://hf-mirror.com/gpt2-xl/resolve/main/tokenizer.json",
+        "distilgpt2": "https://hf-mirror.com/distilgpt2/resolve/main/tokenizer.json",
     },
 }
 
@@ -71,16 +71,16 @@ class GPT2TokenizerFast(PreTrainedTokenizerFast):
     This tokenizer has been trained to treat spaces like parts of the tokens (a bit like sentencepiece) so a word will
     be encoded differently whether it is at the beginning of the sentence (without space) or not:
 
-    ```python
-    >>> from transformers import GPT2TokenizerFast
-
-    >>> tokenizer = GPT2TokenizerFast.from_pretrained("gpt2")
-    >>> tokenizer("Hello world")["input_ids"]
-    [15496, 995]
-
-    >>> tokenizer(" Hello world")["input_ids"]
-    [18435, 995]
-    ```
+    Example:
+        ```python
+        >>> from transformers import GPT2TokenizerFast
+        ...
+        >>> tokenizer = GPT2TokenizerFast.from_pretrained("gpt2")
+        >>> tokenizer("Hello world")["input_ids"]
+        [15496, 995]
+        >>> tokenizer(" Hello world")["input_ids"]
+        [18435, 995]
+        ```
 
     You can get around that behavior by passing `add_prefix_space=True` when instantiating this tokenizer, but since
     the model was not pretrained this way, it might yield a decrease in performance.
@@ -113,7 +113,6 @@ class GPT2TokenizerFast(PreTrainedTokenizerFast):
             Whether or not to add an initial space to the input. This allows to treat the leading word just as any
             other word. (GPT2 tokenizer detect beginning of words by the preceding space).
     """
-
     vocab_files_names = VOCAB_FILES_NAMES
     pretrained_vocab_files_map = PRETRAINED_VOCAB_FILES_MAP
     max_model_input_sizes = PRETRAINED_POSITIONAL_EMBEDDINGS_SIZES
@@ -131,6 +130,27 @@ class GPT2TokenizerFast(PreTrainedTokenizerFast):
         add_prefix_space=False,
         **kwargs,
     ):
+        """
+        __init__
+
+        Initializes a new instance of the GPT2TokenizerFast class.
+
+        Args:
+            self: The instance of the class.
+            vocab_file (str, optional): The path to the vocabulary file. Defaults to None.
+            merges_file (str, optional): The path to the merges file. Defaults to None.
+            tokenizer_file (str, optional): The path to the tokenizer file. Defaults to None.
+            unk_token (str, optional): The unknown token. Defaults to 'endoftext'.
+            bos_token (str, optional): The beginning of sentence token. Defaults to 'endoftext'.
+            eos_token (str, optional): The end of sentence token. Defaults to 'endoftext'.
+            add_prefix_space (bool, optional): A flag indicating whether to add a prefix space. Defaults to False.
+
+        Returns:
+            None.
+
+        Raises:
+            None.
+        """
         super().__init__(
             vocab_file,
             merges_file,
@@ -153,6 +173,21 @@ class GPT2TokenizerFast(PreTrainedTokenizerFast):
         self.add_prefix_space = add_prefix_space
 
     def _batch_encode_plus(self, *args, **kwargs) -> BatchEncoding:
+        """
+        This method '_batch_encode_plus' is defined in the class 'GPT2TokenizerFast'. It takes the following parameters:
+
+        Args:
+            self: (object) The instance of the class.
+
+        Returns:
+            (BatchEncoding) An instance of the 'BatchEncoding' class containing the encoded inputs.
+
+        Raises:
+            AssertionError: If the 'add_prefix_space' is False and the 'is_split_into_words' is also False,
+                an assertion error is raised with the message 'You need to instantiate GPT2TokenizerFast with
+                add_prefix_space=True to use it with pretokenized inputs'.
+            Any other exceptions: raised by the 'super()._batch_encode_plus' method.
+        """
         is_split_into_words = kwargs.get("is_split_into_words", False)
         assert self.add_prefix_space or not is_split_into_words, (
             f"You need to instantiate {self.__class__.__name__} with add_prefix_space=True "
@@ -162,6 +197,33 @@ class GPT2TokenizerFast(PreTrainedTokenizerFast):
         return super()._batch_encode_plus(*args, **kwargs)
 
     def _encode_plus(self, *args, **kwargs) -> BatchEncoding:
+        """Encodes the input text into a batch of numerical representations using the GPT2TokenizerFast.
+
+        Args:
+            self (GPT2TokenizerFast): An instance of the GPT2TokenizerFast class.
+
+        Returns:
+            BatchEncoding: A dictionary-like object containing the encoded inputs.
+
+        Raises:
+            AssertionError: If the 'is_split_into_words' parameter is set to True and the 'add_prefix_space' parameter
+            is set to False, an AssertionError is raised.
+
+        Note:
+            This method is intended to be used with pretokenized inputs. If the 'is_split_into_words' parameter
+            is set to True, make sure to instantiate the GPT2TokenizerFast class with 'add_prefix_space=True'.
+
+        Example:
+            ```python
+            >>> tokenizer = GPT2TokenizerFast()
+            >>> encoded_inputs = tokenizer._encode_plus("Hello, world!")
+            >>> print(encoded_inputs)
+            {'input_ids': [15496, 259, 114, 616], 'attention_mask': [1, 1, 1, 1]}
+            >>> tokenizer = GPT2TokenizerFast(add_prefix_space=True)
+            >>> encoded_inputs = tokenizer._encode_plus("Hello, world!", is_split_into_words=True)
+            AssertionError: You need to instantiate GPT2TokenizerFast with add_prefix_space=True to use it with pretokenized inputs.
+            ```
+        """
         is_split_into_words = kwargs.get("is_split_into_words", False)
 
         assert self.add_prefix_space or not is_split_into_words, (
@@ -172,6 +234,35 @@ class GPT2TokenizerFast(PreTrainedTokenizerFast):
         return super()._encode_plus(*args, **kwargs)
 
     def save_vocabulary(self, save_directory: str, filename_prefix: Optional[str] = None) -> Tuple[str]:
+        """
+        Save the vocabulary of the GPT2TokenizerFast model to the specified directory.
+
+        Args:
+            self (GPT2TokenizerFast): An instance of the GPT2TokenizerFast class.
+            save_directory (str): The directory where the vocabulary files will be saved.
+            filename_prefix (Optional[str], optional): An optional prefix to be added to the saved vocabulary file(s).
+                Defaults to None.
+
+        Returns:
+            Tuple[str]: A tuple containing the file path(s) where the vocabulary was saved.
+
+        Raises:
+            None
+
+        Note:
+            - The 'self' parameter represents the instance of the GPT2TokenizerFast class calling this method.
+            - The 'save_directory' parameter should be a valid directory path where the vocabulary files will be saved.
+            - The 'filename_prefix' parameter allows an optional prefix to be added to the saved vocabulary file(s). If not provided, no prefix will be added.
+            - The method returns a tuple containing the file path(s) where the vocabulary files were saved.
+
+        Example:
+            ```python
+            >>> tokenizer = GPT2TokenizerFast()
+            >>> tokenizer.save_vocabulary("path/to/save", filename_prefix="vocab")
+            >>> # The vocabulary files will be saved with the prefix "vocab" in the specified directory.
+            >>> # The method will return a tuple containing the file paths.
+            ```
+        """
         files = self._tokenizer.model.save(save_directory, name=filename_prefix)
         return tuple(files)
 
@@ -185,7 +276,7 @@ class GPT2TokenizerFast(PreTrainedTokenizerFast):
             "\nNo chat template is defined for this tokenizer - using the default template "
             f"for the {self.__class__.__name__} class. If the default is not appropriate for "
             "your model, please set `tokenizer.chat_template` to an appropriate template. "
-            "See https://huggingface.co/docs/transformers/main/chat_templating for more information.\n"
+            "See https://hf-mirror.com/docs/transformers/main/chat_templating for more information.\n"
         )
         return "{% for message in messages %}" "{{ message.content }}{{ eos_token }}" "{% endfor %}"
 

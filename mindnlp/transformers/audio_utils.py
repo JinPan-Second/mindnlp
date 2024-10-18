@@ -12,14 +12,14 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+# ============================================================================
 # pylint: disable=redefined-outer-name
-# pylint: disable=invalid-name
 """
 Audio processing functions to extract features from audio waveforms. This code is pure numpy to support all frameworks
 and remove unnecessary dependencies.
 """
 import warnings
-from typing import Optional, Union
+from typing import Optional, Union, Tuple
 
 import numpy as np
 
@@ -37,7 +37,6 @@ def hertz_to_mel(freq: Union[float, np.ndarray], mel_scale: str = "htk") -> Unio
     Returns:
         `float` or `np.ndarray`: The frequencies on the mel scale.
     """
-
     if mel_scale not in ["slaney", "htk", "kaldi"]:
         raise ValueError('mel_scale should be one of "htk", "slaney" or "kaldi".')
 
@@ -73,7 +72,6 @@ def mel_to_hertz(mels: Union[float, np.ndarray], mel_scale: str = "htk") -> Unio
     Returns:
         `float` or `np.ndarray`: The frequencies in hertz.
     """
-
     if mel_scale not in ["slaney", "htk", "kaldi"]:
         raise ValueError('mel_scale should be one of "htk", "slaney" or "kaldi".')
 
@@ -117,6 +115,104 @@ def _create_triangular_filter_bank(fft_freqs: np.ndarray, filter_freqs: np.ndarr
     up_slopes = slopes[:, 2:] / filter_diff[1:]
     return np.maximum(np.zeros(1), np.minimum(down_slopes, up_slopes))
 
+
+def hertz_to_octave(
+    freq: Union[float, np.ndarray], tuning: Optional[float] = 0.0, bins_per_octave: Optional[int] = 12
+):
+    """
+    Convert frequency from hertz to fractional octave numbers.
+    Adapted from *librosa*.
+
+    Args:
+        freq (`float` or `np.ndarray`):
+            The frequency, or multiple frequencies, in hertz (Hz).
+        tuning (`float`, defaults to `0.`):
+            Tuning deviation from the Stuttgart pitch (A440) in (fractional) bins per octave.
+        bins_per_octave (`int`, defaults to `12`):
+            Number of bins per octave.
+
+    Returns:
+        `float` or `np.ndarray`: The frequencies on the octave scale.
+    """
+    stuttgart_pitch = 440.0 * 2.0 ** (tuning / bins_per_octave)
+    octave = np.log2(freq / (float(stuttgart_pitch) / 16))
+    return octave
+
+
+def chroma_filter_bank(
+    num_frequency_bins: int,
+    num_chroma: int,
+    sampling_rate: int,
+    tuning: float = 0.0,
+    power: Optional[float] = 2.0,
+    weighting_parameters: Optional[Tuple[float]] = (5.0, 2),
+    start_at_c_chroma: Optional[bool] = True,
+):
+    """
+    Creates a chroma filter bank, i.e a linear transformation to project spectrogram bins onto chroma bins.
+
+    Adapted from *librosa*.
+
+    Args:
+        num_frequency_bins (`int`):
+            Number of frequencies used to compute the spectrogram (should be the same as in `stft`).
+        num_chroma (`int`):
+            Number of chroma bins (i.e pitch classes).
+        sampling_rate (`float`):
+            Sample rate of the audio waveform.
+        tuning (`float`):
+            Tuning deviation from A440 in fractions of a chroma bin.
+        power (`float`, *optional*, defaults to 2.0):
+            If 12.0, normalizes each column with their L2 norm. If 1.0, normalizes each column with their L1 norm.
+        weighting_parameters (`Tuple[float]`, *optional*, defaults to `(5., 2.)`):
+            If specified, apply a Gaussian weighting parameterized by the first element of the tuple being the center and
+            the second element being the Gaussian half-width.
+        start_at_c_chroma (`float`, *optional*, defaults to `True`):
+            If True, the filter bank will start at the 'C' pitch class. Otherwise, it will start at 'A'.
+
+    Returns:
+        `np.ndarray` of shape `(num_frequency_bins, num_chroma)`
+    """
+    # Get the FFT bins, not counting the DC component
+    frequencies = np.linspace(0, sampling_rate, num_frequency_bins, endpoint=False)[1:]
+
+    freq_bins = num_chroma * hertz_to_octave(frequencies, tuning=tuning, bins_per_octave=num_chroma)
+
+    # make up a value for the 0 Hz bin = 1.5 octaves below bin 1
+    # (so chroma is 50% rotated from bin 1, and bin width is broad)
+    freq_bins = np.concatenate(([freq_bins[0] - 1.5 * num_chroma], freq_bins))
+
+    bins_width = np.concatenate((np.maximum(freq_bins[1:] - freq_bins[:-1], 1.0), [1]))
+
+    chroma_filters = np.subtract.outer(freq_bins, np.arange(0, num_chroma, dtype="d")).T
+
+    num_chroma2 = np.round(float(num_chroma) / 2)
+
+    # Project into range -num_chroma/2 .. num_chroma/2
+    # add on fixed offset of 10*num_chroma to ensure all values passed to
+    # rem are positive
+    chroma_filters = np.remainder(chroma_filters + num_chroma2 + 10 * num_chroma, num_chroma) - num_chroma2
+
+    # Gaussian bumps - 2*D to make them narrower
+    chroma_filters = np.exp(-0.5 * (2 * chroma_filters / np.tile(bins_width, (num_chroma, 1))) ** 2)
+
+    # normalize each column
+    if power is not None:
+        chroma_filters = chroma_filters / np.sum(chroma_filters**power, axis=0, keepdims=True) ** (1.0 / power)
+
+    # Maybe apply scaling for fft bins
+    if weighting_parameters is not None:
+        center, half_width = weighting_parameters
+        chroma_filters *= np.tile(
+            np.exp(-0.5 * (((freq_bins / num_chroma - center) / half_width) ** 2)),
+            (num_chroma, 1),
+        )
+
+    if start_at_c_chroma:
+        chroma_filters = np.roll(chroma_filters, -3 * (num_chroma // 12), axis=0)
+
+    # remove aliasing columns, copy to ensure row-contiguity
+    return np.ascontiguousarray(chroma_filters[:, : int(1 + num_frequency_bins / 2)])
 
 def mel_filter_bank(
     num_frequency_bins: int,
@@ -231,10 +327,10 @@ def window_function(
 
     The following window types are supported:
 
-        - `"boxcar"`: a rectangular window
-        - `"hamming"`: the Hamming window
-        - `"hann"`: the Hann window
-        - `"povey"`: the Povey window
+    - `"boxcar"`: a rectangular window
+    - `"hamming"`: the Hamming window
+    - `"hann"`: the Hann window
+    - `"povey"`: the Povey window
 
     Args:
         window_length (`int`):
@@ -308,26 +404,26 @@ def spectrogram(
 
     This function can create the following kinds of spectrograms:
 
-      - amplitude spectrogram (`power = 1.0`)
-      - power spectrogram (`power = 2.0`)
-      - complex-valued spectrogram (`power = None`)
-      - log spectrogram (use `log_mel` argument)
-      - mel spectrogram (provide `mel_filters`)
-      - log-mel spectrogram (provide `mel_filters` and `log_mel`)
+    - amplitude spectrogram (`power = 1.0`)
+    - power spectrogram (`power = 2.0`)
+    - complex-valued spectrogram (`power = None`)
+    - log spectrogram (use `log_mel` argument)
+    - mel spectrogram (provide `mel_filters`)
+    - log-mel spectrogram (provide `mel_filters` and `log_mel`)
 
     How this works:
 
-      1. The input waveform is split into frames of size `frame_length` that are partially overlapping by `frame_length
-         - hop_length` samples.
-      2. Each frame is multiplied by the window and placed into a buffer of size `fft_length`.
-      3. The DFT is taken of each windowed frame.
-      4. The results are stacked into a spectrogram.
+    1. The input waveform is split into frames of size `frame_length` that are partially overlapping by `frame_length
+     - hop_length` samples.
+    2. Each frame is multiplied by the window and placed into a buffer of size `fft_length`.
+    3. The DFT is taken of each windowed frame.
+    4. The results are stacked into a spectrogram.
 
     We make a distinction between the following "blocks" of sample data, each of which may have a different lengths:
 
-      - The analysis frame. This is the size of the time slices that the input waveform is split into.
-      - The window. Each analysis frame is multiplied by the window to avoid spectral leakage.
-      - The FFT input buffer. The length of this determines how many frequency bins are in the spectrogram.
+    - The analysis frame. This is the size of the time slices that the input waveform is split into.
+    - The window. Each analysis frame is multiplied by the window to avoid spectral leakage.
+    - The FFT input buffer. The length of this determines how many frequency bins are in the spectrogram.
 
     In this implementation, the window is assumed to be zero-padded to have the same size as the analysis frame. A
     padded window can be obtained from `window_function()`. The FFT input buffer may be larger than the analysis frame,
@@ -335,7 +431,7 @@ def spectrogram(
 
     Note: This function is not optimized for speed yet. It should be mostly compatible with `librosa.stft` and
     `torchaudio.functional.transforms.Spectrogram`, although it is more flexible due to the different ways spectrograms
-    can be constructed.
+    can be forwarded.
 
     Args:
         waveform (`np.ndarray` of shape `(length,)`):
@@ -598,24 +694,23 @@ def stft(frames: np.array, windowing_function: np.array, fft_window_size: int = 
             `(1+fft_window_size)//2`. An increase of the fft_window_size slows the calculus time proportionnally.
 
     Example:
-
-    ```python
-    >>> from transformers.audio_utils import stft, fram_wave
-    >>> import numpy as np
-
-    >>> audio = np.random.rand(50)
-    >>> fft_window_size = 10
-    >>> hop_length = 2
-    >>> framed_audio = fram_wave(audio, hop_length, fft_window_size)
-    >>> spectrogram = stft(framed_audio, np.hanning(fft_window_size + 1))
-    ```
+        ```python
+        >>> from transformers.audio_utils import stft, fram_wave
+        >>> import numpy as np
+        ...
+        >>> audio = np.random.rand(50)
+        >>> fft_window_size = 10
+        >>> hop_length = 2
+        >>> framed_audio = fram_wave(audio, hop_length, fft_window_size)
+        >>> spectrogram = stft(framed_audio, np.hanning(fft_window_size + 1))
+        ```
 
     Returns:
         spectrogram (`np.ndarray`):
             A spectrogram of shape `(num_frames, nb_frequency_bins)` obtained using the STFT algorithm
     """
     warnings.warn(
-        "The function `stft` is deprecated and will be removed in version 4.31.0 of Transformers",
+        "The function `stft` is deprecated.31.0 of Transformers",
         FutureWarning,
     )
     frame_size = frames.shape[1]

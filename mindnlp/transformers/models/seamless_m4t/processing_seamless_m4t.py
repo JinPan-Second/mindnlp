@@ -12,7 +12,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-# pylint: disable=cyclic-import
 """
 Audio/Text processor class for SeamlessM4T
 """
@@ -35,11 +34,24 @@ class SeamlessM4TProcessor(ProcessorMixin):
         tokenizer ([`SeamlessM4TTokenizerFast`]):
             The tokenizer is a required input.
     """
-
     feature_extractor_class = "SeamlessM4TFeatureExtractor"
     tokenizer_class = ("SeamlessM4TTokenizer", "SeamlessM4TTokenizerFast")
 
     def __init__(self, feature_extractor, tokenizer):
+        """
+        Initializes a SeamlessM4TProcessor instance.
+        
+        Args:
+            self (SeamlessM4TProcessor): The instance of the SeamlessM4TProcessor class.
+            feature_extractor (object): The feature extractor object used for processing.
+            tokenizer (object): The tokenizer object used for processing.
+        
+        Returns:
+            None.
+        
+        Raises:
+            None.
+        """
         super().__init__(feature_extractor, tokenizer)
 
     def __call__(self, text=None, audios=None, src_lang=None, tgt_lang=None, **kwargs):
@@ -67,14 +79,16 @@ class SeamlessM4TProcessor(ProcessorMixin):
             kwargs (*optional*):
                 Remaining dictionary of keyword arguments that will be passed to the feature extractor and/or the
                 tokenizer.
-        Returns:
-            [`BatchEncoding`]: A [`BatchEncoding`] with the following fields:
 
-            - **input_ids** -- List of token ids to be fed to a model. Returned when `text` is not `None`.
-            - **attention_mask** -- List of indices specifying which tokens should be attended to by the model (when
-              `return_attention_mask=True` or if *"attention_mask"* is in `self.model_input_names` and if `text` is not
-              `None`).
-            - **input_features** -- Audio input features to be fed to a model. Returned when `audios` is not `None`.
+        Returns:
+            [`BatchEncoding`]:
+                A [`BatchEncoding`] with the following fields:
+
+                - **input_ids** -- List of token ids to be fed to a model. Returned when `text` is not `None`.
+                - **attention_mask** -- List of indices specifying which tokens should be attended to by the model (when
+                `return_attention_mask=True` or if *"attention_mask"* is in `self.model_input_names` and if `text` is not
+                `None`).
+                - **input_features** -- Audio input features to be fed to a model. Returned when `audios` is not `None`.
         """
         sampling_rate = kwargs.pop("sampling_rate", None)
 
@@ -110,6 +124,22 @@ class SeamlessM4TProcessor(ProcessorMixin):
 
     @property
     def model_input_names(self):
+        """
+        Returns a list of unique model input names required by the SeamlessM4TProcessor.
+
+        Args:
+            self (SeamlessM4TProcessor): An instance of the SeamlessM4TProcessor class.
+
+        Returns:
+            None
+
+        Raises:
+            None
+
+        This method retrieves the model input names from the tokenizer and feature extractor used by the
+        SeamlessM4TProcessor. It then combines these names into a single list and removes any duplicates,
+        returning the final list of model input names.
+        """
         tokenizer_input_names = self.tokenizer.model_input_names
         feature_extractor_input_names = self.feature_extractor.model_input_names
         return list(dict.fromkeys(tokenizer_input_names + feature_extractor_input_names))

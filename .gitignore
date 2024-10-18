@@ -125,7 +125,6 @@ save/
 
 
 # dataset
-data/
 save/
 
 # ms files
@@ -153,3 +152,15 @@ train_with_summ.txt
 
 # mindspore profiler
 RuntimeProfiler*
+
+checkpoint-*/
+data*/
+!mindnlp/data/
+!mindnlp/dataset/
+!docs/api/data/
+!data2vec/
+*config.json
+
+fusion_result.json
+aclinit.json
+xiyouji.txt

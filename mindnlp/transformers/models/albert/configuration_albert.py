@@ -21,14 +21,14 @@ from ...configuration_utils import PretrainedConfig
 
 
 ALBERT_PRETRAINED_CONFIG_ARCHIVE_MAP = {
-    "albert-base-v1": "https://huggingface.co/albert-base-v1/resolve/main/config.json",
-    "albert-large-v1": "https://huggingface.co/albert-large-v1/resolve/main/config.json",
-    "albert-xlarge-v1": "https://huggingface.co/albert-xlarge-v1/resolve/main/config.json",
-    "albert-xxlarge-v1": "https://huggingface.co/albert-xxlarge-v1/resolve/main/config.json",
-    "albert-base-v2": "https://huggingface.co/albert-base-v2/resolve/main/config.json",
-    "albert-large-v2": "https://huggingface.co/albert-large-v2/resolve/main/config.json",
-    "albert-xlarge-v2": "https://huggingface.co/albert-xlarge-v2/resolve/main/config.json",
-    "albert-xxlarge-v2": "https://huggingface.co/albert-xxlarge-v2/resolve/main/config.json",
+    "albert-base-v1": "https://hf-mirror.com/albert-base-v1/resolve/main/config.json",
+    "albert-large-v1": "https://hf-mirror.com/albert-large-v1/resolve/main/config.json",
+    "albert-xlarge-v1": "https://hf-mirror.com/albert-xlarge-v1/resolve/main/config.json",
+    "albert-xxlarge-v1": "https://hf-mirror.com/albert-xxlarge-v1/resolve/main/config.json",
+    "albert-base-v2": "https://hf-mirror.com/albert-base-v2/resolve/main/config.json",
+    "albert-large-v2": "https://hf-mirror.com/albert-large-v2/resolve/main/config.json",
+    "albert-xlarge-v2": "https://hf-mirror.com/albert-xlarge-v2/resolve/main/config.json",
+    "albert-xxlarge-v2": "https://hf-mirror.com/albert-xxlarge-v2/resolve/main/config.json",
 }
 
 
@@ -37,7 +37,7 @@ class AlbertConfig(PretrainedConfig):
     This is the configuration class to store the configuration of a [`AlbertModel`] or a [`TFAlbertModel`]. It is used
     to instantiate an ALBERT model according to the specified arguments, defining the model architecture. Instantiating
     a configuration with the defaults will yield a similar configuration to that of the ALBERT
-    [albert-xxlarge-v2](https://huggingface.co/albert-xxlarge-v2) architecture.
+    [albert-xxlarge-v2](https://hf-mirror.com/albert-xxlarge-v2) architecture.
 
     Configuration objects inherit from [`PretrainedConfig`] and can be used to control the model outputs. Read the
     documentation from [`PretrainedConfig`] for more information.
@@ -91,28 +91,27 @@ class AlbertConfig(PretrainedConfig):
         eos_token_id (`int`, *optional*, defaults to 3):
             End of stream token id.
 
-    Examples:
-
-    ```python
-    >>> from transformers import AlbertConfig, AlbertModel
-
-    >>> # Initializing an ALBERT-xxlarge style configuration
-    >>> albert_xxlarge_configuration = AlbertConfig()
-
-    >>> # Initializing an ALBERT-base style configuration
-    >>> albert_base_configuration = AlbertConfig(
-    ...     hidden_size=768,
-    ...     num_attention_heads=12,
-    ...     intermediate_size=3072,
-    ... )
-
-    >>> # Initializing a model (with random weights) from the ALBERT-base style configuration
-    >>> model = AlbertModel(albert_xxlarge_configuration)
-
-    >>> # Accessing the model configuration
-    >>> configuration = model.config
-    ```"""
-
+    Example:
+        ```python
+        >>> from transformers import AlbertConfig, AlbertModel
+        ...
+        >>> # Initializing an ALBERT-xxlarge style configuration
+        >>> albert_xxlarge_configuration = AlbertConfig()
+        ...
+        >>> # Initializing an ALBERT-base style configuration
+        >>> albert_base_configuration = AlbertConfig(
+        ...     hidden_size=768,
+        ...     num_attention_heads=12,
+        ...     intermediate_size=3072,
+        ... )
+        ...
+        >>> # Initializing a model (with random weights) from the ALBERT-base style configuration
+        >>> model = AlbertModel(albert_xxlarge_configuration)
+        ...
+        >>> # Accessing the model configuration
+        >>> configuration = model.config
+        ```
+    """
     model_type = "albert"
 
     def __init__(
@@ -139,6 +138,40 @@ class AlbertConfig(PretrainedConfig):
         eos_token_id=3,
         **kwargs,
     ):
+        """
+        __init__
+        
+        Initializes an instance of AlbertConfig.
+        
+        Args:
+            self: The instance of the class.
+            vocab_size (int, optional): The vocabulary size. Defaults to 30000.
+            embedding_size (int, optional): The size of word embeddings. Defaults to 128.
+            hidden_size (int, optional): The size of hidden layers. Defaults to 4096.
+            num_hidden_layers (int, optional): The number of hidden layers. Defaults to 12.
+            num_hidden_groups (int, optional): The number of hidden groups. Defaults to 1.
+            num_attention_heads (int, optional): The number of attention heads. Defaults to 64.
+            intermediate_size (int, optional): The size of intermediate layers. Defaults to 16384.
+            inner_group_num (int, optional): The number of inner groups. Defaults to 1.
+            hidden_act (str, optional): The activation function for hidden layers. Defaults to 'gelu_new'.
+            hidden_dropout_prob (float, optional): The dropout probability for hidden layers. Defaults to 0.
+            attention_probs_dropout_prob (float, optional): The dropout probability for attention probabilities. Defaults to 0.
+            max_position_embeddings (int, optional): The maximum position for embeddings. Defaults to 512.
+            type_vocab_size (int, optional): The size of the type vocabulary. Defaults to 2.
+            initializer_range (float, optional): The range for weight initialization. Defaults to 0.02.
+            layer_norm_eps (float, optional): The epsilon value for layer normalization. Defaults to 1e-12.
+            classifier_dropout_prob (float, optional): The dropout probability for the classifier. Defaults to 0.1.
+            position_embedding_type (str, optional): The type of position embedding. Defaults to 'absolute'.
+            pad_token_id (int, optional): The ID for padding token. Defaults to 0.
+            bos_token_id (int, optional): The ID for beginning of sequence token. Defaults to 2.
+            eos_token_id (int, optional): The ID for end of sequence token. Defaults to 3.
+        
+        Returns:
+            None.
+        
+        Raises:
+            None.
+        """
         super().__init__(pad_token_id=pad_token_id, bos_token_id=bos_token_id, eos_token_id=eos_token_id, **kwargs)
 
         self.vocab_size = vocab_size

@@ -23,12 +23,12 @@ from ...configuration_utils import PretrainedConfig
 logger = logging.get_logger(__name__)
 
 BLOOM_PRETRAINED_CONFIG_ARCHIVE_MAP = {
-    "bigscience/bloom": "https://huggingface.co/bigscience/bloom/resolve/main/config.json",
-    "bigscience/bloom-560m": "https://huggingface.co/bigscience/bloom-560m/blob/main/config.json",
-    "bigscience/bloom-1b1": "https://huggingface.co/bigscience/bloom-1b1/blob/main/config.json",
-    "bigscience/bloom-1b7": "https://huggingface.co/bigscience/bloom-1b7/blob/main/config.json",
-    "bigscience/bloom-3b": "https://huggingface.co/bigscience/bloom-3b/blob/main/config.json",
-    "bigscience/bloom-7b1": "https://huggingface.co/bigscience/bloom-7b1/blob/main/config.json",
+    "bigscience/bloom": "https://hf-mirror.com/bigscience/bloom/resolve/main/config.json",
+    "bigscience/bloom-560m": "https://hf-mirror.com/bigscience/bloom-560m/blob/main/config.json",
+    "bigscience/bloom-1b1": "https://hf-mirror.com/bigscience/bloom-1b1/blob/main/config.json",
+    "bigscience/bloom-1b7": "https://hf-mirror.com/bigscience/bloom-1b7/blob/main/config.json",
+    "bigscience/bloom-3b": "https://hf-mirror.com/bigscience/bloom-3b/blob/main/config.json",
+    "bigscience/bloom-7b1": "https://hf-mirror.com/bigscience/bloom-7b1/blob/main/config.json",
 }
 
 
@@ -37,7 +37,7 @@ class BloomConfig(PretrainedConfig):
     This is the configuration class to store the configuration of a [`BloomModel`]. It is used to instantiate a Bloom
     model according to the specified arguments, defining the model architecture. Instantiating a configuration with the
     defaults will yield a similar configuration to the Bloom architecture
-    [bigscience/bloom](https://huggingface.co/bigscience/bloom).
+    [bigscience/bloom](https://hf-mirror.com/bigscience/bloom).
 
     Configuration objects inherit from [`PretrainedConfig`] and can be used to control the model outputs. Read the
     documentation from [`PretrainedConfig`] for more information.
@@ -47,7 +47,7 @@ class BloomConfig(PretrainedConfig):
         vocab_size (`int`, *optional*, defaults to 250880):
             Vocabulary size of the Bloom model. Defines the maximum number of different tokens that can be represented
             by the `inputs_ids` passed when calling [`BloomModel`]. Check [this
-            discussion](https://huggingface.co/bigscience/bloom/discussions/120#633d28389addb8530b406c2a) on how the
+            discussion](https://hf-mirror.com/bigscience/bloom/discussions/120#633d28389addb8530b406c2a) on how the
             `vocab_size` has been defined.
         hidden_size (`int`, *optional*, defaults to 64):
             Dimensionality of the embeddings and hidden states.
@@ -69,7 +69,7 @@ class BloomConfig(PretrainedConfig):
             Whether or not the model should return the last key/values attentions (not used by all models).
         pretraining_tp (`int`, *optional*, defaults to `1`):
             Experimental feature. Tensor parallelism rank used during pretraining with Megatron. Please refer to [this
-            document](https://huggingface.co/docs/transformers/parallelism) to understand more about it. This value is
+            document](https://hf-mirror.com/docs/transformers/parallelism) to understand more about it. This value is
             necessary to ensure exact reproducibility of the pretraining results. Please refer to [this
             issue](https://github.com/pytorch/pytorch/issues/76232). Note also that this is enabled only when
             `slow_but_exact=True`.
@@ -82,20 +82,19 @@ class BloomConfig(PretrainedConfig):
             resolved in the future once the main model has been fine-tuned with TP_rank=1.
 
     Example:
-
-    ```python
-    >>> from transformers import BloomConfig, BloomModel
-
-    >>> # Initializing a Bloom configuration
-    >>> configuration = BloomConfig()
-
-    >>> # Initializing a model (with random weights) from the configuration
-    >>> model = BloomModel(configuration)
-
-    >>> # Accessing the model configuration
-    >>> configuration = model.config
-    ```"""
-
+        ```python
+        >>> from transformers import BloomConfig, BloomModel
+        ...
+        >>> # Initializing a Bloom configuration
+        >>> configuration = BloomConfig()
+        ...
+        >>> # Initializing a model (with random weights) from the configuration
+        >>> model = BloomModel(configuration)
+        ...
+        >>> # Accessing the model configuration
+        >>> configuration = model.config
+        ```
+    """
     model_type = "bloom"
     keys_to_ignore_at_inference = ["past_key_values"]
     attribute_map = {
@@ -121,6 +120,33 @@ class BloomConfig(PretrainedConfig):
         slow_but_exact=False,
         **kwargs,
     ):
+        """
+        Initializes a new instance of the BloomConfig class.
+        
+        Args:
+            self: The object itself.
+            vocab_size (int): The size of the vocabulary. Default is 250880.
+            hidden_size (int): The size of the hidden layer. Default is 64.
+            n_layer (int): The number of layers. Default is 2.
+            n_head (int): The number of attention heads. Default is 8.
+            layer_norm_epsilon (float): The epsilon value for layer normalization. Default is 1e-05.
+            initializer_range (float): The range for the initializer. Default is 0.02.
+            use_cache (bool): Determines if caching is used. Default is True.
+            bos_token_id (int): The ID of the beginning-of-sentence token. Default is 1.
+            eos_token_id (int): The ID of the end-of-sentence token. Default is 2.
+            apply_residual_connection_post_layernorm (bool): Determines if residual connection is applied after layer normalization. Default is False.
+            hidden_dropout (float): The dropout rate for hidden layers. Default is 0.0.
+            attention_dropout (float): The dropout rate for attention layers. Default is 0.0.
+            pretraining_tp (int): The pretraining TP value. Default is 1.
+            slow_but_exact (bool): Determines if the method should prioritize accuracy over speed. Default is False.
+            **kwargs: Additional keyword arguments.
+        
+        Returns:
+            None.
+        
+        Raises:
+            None.
+        """
         self.vocab_size = vocab_size
         # Backward compatibility with n_embed kwarg
         n_embed = kwargs.pop("n_embed", None)

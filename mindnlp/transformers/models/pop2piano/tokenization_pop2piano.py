@@ -14,15 +14,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ============================================================================
-# pylint: disable=invalid-name
-# pylint: disable=arguments-renamed
-# pylint: disable=invalid-unary-operand-type
-# pylint: disable=missing-function-docstring
-# pylint: disable=missing-class-docstring
-# pylint: disable=consider-using-enumerate
-# pylint: disable=consider-using-generator
-# pylint: disable=unspecified-encoding
-# pylint: disable=signature-differs
+# pylint: disable=import-error
 """Tokenization class for Pop2Piano."""
 
 import json
@@ -47,11 +39,24 @@ VOCAB_FILES_NAMES = {
 
 PRETRAINED_VOCAB_FILES_MAP = {
     "vocab": {
-        "sweetcocoa/pop2piano": "https://huggingface.co/sweetcocoa/pop2piano/blob/main/vocab.json",
+        "sweetcocoa/pop2piano": "https://hf-mirror.com/sweetcocoa/pop2piano/blob/main/vocab.json",
     },
 }
 
 def token_time_to_note(number, cutoff_time_idx, current_idx):
+    """
+
+    Args:
+        number (int): The amount to increment the current index by.
+        cutoff_time_idx (int or None): The maximum index value allowed, can be None.
+        current_idx (int): The current index value.
+    
+    Returns:
+        current_idx: The updated current index value, respecting the cutoff_time_idx if provided.
+    
+    Raises:
+        None
+    """
     current_idx += number
     if cutoff_time_idx is not None:
         current_idx = min(current_idx, cutoff_time_idx)
@@ -59,6 +64,24 @@ def token_time_to_note(number, cutoff_time_idx, current_idx):
     return current_idx
 
 def token_note_to_note(number, current_velocity, default_velocity, note_onsets_ready, current_idx, notes):
+    """
+    This function updates the notes list based on the given parameters.
+    
+    Args:
+        number (int): The number of the note.
+        current_velocity (int): The current velocity of the note.
+        default_velocity (int): The default velocity for the note.
+        note_onsets_ready (list or None): A list containing the onset index for each note.
+            If an onset index is None, it means that the note has not yet started.
+        current_idx (int): The current index.
+        notes (list): A list containing the notes and their properties.
+    
+    Returns:
+        None.
+    
+    Raises:
+        None.
+    """
     if note_onsets_ready[number] is not None:
         # offset with onset
         onset_idx = note_onsets_ready[number]
@@ -87,7 +110,6 @@ class Pop2PianoTokenizer(PreTrainedTokenizer):
         num_bars (`int`, *optional*, defaults to 2):
             Determines cutoff_time_idx in for each token.
     """
-
     model_input_names = ["token_ids", "attention_mask"]
     vocab_files_names = VOCAB_FILES_NAMES
     pretrained_vocab_files_map = PRETRAINED_VOCAB_FILES_MAP
@@ -103,6 +125,30 @@ class Pop2PianoTokenizer(PreTrainedTokenizer):
         bos_token="2",
         **kwargs,
     ):
+        """
+        This method initializes an instance of the Pop2PianoTokenizer class.
+        
+        Args:
+            self: The instance of the Pop2PianoTokenizer class.
+            vocab (str): The path to the vocabulary file.
+            default_velocity (int): The default velocity for the tokenizer, default value is 77.
+            num_bars (int): The number of bars.
+            unk_token (str or AddedToken): The unknown token for the tokenizer.
+                If str, it will be converted to an AddedToken.
+            eos_token (str or AddedToken): The end-of-sequence token for the tokenizer.
+                If str, it will be converted to an AddedToken.
+            pad_token (str or AddedToken): The padding token for the tokenizer.
+                If str, it will be converted to an AddedToken.
+            bos_token (str or AddedToken): The beginning-of-sequence token for the tokenizer.
+                If str, it will be converted to an AddedToken.
+        
+        Returns:
+            None.
+        
+        Raises:
+            FileNotFoundError: If the 'vocab' file is not found.
+            JSONDecodeError: If there is an error decoding the JSON data from the 'vocab' file.
+        """
         unk_token = AddedToken(unk_token, lstrip=False, rstrip=False) if isinstance(unk_token, str) else unk_token
         eos_token = AddedToken(eos_token, lstrip=False, rstrip=False) if isinstance(eos_token, str) else eos_token
         pad_token = AddedToken(pad_token, lstrip=False, rstrip=False) if isinstance(pad_token, str) else pad_token
@@ -146,7 +192,6 @@ class Pop2PianoTokenizer(PreTrainedTokenizer):
         Returns:
             `List`: A list consists of token_type (`str`) and value (`int`).
         """
-
         token_type_value = self.decoder.get(token_id, f"{self.unk_token}_TOKEN_TIME")
         token_type_value = token_type_value.split("_")
         token_type, value = "_".join(token_type_value[1:]), int(token_type_value[0])
@@ -189,7 +234,6 @@ class Pop2PianoTokenizer(PreTrainedTokenizer):
             cutoff_time_idx (`int`):
                 Denotes the cutoff time index for each note in generated Midi.
         """
-
         notes = None
 
         for index in range(len(tokens)):
@@ -265,7 +309,7 @@ class Pop2PianoTokenizer(PreTrainedTokenizer):
 
         current_idx = start_idx
         current_velocity = 0
-        note_onsets_ready = [None for i in range(sum([k.endswith("NOTE") for k in self.encoder.keys()]) + 1)]
+        note_onsets_ready = [None for i in range(sum(k.endswith("NOTE") for k in self.encoder.keys()) + 1)]
         notes = []
         for token_type, number in words:
             if token_type == "TOKEN_SPECIAL":
@@ -321,7 +365,6 @@ class Pop2PianoTokenizer(PreTrainedTokenizer):
             offset_sec (`int`, *optional*, defaults to 0.0):
                 This represents the offset seconds which is used while creating each Pretty Midi Note.
         """
-
         requires_backends(self, ["pretty_midi"])
 
         new_pm = pretty_midi.PrettyMIDI(resolution=384, initial_tempo=120.0)
@@ -379,9 +422,12 @@ class Pop2PianoTokenizer(PreTrainedTokenizer):
         Args:
             notes (`numpy.ndarray` of shape `[sequence_length, 4]` or `list` of `pretty_midi.Note` objects):
                 This represents the midi notes. If `notes` is a `numpy.ndarray`:
-                    - Each sequence must have 4 values, they are `onset idx`, `offset idx`, `pitch` and `velocity`.
+
+                - Each sequence must have 4 values, they are `onset idx`, `offset idx`, `pitch` and `velocity`.
+
                 If `notes` is a `list` containing `pretty_midi.Note` objects:
-                    - Each sequence must have 4 attributes, they are `start`, `end`, `pitch` and `velocity`.
+
+                - Each sequence must have 4 attributes, they are `start`, `end`, `pitch` and `velocity`.
             truncation_strategy ([`~tokenization_utils_base.TruncationStrategy`], *optional*):
                 Indicates the truncation strategy that is going to be used during truncation.
             max_length (`int`, *optional*):
@@ -390,7 +436,6 @@ class Pop2PianoTokenizer(PreTrainedTokenizer):
         Returns:
             `BatchEncoding` containing the tokens ids.
         """
-
         requires_backends(self, ["pretty_midi"])
 
         # check if notes is a pretty_midi object or not, if yes then extract the attributes and put them into a numpy
@@ -449,9 +494,12 @@ class Pop2PianoTokenizer(PreTrainedTokenizer):
         Args:
             notes (`numpy.ndarray` of shape `[batch_size, sequence_length, 4]` or `list` of `pretty_midi.Note` objects):
                 This represents the midi notes. If `notes` is a `numpy.ndarray`:
-                    - Each sequence must have 4 values, they are `onset idx`, `offset idx`, `pitch` and `velocity`.
+
+                - Each sequence must have 4 values, they are `onset idx`, `offset idx`, `pitch` and `velocity`.
+
                 If `notes` is a `list` containing `pretty_midi.Note` objects:
-                    - Each sequence must have 4 attributes, they are `start`, `end`, `pitch` and `velocity`.
+
+                - Each sequence must have 4 attributes, they are `start`, `end`, `pitch` and `velocity`.
             truncation_strategy ([`~tokenization_utils_base.TruncationStrategy`], *optional*):
                 Indicates the truncation strategy that is going to be used during truncation.
             max_length (`int`, *optional*):
@@ -460,7 +508,6 @@ class Pop2PianoTokenizer(PreTrainedTokenizer):
         Returns:
             `BatchEncoding` containing the tokens ids.
         """
-
         encoded_batch_token_ids = []
         for i in range(len(notes)):
             encoded_batch_token_ids.append(
@@ -499,33 +546,36 @@ class Pop2PianoTokenizer(PreTrainedTokenizer):
                 This represents the midi notes.
 
                 If `notes` is a `numpy.ndarray`:
-                    - Each sequence must have 4 values, they are `onset idx`, `offset idx`, `pitch` and `velocity`.
+
+                Each sequence must have 4 values, they are `onset idx`, `offset idx`, `pitch` and `velocity`.
+
                 If `notes` is a `list` containing `pretty_midi.Note` objects:
-                    - Each sequence must have 4 attributes, they are `start`, `end`, `pitch` and `velocity`.
+
+                - Each sequence must have 4 attributes, they are `start`, `end`, `pitch` and `velocity`.
             padding (`bool`, `str` or [`~file_utils.PaddingStrategy`], *optional*, defaults to `False`):
                 Activates and controls padding. Accepts the following values:
 
                 - `True` or `'longest'`: Pad to the longest sequence in the batch (or no padding if only a single
-                  sequence if provided).
+                sequence if provided).
                 - `'max_length'`: Pad to a maximum length specified with the argument `max_length` or to the maximum
-                  acceptable input length for the model if that argument is not provided.
+                acceptable input length for the model if that argument is not provided.
                 - `False` or `'do_not_pad'` (default): No padding (i.e., can output a batch with sequences of different
-                  lengths).
+                lengths).
             truncation (`bool`, `str` or [`~tokenization_utils_base.TruncationStrategy`], *optional*, defaults to `False`):
                 Activates and controls truncation. Accepts the following values:
 
                 - `True` or `'longest_first'`: Truncate to a maximum length specified with the argument `max_length` or
-                  to the maximum acceptable input length for the model if that argument is not provided. This will
-                  truncate token by token, removing a token from the longest sequence in the pair if a pair of
-                  sequences (or a batch of pairs) is provided.
+                to the maximum acceptable input length for the model if that argument is not provided. This will
+                truncate token by token, removing a token from the longest sequence in the pair if a pair of
+                sequences (or a batch of pairs) is provided.
                 - `'only_first'`: Truncate to a maximum length specified with the argument `max_length` or to the
-                  maximum acceptable input length for the model if that argument is not provided. This will only
-                  truncate the first sequence of a pair if a pair of sequences (or a batch of pairs) is provided.
+                maximum acceptable input length for the model if that argument is not provided. This will only
+                truncate the first sequence of a pair if a pair of sequences (or a batch of pairs) is provided.
                 - `'only_second'`: Truncate to a maximum length specified with the argument `max_length` or to the
-                  maximum acceptable input length for the model if that argument is not provided. This will only
-                  truncate the second sequence of a pair if a pair of sequences (or a batch of pairs) is provided.
+                maximum acceptable input length for the model if that argument is not provided. This will only
+                truncate the second sequence of a pair if a pair of sequences (or a batch of pairs) is provided.
                 - `False` or `'do_not_truncate'` (default): No truncation (i.e., can output batch with sequence lengths
-                  greater than the model maximum admissible input size).
+                greater than the model maximum admissible input size).
             max_length (`int`, *optional*):
                 Controls the maximum length to use by one of the truncation/padding parameters. If left unset or set to
                 `None`, this will use the predefined model maximum length if a maximum length is required by one of the
@@ -551,7 +601,6 @@ class Pop2PianoTokenizer(PreTrainedTokenizer):
         Returns:
             `BatchEncoding` containing the token_ids.
         """
-
         # check if it is batched or not
         # it is batched if its a list containing a list of `pretty_midi.Notes` where the outer list contains all the
         # batches and the inner list contains all Notes for a single batch. Otherwise if np.ndarray is passed it will be
@@ -618,13 +667,17 @@ class Pop2PianoTokenizer(PreTrainedTokenizer):
                  should be present if they were returned by the feature extractor.
             return_midi (`bool`, *optional*, defaults to `True`):
                 Whether to return midi object or not.
+
         Returns:
-            If `return_midi` is True:
+            Conditional Return:
+                If `return_midi` is True:
+
                 - `BatchEncoding` containing both `notes` and `pretty_midi.pretty_midi.PrettyMIDI` objects.
-            If `return_midi` is False:
+
+                If `return_midi` is False:
+
                 - `BatchEncoding` containing `notes`.
         """
-
         # check if they have attention_masks(attention_mask, attention_mask_beatsteps, attention_mask_extrapolated_beatstep) or not
         attention_masks_present = bool(
             hasattr(feature_extractor_output, "attention_mask")

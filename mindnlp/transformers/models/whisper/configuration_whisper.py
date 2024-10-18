@@ -12,18 +12,20 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-# pylint: disable=dangerous-default-value
-""" Whisper model configuration"""
+"""Whisper model configuration"""
 
-from mindnlp.utils import logging
+from typing import TYPE_CHECKING
+
 from ...configuration_utils import PretrainedConfig
+from ....utils import logging
 
+
+if TYPE_CHECKING:
+    from ...feature_extraction_utils import FeatureExtractionMixin
+    from ...tokenization_utils_base import PreTrainedTokenizerBase
+    from ....utils import TensorType
 
 logger = logging.get_logger(__name__)
-
-WHISPER_SUPPORT_LIST = [
-    "openai/whisper-base"
-]
 
 
 # fmt: off
@@ -182,9 +184,14 @@ class WhisperConfig(PretrainedConfig):
     >>> # Accessing the model configuration
     >>> configuration = model.config
     ```"""
+
     model_type = "whisper"
     keys_to_ignore_at_inference = ["past_key_values"]
-    attribute_map = {"num_attention_heads": "encoder_attention_heads", "hidden_size": "d_model"}
+    attribute_map = {
+        "num_key_value_heads": "encoder_attention_heads",
+        "num_attention_heads": "encoder_attention_heads",
+        "hidden_size": "d_model",
+    }
 
     def __init__(
         self,

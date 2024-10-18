@@ -23,16 +23,16 @@ from ...configuration_utils import PretrainedConfig
 logger = logging.get_logger(__name__)
 
 ERNIE_PRETRAINED_CONFIG_ARCHIVE_MAP = {
-    "nghuyong/ernie-1.0-base-zh": "https://huggingface.co/nghuyong/ernie-1.0-base-zh/resolve/main/config.json",
-    "nghuyong/ernie-2.0-base-en": "https://huggingface.co/nghuyong/ernie-2.0-base-en/resolve/main/config.json",
-    "nghuyong/ernie-2.0-large-en": "https://huggingface.co/nghuyong/ernie-2.0-large-en/resolve/main/config.json",
-    "nghuyong/ernie-3.0-base-zh": "https://huggingface.co/nghuyong/ernie-3.0-base-zh/resolve/main/config.json",
-    "nghuyong/ernie-3.0-medium-zh": "https://huggingface.co/nghuyong/ernie-3.0-medium-zh/resolve/main/config.json",
-    "nghuyong/ernie-3.0-mini-zh": "https://huggingface.co/nghuyong/ernie-3.0-mini-zh/resolve/main/config.json",
-    "nghuyong/ernie-3.0-micro-zh": "https://huggingface.co/nghuyong/ernie-3.0-micro-zh/resolve/main/config.json",
-    "nghuyong/ernie-3.0-nano-zh": "https://huggingface.co/nghuyong/ernie-3.0-nano-zh/resolve/main/config.json",
-    "nghuyong/ernie-gram-zh": "https://huggingface.co/nghuyong/ernie-gram-zh/resolve/main/config.json",
-    "nghuyong/ernie-health-zh": "https://huggingface.co/nghuyong/ernie-health-zh/resolve/main/config.json",
+    "nghuyong/ernie-1.0-base-zh": "https://hf-mirror.com/nghuyong/ernie-1.0-base-zh/resolve/main/config.json",
+    "nghuyong/ernie-2.0-base-en": "https://hf-mirror.com/nghuyong/ernie-2.0-base-en/resolve/main/config.json",
+    "nghuyong/ernie-2.0-large-en": "https://hf-mirror.com/nghuyong/ernie-2.0-large-en/resolve/main/config.json",
+    "nghuyong/ernie-3.0-base-zh": "https://hf-mirror.com/nghuyong/ernie-3.0-base-zh/resolve/main/config.json",
+    "nghuyong/ernie-3.0-medium-zh": "https://hf-mirror.com/nghuyong/ernie-3.0-medium-zh/resolve/main/config.json",
+    "nghuyong/ernie-3.0-mini-zh": "https://hf-mirror.com/nghuyong/ernie-3.0-mini-zh/resolve/main/config.json",
+    "nghuyong/ernie-3.0-micro-zh": "https://hf-mirror.com/nghuyong/ernie-3.0-micro-zh/resolve/main/config.json",
+    "nghuyong/ernie-3.0-nano-zh": "https://hf-mirror.com/nghuyong/ernie-3.0-nano-zh/resolve/main/config.json",
+    "nghuyong/ernie-gram-zh": "https://hf-mirror.com/nghuyong/ernie-gram-zh/resolve/main/config.json",
+    "nghuyong/ernie-health-zh": "https://hf-mirror.com/nghuyong/ernie-health-zh/resolve/main/config.json",
 }
 
 
@@ -41,7 +41,7 @@ class ErnieConfig(PretrainedConfig):
     This is the configuration class to store the configuration of a [`ErnieModel`] or a [`TFErnieModel`]. It is used to
     instantiate a ERNIE model according to the specified arguments, defining the model architecture. Instantiating a
     configuration with the defaults will yield a similar configuration to that of the ERNIE
-    [nghuyong/ernie-3.0-base-zh](https://huggingface.co/nghuyong/ernie-3.0-base-zh) architecture.
+    [nghuyong/ernie-3.0-base-zh](https://hf-mirror.com/nghuyong/ernie-3.0-base-zh) architecture.
 
     Configuration objects inherit from [`PretrainedConfig`] and can be used to control the model outputs. Read the
     documentation from [`PretrainedConfig`] for more information.
@@ -93,20 +93,20 @@ class ErnieConfig(PretrainedConfig):
         classifier_dropout (`float`, *optional*):
             The dropout ratio for the classification head.
 
-    Examples:
-
-    ```python
-    >>> from transformers import ErnieConfig, ErnieModel
-
-    >>> # Initializing a ERNIE nghuyong/ernie-3.0-base-zh style configuration
-    >>> configuration = ErnieConfig()
-
-    >>> # Initializing a model (with random weights) from the nghuyong/ernie-3.0-base-zh style configuration
-    >>> model = ErnieModel(configuration)
-
-    >>> # Accessing the model configuration
-    >>> configuration = model.config
-    ```"""
+    Example:
+        ```python
+        >>> from transformers import ErnieConfig, ErnieModel
+        ...
+        >>> # Initializing a ERNIE nghuyong/ernie-3.0-base-zh style configuration
+        >>> configuration = ErnieConfig()
+        ...
+        >>> # Initializing a model (with random weights) from the nghuyong/ernie-3.0-base-zh style configuration
+        >>> model = ErnieModel(configuration)
+        ... 
+        >>> # Accessing the model configuration
+        >>> configuration = model.config
+        ```
+    """
     model_type = "ernie"
 
     def __init__(
@@ -131,6 +131,36 @@ class ErnieConfig(PretrainedConfig):
         classifier_dropout=None,
         **kwargs,
     ):
+        """
+        Initialize the ErnieConfig class.
+        
+        Args:
+            self (object): The instance of the class.
+            vocab_size (int, optional): The size of the vocabulary. Defaults to 30522.
+            hidden_size (int, optional): The size of the hidden layers. Defaults to 768.
+            num_hidden_layers (int, optional): The number of hidden layers. Defaults to 12.
+            num_attention_heads (int, optional): The number of attention heads. Defaults to 12.
+            intermediate_size (int, optional): The size of the intermediate layer in the transformer encoder. Defaults to 3072.
+            hidden_act (str, optional): The activation function for the hidden layers. Defaults to 'gelu'.
+            hidden_dropout_prob (float, optional): The dropout probability for the hidden layers. Defaults to 0.1.
+            attention_probs_dropout_prob (float, optional): The dropout probability for the attention layers. Defaults to 0.1.
+            max_position_embeddings (int, optional): The maximum position embeddings. Defaults to 512.
+            type_vocab_size (int, optional): The size of the type vocabulary. Defaults to 2.
+            task_type_vocab_size (int, optional): The size of the task type vocabulary. Defaults to 3.
+            use_task_id (bool, optional): Whether to use task IDs. Defaults to False.
+            initializer_range (float, optional): The range for weight initialization. Defaults to 0.02.
+            layer_norm_eps (float, optional): The epsilon value for layer normalization. Defaults to 1e-12.
+            pad_token_id (int, optional): The ID for padding tokens. Defaults to 0.
+            position_embedding_type (str, optional): The type of position embedding. Defaults to 'absolute'.
+            use_cache (bool, optional): Whether to use caching. Defaults to True.
+            classifier_dropout (float, optional): The dropout probability for the classifier. Defaults to None.
+        
+        Returns:
+            None.
+        
+        Raises:
+            None.
+        """
         super().__init__(pad_token_id=pad_token_id, **kwargs)
 
         self.vocab_size = vocab_size
